@@ -1,0 +1,494 @@
+/* ========================================
+   价格页面样式 (Qoder 风格复刻)
+   ======================================== */
+
+/* --- 1. 页面头部 --- */
+.pricing-header {
+    text-align: left !important;
+    padding-top: calc(var(--navbar-height) + 160px) !important;
+    padding-bottom: 24px !important;
+}
+
+.pricing-header .page-title {
+    font-size: 2rem;
+    font-weight: 600;
+    color: #ffffff;
+    margin-bottom: 12px;
+    letter-spacing: -0.01em;
+    background: none;
+    -webkit-text-fill-color: #ffffff;
+}
+
+.pricing-header .page-subtitle {
+    color: #ffffff;
+    font-size: 16px;
+    margin: 0;
+    max-width: none;
+    font-weight: 400;
+}
+
+.subtitle-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.learn-more-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    color: rgba(255, 255, 255, 0.5);
+    font-size: 14px;
+    transition: color var(--transition-fast);
+    text-decoration: none;
+    flex-shrink: 0;
+}
+
+.learn-more-link:hover {
+    color: rgba(255, 255, 255, 0.8);
+}
+
+.learn-more-link .arrow {
+    font-size: 12px;
+}
+
+/* 积分说明和税费提示 */
+.pricing-notes {
+    margin-top: var(--spacing-2xl);
+}
+
+.pricing-notes p {
+    font-size: 14px;
+    color: rgba(255, 255, 255, 0.5);
+    margin: 0 0 4px 0;
+    line-height: 1.5;
+}
+
+
+/* --- 3. 分类标题 --- */
+.pricing-category-title {
+    margin-top: var(--spacing-3xl);
+    margin-bottom: var(--spacing-xl);
+}
+
+.pricing-category-title h2 {
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: #ffffff;
+}
+
+/* --- 4. 价格卡片容器 (连体设计) --- */
+.pricing-section {
+    padding-bottom: var(--spacing-4xl);
+}
+
+.pricing-super-container {
+    background: var(--color-border);
+    /* 用作分割线颜色 */
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-2xl);
+    overflow: hidden;
+}
+
+.pricing-grid {
+    display: grid;
+    /* 默认列数由 JS 动态设置，此处作为回退 */
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1px;
+    /* 1px 间隙显示出底下的 background (即 border颜色) */
+    background: var(--color-border);
+}
+
+.pricing-card {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    padding: 32px 28px;
+    background: var(--color-bg-primary);
+    /* 卡片背景色 */
+    /* 移除原有边框和圆角 */
+    border: none;
+    border-radius: 0;
+    min-height: 400px;
+}
+
+.pricing-card:hover {
+    background: var(--color-bg-card);
+    /* Hover 时稍微变亮一点 */
+    transform: none;
+    /* 移除上浮 */
+    z-index: 1;
+}
+
+
+/* 移除旧的 Badge 样式，如果不需要悬浮标签的话。Qoder 似乎是用右上角的标签 */
+.pricing-badge {
+    top: var(--spacing-lg);
+    right: var(--spacing-lg);
+    left: auto;
+    transform: none;
+    font-size: 10px;
+    padding: 2px 8px;
+}
+
+.pricing-card-header {
+    text-align: left;
+    /* Qoder 是左对齐 */
+    margin-bottom: 8px;
+}
+
+.pricing-name {
+    font-size: 1.5rem;
+    font-weight: 600;
+    margin-bottom: 8px;
+    color: rgba(255, 255, 255, 0.95);
+    text-transform: none;
+    letter-spacing: 0.02em;
+}
+
+.pricing-price {
+    margin-bottom: 16px;
+    display: flex;
+    align-items: baseline;
+    gap: 6px;
+    flex-wrap: wrap;
+}
+
+.price-amount {
+    font-size: 3.5rem;
+    font-weight: 700;
+    letter-spacing: -0.03em;
+    line-height: 1;
+}
+
+.price-period {
+    font-size: 14px;
+    color: rgba(255, 255, 255, 0.5);
+}
+
+/* 原价删除线 */
+.price-original {
+    font-size: 16px;
+    color: rgba(255, 255, 255, 0.35);
+    text-decoration: line-through;
+    margin-left: 4px;
+}
+
+/* 折扣标签 - 绝对定位到右上角 */
+.price-discount-tag {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    display: inline-flex;
+    align-items: center;
+    padding: 3px 10px;
+    font-size: 11px;
+    font-weight: 500;
+    border-radius: 4px;
+    background: rgba(16, 185, 129, 0.15);
+    color: #10b981;
+    border: 1px solid rgba(16, 185, 129, 0.3);
+}
+
+.pricing-card .btn {
+    width: 100%;
+    margin-bottom: 20px;
+    padding: 14px 24px;
+    font-size: 14px;
+    font-weight: 500;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.1);
+    border: none;
+    color: rgba(255, 255, 255, 0.9);
+    transition: all 0.2s ease;
+}
+
+.pricing-card .btn:hover {
+    background: rgba(255, 255, 255, 0.15);
+}
+
+/* 高亮按钮样式 - 使用系统主色 */
+.pricing-card .btn.btn-highlighted {
+    background: var(--color-accent-teal);
+    color: #ffffff;
+}
+
+.pricing-card .btn.btn-highlighted:hover {
+    background: var(--color-accent-teal-light);
+}
+
+.pricing-features {
+    flex: 1;
+    margin-top: 4px;
+}
+
+/* 功能列表前的描述文字 */
+.pricing-features-intro {
+    font-size: 13px;
+    color: rgba(255, 255, 255, 0.5);
+    margin-bottom: 12px;
+}
+
+.pricing-feature {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    padding: 4px 0;
+    font-size: 13px;
+    color: #ffffff;
+    font-weight: 400;
+}
+
+.pricing-feature svg {
+    flex-shrink: 0;
+    margin-top: 2px;
+    color: var(--color-accent-teal-light);
+}
+
+/* 计划描述 */
+.pricing-desc {
+    font-size: 13px;
+    color: #ffffff;
+    font-weight: 400;
+    margin: 0 0 16px 0;
+    line-height: 1.5;
+}
+
+/* 积分包 - 敬请期待 */
+.boost-pack-coming-soon {
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 12px;
+    padding: var(--spacing-3xl) var(--spacing-2xl);
+    text-align: center;
+    max-width: 300px;
+}
+
+.boost-pack-coming-soon p {
+    font-size: 14px;
+    color: rgba(255, 255, 255, 0.5);
+    margin: 0;
+}
+
+/* FAQ */
+.faq-section {
+    padding: var(--spacing-4xl) 0;
+    background: var(--color-bg-secondary);
+}
+
+/* 手风琴容器 */
+.faq-accordion {
+    max-width: 900px;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-sm);
+}
+
+/* 手风琴项目 */
+.faq-accordion-item {
+    background: var(--color-bg-card);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    transition: all var(--transition-normal);
+}
+
+.faq-accordion-item:hover {
+    border-color: var(--color-border-hover);
+}
+
+/* 手风琴头部（按钮） */
+.faq-accordion-header {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: var(--spacing-lg) var(--spacing-xl);
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    text-align: left;
+    color: var(--color-text-primary);
+    transition: all var(--transition-fast);
+}
+
+.faq-accordion-header:hover {
+    background: rgba(255, 255, 255, 0.02);
+}
+
+/* 问题文本 */
+.faq-accordion-question {
+    font-size: var(--font-size-base);
+    font-weight: 500;
+    line-height: 1.5;
+}
+
+/* 箭头图标 */
+.faq-chevron {
+    flex-shrink: 0;
+    color: var(--color-text-tertiary);
+    transition: transform var(--transition-normal);
+}
+
+.faq-chevron-open {
+    transform: rotate(180deg);
+}
+
+/* 手风琴内容区域 */
+.faq-accordion-content {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.3s ease-out, padding 0.3s ease-out;
+}
+
+.faq-accordion-item-open .faq-accordion-content {
+    max-height: 500px;
+}
+
+/* 答案文本 */
+.faq-accordion-answer {
+    padding: 0 var(--spacing-xl) var(--spacing-lg);
+    font-size: var(--font-size-sm);
+    color: var(--color-text-secondary);
+    line-height: var(--line-height-relaxed);
+}
+
+/* 保留旧的网格样式以备其他页面使用 */
+.faq-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: var(--spacing-xl);
+}
+
+.faq-item {
+    padding: var(--spacing-xl);
+    background: var(--color-bg-card);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-xl);
+}
+
+.faq-question {
+    font-size: var(--font-size-lg);
+    font-weight: 600;
+    margin-bottom: var(--spacing-sm);
+}
+
+.faq-answer {
+    font-size: var(--font-size-sm);
+    color: var(--color-text-secondary);
+    line-height: var(--line-height-relaxed);
+}
+
+/* ========================================
+   定价页面响应式布局
+   ======================================== */
+
+/* 768px 断点 - 移动端布局 */
+@media (max-width: 768px) {
+    .pricing-header {
+        padding-top: calc(var(--navbar-height) + 100px) !important;
+        padding-bottom: var(--spacing-lg) !important;
+    }
+
+    .pricing-header .page-title {
+        font-size: 1.5rem;
+    }
+
+    .subtitle-row {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: var(--spacing-sm);
+    }
+
+    .learn-more-link {
+        align-self: flex-start;
+    }
+
+    .pricing-category-title {
+        margin-top: var(--spacing-2xl);
+    }
+
+    .pricing-category-title h2 {
+        font-size: 1.25rem;
+    }
+
+    .pricing-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .pricing-card {
+        padding: var(--spacing-lg);
+        min-height: auto;
+    }
+
+    .pricing-name {
+        font-size: 1.25rem;
+    }
+
+    .price-amount {
+        font-size: 2.5rem;
+    }
+
+    .price-discount-tag {
+        position: static;
+        margin-top: var(--spacing-sm);
+    }
+
+    .pricing-price {
+        flex-wrap: wrap;
+        gap: var(--spacing-xs);
+    }
+
+    /* FAQ 移动端优化 */
+    .faq-section {
+        padding: var(--spacing-2xl) 0;
+    }
+
+    .faq-accordion-header {
+        padding: var(--spacing-md) var(--spacing-lg);
+    }
+
+    .faq-accordion-question {
+        font-size: var(--font-size-sm);
+    }
+
+    .faq-accordion-answer {
+        padding: 0 var(--spacing-lg) var(--spacing-md);
+    }
+
+    .faq-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* 480px 断点 - 超小屏幕 */
+@media (max-width: 480px) {
+    .pricing-header {
+        padding-top: calc(var(--navbar-height) + 80px) !important;
+    }
+
+    .pricing-header .page-title {
+        font-size: 1.25rem;
+    }
+
+    .pricing-header .page-subtitle {
+        font-size: 14px;
+    }
+
+    .pricing-card {
+        padding: var(--spacing-md);
+    }
+
+    .pricing-name {
+        font-size: 1rem;
+    }
+
+    .price-amount {
+        font-size: 2rem;
+    }
+
+    .pricing-feature {
+        font-size: 12px;
+    }
+}

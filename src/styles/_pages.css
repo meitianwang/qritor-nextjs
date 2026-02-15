@@ -1,0 +1,1013 @@
+/* ========================================
+   页面样式 - 下载/文档/博客
+   ======================================== */
+.download-page {
+    min-height: 100vh;
+    padding-top: calc(var(--navbar-height) + 160px);
+}
+
+.download-hero {
+    padding: 0 0 var(--spacing-xl);
+    text-align: left;
+}
+
+.download-hero-title {
+    font-size: var(--font-size-4xl);
+    font-weight: 700;
+    margin-bottom: var(--spacing-sm);
+    color: var(--color-text-primary);
+}
+
+.download-hero-subtitle {
+    font-size: var(--font-size-base);
+    color: var(--color-text-secondary);
+}
+
+/* 主下载面板 */
+.download-main {
+    padding: var(--spacing-xl) 0 var(--spacing-4xl);
+}
+
+/* 主下载面板 */
+
+.download-panel {
+    display: grid;
+    grid-template-columns: 1fr 1.2fr;
+    gap: var(--spacing-3xl);
+    background: var(--color-bg-card);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-2xl);
+    padding: var(--spacing-3xl);
+    overflow: hidden;
+}
+
+/* 左侧选择区 */
+.download-selector {
+    display: flex;
+    flex-direction: column;
+}
+
+.download-product-title {
+    font-size: var(--font-size-2xl);
+    font-weight: 700;
+    margin-bottom: var(--spacing-sm);
+}
+
+.download-product-desc {
+    font-size: var(--font-size-sm);
+    color: var(--color-text-secondary);
+    margin-bottom: var(--spacing-lg);
+    line-height: var(--line-height-relaxed);
+}
+
+.download-links {
+    display: flex;
+    gap: var(--spacing-lg);
+    margin-bottom: var(--spacing-xl);
+}
+
+.download-link {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--spacing-xs);
+    font-size: var(--font-size-sm);
+    color: var(--color-accent-blue-light);
+    text-decoration: none;
+    transition: color var(--transition-fast);
+}
+
+.download-link:hover {
+    color: var(--color-text-primary);
+}
+
+.download-link svg {
+    opacity: 0.7;
+}
+
+/* ========== Qoder 风格平台列表 ========== */
+.qoder-platform-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    margin-bottom: var(--spacing-xl);
+}
+
+.qoder-platform-wrapper {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+}
+
+/* 平台选择项 */
+.qoder-platform-item {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-md);
+    padding: var(--spacing-lg) var(--spacing-xl);
+    background: transparent;
+    border: none;
+    border-radius: var(--radius-lg);
+    cursor: pointer;
+    transition: all var(--transition-fast);
+    text-align: left;
+    width: 100%;
+}
+
+.qoder-platform-item:hover:not(.disabled):not(.active) {
+    background: var(--color-bg-tertiary);
+}
+
+.qoder-platform-item.active {
+    background: var(--color-accent-gradient);
+    border-radius: var(--radius-lg);
+}
+
+.qoder-platform-item.active .qoder-platform-icon,
+.qoder-platform-item.active .qoder-platform-name,
+.qoder-platform-item.active .qoder-platform-req,
+.qoder-platform-item.active .qoder-platform-arrow {
+    color: white;
+}
+
+.qoder-platform-item.disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.qoder-platform-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--color-text-primary);
+}
+
+.qoder-platform-name {
+    font-size: var(--font-size-lg);
+    font-weight: 600;
+    color: var(--color-text-primary);
+    min-width: 100px;
+}
+
+.qoder-platform-badge {
+    font-size: var(--font-size-xs);
+    color: var(--color-text-tertiary);
+    background: var(--color-bg-tertiary);
+    padding: 2px 8px;
+    border-radius: var(--radius-sm);
+    margin-left: var(--spacing-xs);
+}
+
+.qoder-platform-req {
+    flex: 1;
+    font-size: var(--font-size-base);
+    color: var(--color-text-secondary);
+    text-align: right;
+}
+
+.qoder-platform-item.active .qoder-platform-req {
+    color: rgba(255, 255, 255, 0.9);
+}
+
+.qoder-platform-arrow {
+    display: flex;
+    align-items: center;
+    color: var(--color-text-tertiary);
+    transition: transform var(--transition-fast);
+}
+
+.qoder-platform-arrow.expanded {
+    transform: rotate(180deg);
+}
+
+/* 架构下拉列表 */
+.qoder-arch-dropdown {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    z-index: 100;
+    display: flex;
+    flex-direction: column;
+    background: var(--color-bg-tertiary);
+    border-radius: var(--radius-lg);
+    margin-top: var(--spacing-xs);
+    overflow: hidden;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+}
+
+.qoder-arch-item {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-md);
+    padding: var(--spacing-lg) var(--spacing-xl);
+    padding-left: calc(var(--spacing-xl) + 28px);
+    color: var(--color-text-primary);
+    text-decoration: none;
+    transition: background var(--transition-fast);
+    border-bottom: 1px solid var(--color-border);
+}
+
+.qoder-arch-item:last-child {
+    border-bottom: none;
+}
+
+.qoder-arch-item:hover {
+    background: var(--color-bg-secondary);
+}
+
+.qoder-arch-label {
+    flex: 1;
+    font-size: var(--font-size-base);
+    font-weight: 500;
+}
+
+.qoder-arch-current {
+    font-size: var(--font-size-xs);
+    color: var(--color-accent-blue-light);
+    background: rgba(13, 148, 136, 0.15);
+    padding: 4px 10px;
+    border-radius: var(--radius-sm);
+}
+
+.qoder-arch-download {
+    display: flex;
+    align-items: center;
+    color: var(--color-text-tertiary);
+    transition: color var(--transition-fast);
+}
+
+.qoder-arch-item:hover .qoder-arch-download {
+    color: var(--color-text-primary);
+}
+
+/* 旧平台列表样式 - 保留兼容 */
+.platform-list {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-sm);
+    margin-bottom: var(--spacing-lg);
+}
+
+.platform-item {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-md);
+    padding: var(--spacing-md) var(--spacing-lg);
+    background: var(--color-bg-tertiary);
+    border: 1px solid transparent;
+    border-radius: var(--radius-lg);
+    cursor: pointer;
+    transition: all var(--transition-fast);
+    text-align: left;
+}
+
+.platform-item:hover:not(.disabled) {
+    background: var(--color-bg-secondary);
+    border-color: var(--color-border);
+}
+
+.platform-item.active {
+    background: linear-gradient(135deg, rgba(13, 148, 136, 0.2) 0%, rgba(20, 184, 166, 0.1) 100%);
+    border-color: var(--color-accent-blue);
+}
+
+.platform-item.disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.platform-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    color: var(--color-text-primary);
+}
+
+.platform-icon svg {
+    width: 24px;
+    height: 24px;
+}
+
+.platform-name {
+    flex: 1;
+    font-size: var(--font-size-base);
+    font-weight: 500;
+    color: var(--color-text-primary);
+}
+
+.platform-badge {
+    font-size: var(--font-size-xs);
+    color: var(--color-text-tertiary);
+    background: var(--color-bg-card);
+    padding: 2px 8px;
+    border-radius: var(--radius-sm);
+}
+
+/* 架构选择 */
+.arch-selector {
+    display: flex;
+    gap: var(--spacing-sm);
+    margin-bottom: var(--spacing-xl);
+}
+
+.arch-item {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: var(--spacing-md);
+    background: var(--color-bg-tertiary);
+    border: 1px solid transparent;
+    border-radius: var(--radius-lg);
+    cursor: pointer;
+    transition: all var(--transition-fast);
+}
+
+.arch-item:hover {
+    background: var(--color-bg-secondary);
+    border-color: var(--color-border);
+}
+
+.arch-item.active {
+    background: var(--color-bg-secondary);
+    border-color: var(--color-accent-blue);
+}
+
+.arch-label {
+    font-size: var(--font-size-sm);
+    font-weight: 600;
+    color: var(--color-text-primary);
+}
+
+.arch-sublabel {
+    font-size: var(--font-size-xs);
+    color: var(--color-text-tertiary);
+}
+
+/* 下载按钮 */
+.download-cta-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--spacing-sm);
+    width: 100%;
+    padding: var(--spacing-md) var(--spacing-xl);
+    background: var(--color-accent-gradient);
+    border: none;
+    border-radius: var(--radius-lg);
+    color: white;
+    font-size: var(--font-size-base);
+    font-weight: 600;
+    cursor: pointer;
+    transition: all var(--transition-fast);
+    text-decoration: none;
+}
+
+.download-cta-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(13, 148, 136, 0.3);
+}
+
+.download-version {
+    margin-top: var(--spacing-md);
+    font-size: var(--font-size-xs);
+    color: var(--color-text-tertiary);
+    text-align: center;
+}
+
+/* macOS 安装说明 */
+.download-install-notes {
+    margin-top: var(--spacing-xl);
+    padding: var(--spacing-lg);
+    background: var(--color-bg-tertiary);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
+}
+
+.download-install-notes h4 {
+    font-size: var(--font-size-base);
+    font-weight: 600;
+    margin-bottom: var(--spacing-md);
+    color: var(--color-text-primary);
+}
+
+.download-install-notes ol {
+    margin: 0;
+    padding-left: var(--spacing-xl);
+    list-style: decimal;
+}
+
+.download-install-notes li {
+    font-size: var(--font-size-sm);
+    color: var(--color-text-secondary);
+    margin-bottom: var(--spacing-sm);
+    line-height: var(--line-height-relaxed);
+}
+
+.install-note-tip {
+    margin-top: var(--spacing-md);
+    margin-bottom: var(--spacing-md);
+    padding: var(--spacing-sm) var(--spacing-md);
+    background: rgba(13, 148, 136, 0.1);
+    border-left: 3px solid var(--color-accent-blue);
+    border-radius: var(--radius-sm);
+    font-size: var(--font-size-xs);
+    color: var(--color-text-secondary);
+    line-height: var(--line-height-relaxed);
+}
+
+
+/* 右侧预览区 */
+.download-preview {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.preview-window {
+    width: 100%;
+    max-width: 500px;
+    background: #1a1a1a;
+    border-radius: var(--radius-xl);
+    overflow: hidden;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+}
+
+.preview-titlebar {
+    display: flex;
+    gap: 8px;
+    padding: 12px 16px;
+    background: #2a2a2a;
+}
+
+.preview-dot {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+}
+
+.preview-dot.red {
+    background: #ff5f56;
+}
+
+.preview-dot.yellow {
+    background: #ffbd2e;
+}
+
+.preview-dot.green {
+    background: #27ca40;
+}
+
+.preview-content {
+    display: grid;
+    grid-template-columns: 48px 1fr 140px;
+    height: 280px;
+}
+
+.preview-sidebar {
+    background: #1f1f1f;
+    padding: 12px 8px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.preview-nav-item {
+    width: 32px;
+    height: 32px;
+    background: #333;
+    border-radius: 6px;
+}
+
+.preview-nav-item.active {
+    background: linear-gradient(135deg, #0d9488 0%, #14b8a6 100%);
+}
+
+.preview-main {
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.preview-text-line {
+    height: 12px;
+    background: #333;
+    border-radius: 4px;
+}
+
+.preview-text-line.w40 {
+    width: 40%;
+}
+
+.preview-text-line.w60 {
+    width: 60%;
+}
+
+.preview-text-line.w70 {
+    width: 70%;
+}
+
+.preview-text-line.w80 {
+    width: 80%;
+}
+
+.preview-text-line.w90 {
+    width: 90%;
+}
+
+.preview-ai-panel {
+    background: #1f1f1f;
+    border-left: 1px solid #333;
+    padding: 12px;
+}
+
+.preview-ai-header {
+    height: 24px;
+    background: linear-gradient(90deg, #0d9488 0%, #14b8a6 100%);
+    border-radius: 6px;
+    margin-bottom: 12px;
+}
+
+.preview-ai-content {
+    height: 80px;
+    background: #2a2a2a;
+    border-radius: 6px;
+}
+
+/* 系统要求 */
+.download-requirements {
+    padding: var(--spacing-4xl) 0;
+    background: var(--color-bg-secondary);
+}
+
+.section-title-center {
+    font-size: var(--font-size-2xl);
+    font-weight: 700;
+    text-align: center;
+    margin-bottom: var(--spacing-2xl);
+}
+
+.requirements-cards {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: var(--spacing-xl);
+    max-width: 700px;
+    margin: 0 auto;
+}
+
+.requirement-card {
+    background: var(--color-bg-card);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-xl);
+    padding: var(--spacing-xl);
+    text-align: center;
+}
+
+.requirement-icon {
+    font-size: 2.5rem;
+    margin-bottom: var(--spacing-md);
+}
+
+.requirement-card h4 {
+    font-size: var(--font-size-lg);
+    font-weight: 600;
+    margin-bottom: var(--spacing-md);
+}
+
+.requirement-card ul {
+    list-style: none;
+    padding: 0;
+}
+
+.requirement-card li {
+    font-size: var(--font-size-sm);
+    color: var(--color-text-secondary);
+    padding: var(--spacing-xs) 0;
+}
+
+.requirement-card li.muted {
+    color: var(--color-text-tertiary);
+    font-style: italic;
+}
+
+/* 响应式 */
+@media (max-width: 768px) {
+    .download-page {
+        padding-top: calc(var(--navbar-height) + 100px);
+    }
+
+    .download-hero-title {
+        font-size: var(--font-size-2xl);
+    }
+
+    .download-panel {
+        grid-template-columns: 1fr;
+        padding: var(--spacing-xl);
+    }
+
+    .download-preview {
+        display: none;
+    }
+
+    .download-product-title {
+        font-size: var(--font-size-xl);
+    }
+
+    .download-links {
+        flex-direction: column;
+        gap: var(--spacing-sm);
+    }
+
+    /* 平台列表移动端优化 */
+    .qoder-platform-item {
+        padding: var(--spacing-md);
+    }
+
+    .qoder-platform-name {
+        font-size: var(--font-size-base);
+        min-width: 80px;
+    }
+
+    .qoder-platform-req {
+        display: none;
+    }
+
+    .qoder-arch-item {
+        padding: var(--spacing-md);
+        padding-left: var(--spacing-xl);
+    }
+
+    .requirements-cards {
+        grid-template-columns: 1fr;
+    }
+
+    /* 系统要求页面 */
+    .download-requirements {
+        padding: var(--spacing-2xl) 0;
+    }
+
+    .section-title-center {
+        font-size: var(--font-size-xl);
+    }
+}
+
+/* 480px 断点 - 超小屏幕 */
+@media (max-width: 480px) {
+    .download-page {
+        padding-top: calc(var(--navbar-height) + 80px);
+    }
+
+    .download-hero-title {
+        font-size: var(--font-size-xl);
+    }
+
+    .download-panel {
+        padding: var(--spacing-md);
+    }
+
+    .download-product-title {
+        font-size: var(--font-size-lg);
+    }
+
+    .qoder-platform-item {
+        padding: var(--spacing-sm);
+    }
+
+    .qoder-platform-icon {
+        display: none;
+    }
+
+    .download-cta-btn {
+        padding: var(--spacing-sm) var(--spacing-md);
+        font-size: var(--font-size-sm);
+    }
+}
+
+/* ========== 保留旧样式兼容 ========== */
+
+/* 系统要求 */
+.requirements-section {
+    padding: var(--spacing-4xl) 0;
+    background: var(--color-bg-secondary);
+}
+
+.requirements-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: var(--spacing-xl);
+}
+
+.requirement-item {
+    padding: var(--spacing-xl);
+    background: var(--color-bg-card);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-xl);
+}
+
+.requirement-item h4 {
+    font-size: var(--font-size-lg);
+    font-weight: 600;
+    margin-bottom: var(--spacing-md);
+}
+
+.requirement-item li {
+    font-size: var(--font-size-sm);
+    color: var(--color-text-secondary);
+    padding: var(--spacing-xs) 0;
+}
+
+/* 快速开始步骤 */
+.quickstart-section {
+    padding: var(--spacing-4xl) 0;
+}
+
+.quickstart-steps {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: var(--spacing-xl);
+}
+
+.quickstart-step {
+    text-align: center;
+    padding: var(--spacing-xl);
+}
+
+.step-number {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 48px;
+    height: 48px;
+    background: var(--color-accent-gradient);
+    border-radius: 50%;
+    font-size: var(--font-size-xl);
+    font-weight: 700;
+    margin-bottom: var(--spacing-md);
+}
+
+.quickstart-step h4 {
+    font-size: var(--font-size-lg);
+    font-weight: 600;
+    margin-bottom: var(--spacing-sm);
+}
+
+.quickstart-step p {
+    font-size: var(--font-size-sm);
+    color: var(--color-text-tertiary);
+}
+
+/* 文档页面 */
+.docs-section {
+    padding: var(--spacing-4xl) 0;
+}
+
+.docs-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: var(--spacing-xl);
+}
+
+.docs-card {
+    padding: var(--spacing-xl);
+    background: var(--color-bg-card);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-xl);
+    transition: all var(--transition-normal);
+}
+
+.docs-card:hover {
+    border-color: var(--color-border-hover);
+}
+
+.docs-card-icon {
+    font-size: 2rem;
+    margin-bottom: var(--spacing-md);
+}
+
+.docs-card-title {
+    font-size: var(--font-size-xl);
+    font-weight: 600;
+    margin-bottom: var(--spacing-sm);
+}
+
+.docs-card-desc {
+    font-size: var(--font-size-sm);
+    color: var(--color-text-secondary);
+    margin-bottom: var(--spacing-lg);
+}
+
+.docs-card-links li {
+    padding: var(--spacing-xs) 0;
+}
+
+.docs-card-links a {
+    font-size: var(--font-size-sm);
+    color: var(--color-accent-blue-light);
+    transition: color var(--transition-fast);
+}
+
+.docs-card-links a:hover {
+    color: var(--color-text-primary);
+}
+
+.docs-search-section {
+    padding: var(--spacing-4xl) 0;
+    background: var(--color-bg-secondary);
+}
+
+.docs-search-box {
+    text-align: center;
+    padding: var(--spacing-3xl);
+    background: var(--color-bg-card);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-2xl);
+}
+
+.docs-search-box h3 {
+    font-size: var(--font-size-2xl);
+    font-weight: 600;
+    margin-bottom: var(--spacing-sm);
+}
+
+.docs-search-box p {
+    font-size: var(--font-size-base);
+    color: var(--color-text-secondary);
+    margin-bottom: var(--spacing-xl);
+}
+
+.docs-search-actions {
+    display: flex;
+    justify-content: center;
+    gap: var(--spacing-md);
+}
+
+/* 博客页面 */
+.blog-section {
+    padding: var(--spacing-4xl) 0;
+}
+
+.blog-tabs {
+    display: flex;
+    justify-content: center;
+    gap: var(--spacing-sm);
+    margin-bottom: var(--spacing-3xl);
+}
+
+.blog-tab {
+    padding: var(--spacing-sm) var(--spacing-lg);
+    background: transparent;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-full);
+    font-size: var(--font-size-sm);
+    color: var(--color-text-secondary);
+    cursor: pointer;
+    transition: all var(--transition-fast);
+}
+
+.blog-tab:hover,
+.blog-tab.active {
+    background: var(--color-bg-card);
+    border-color: var(--color-border-hover);
+    color: var(--color-text-primary);
+}
+
+.blog-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: var(--spacing-xl);
+}
+
+.blog-card {
+    background: var(--color-bg-card);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-xl);
+    overflow: hidden;
+    transition: all var(--transition-normal);
+}
+
+.blog-card:hover {
+    border-color: var(--color-border-hover);
+}
+
+.blog-card-image {
+    aspect-ratio: 16 / 9;
+    background: linear-gradient(135deg, rgba(13, 148, 136, 0.2) 0%, rgba(20, 184, 166, 0.2) 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.blog-card-placeholder {
+    font-size: 3rem;
+}
+
+.blog-card-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.blog-loading,
+.blog-empty {
+    text-align: center;
+    padding: var(--spacing-4xl) 0;
+    color: var(--color-text-tertiary);
+    font-size: var(--font-size-base);
+}
+
+.blog-card-content {
+    padding: var(--spacing-lg);
+}
+
+.blog-card-tag {
+    display: inline-block;
+    padding: var(--spacing-xs) var(--spacing-sm);
+    background: var(--color-bg-tertiary);
+    border-radius: var(--radius-sm);
+    font-size: var(--font-size-xs);
+    color: var(--color-accent-blue-light);
+    margin-bottom: var(--spacing-sm);
+}
+
+.blog-card-title {
+    font-size: var(--font-size-lg);
+    font-weight: 600;
+    margin-bottom: var(--spacing-sm);
+    line-height: 1.3;
+}
+
+.blog-card-excerpt {
+    font-size: var(--font-size-sm);
+    color: var(--color-text-tertiary);
+    margin-bottom: var(--spacing-md);
+    line-height: var(--line-height-relaxed);
+}
+
+.blog-card-meta {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+    font-size: var(--font-size-xs);
+    color: var(--color-text-tertiary);
+}
+
+.blog-load-more {
+    text-align: center;
+    margin-top: var(--spacing-3xl);
+}
+
+/* 订阅 */
+.newsletter-section {
+    padding: var(--spacing-4xl) 0;
+    background: var(--color-bg-secondary);
+}
+
+.newsletter-box {
+    text-align: center;
+    padding: var(--spacing-3xl);
+    background: var(--color-bg-card);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-2xl);
+}
+
+.newsletter-box h3 {
+    font-size: var(--font-size-2xl);
+    font-weight: 600;
+    margin-bottom: var(--spacing-sm);
+}
+
+.newsletter-box p {
+    font-size: var(--font-size-base);
+    color: var(--color-text-secondary);
+    margin-bottom: var(--spacing-xl);
+}
+
+.newsletter-form {
+    display: flex;
+    justify-content: center;
+    gap: var(--spacing-md);
+    max-width: 500px;
+    margin: 0 auto;
+}
+
+.newsletter-input {
+    flex: 1;
+    padding: var(--spacing-md) var(--spacing-lg);
+    background: var(--color-bg-tertiary);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
+    color: var(--color-text-primary);
+    font-size: var(--font-size-sm);
+}
+
+.newsletter-input::placeholder {
+    color: var(--color-text-tertiary);
+}
+
+.newsletter-input:focus {
+    outline: none;
+    border-color: var(--color-accent-blue);
+}

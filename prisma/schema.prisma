@@ -1,0 +1,413 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "mysql"
+}
+
+model User {
+  id             BigInt   @id @default(autoincrement())
+  email          String   @unique @db.VarChar(255)
+  username       String?  @db.VarChar(100)
+  password       String   @db.VarChar(255)
+  avatar_url     String?  @db.Text
+  bio            String?  @db.Text
+  status         String   @default("active") @db.VarChar(20)
+  email_verified Boolean  @default(false)
+  language       String   @default("zh") @db.VarChar(10)
+  created_at     DateTime @default(now())
+  updated_at     DateTime
+
+  @@index([created_at])
+  @@index([email])
+}
+
+model boost_pack_purchases {
+  id                BigInt    @id @default(autoincrement())
+  user_id           BigInt
+  boost_pack_id     BigInt
+  boost_pack_name   String    @db.VarChar(100)
+  credits           BigInt
+  price_paid        Decimal   @db.Decimal(10, 2)
+  payment_method    String?   @db.VarChar(30)
+  external_order_id String?   @db.VarChar(100)
+  payment_status    String    @db.VarChar(20)
+  purchased_at      DateTime  @db.DateTime(0)
+  paid_at           DateTime? @db.DateTime(0)
+  expire_at         DateTime? @db.DateTime(0)
+  credits_used      BigInt
+
+  @@index([id], map: "ix_boost_pack_purchases_id")
+}
+
+model boost_packs {
+  id             BigInt   @id @default(autoincrement())
+  name           String   @db.VarChar(50)
+  display_name   String   @db.VarChar(100)
+  credits        BigInt
+  price          Decimal  @db.Decimal(10, 2)
+  original_price Decimal? @db.Decimal(10, 2)
+  description    String?  @db.VarChar(500)
+  valid_days     BigInt
+  sort_order     BigInt
+  is_active      Boolean
+  is_recommended Boolean
+  created_at     DateTime @db.DateTime(0)
+  updated_at     DateTime @db.DateTime(0)
+
+  @@index([id], map: "ix_boost_packs_id")
+}
+
+model credit_transactions {
+  id                   BigInt   @id @default(autoincrement())
+  user_id              BigInt
+  transaction_type     String   @db.VarChar(20)
+  source_type          String   @db.VarChar(50)
+  llm_config_id        BigInt?
+  input_tokens         Int?
+  output_tokens        Int?
+  total_tokens         Int?
+  credit_rate          Float?   @db.Float
+  normalization_factor Float?   @db.Float
+  credits_consumed     Int
+  description          String?  @db.Text
+  created_at           DateTime @db.DateTime(0)
+
+  @@index([id], map: "ix_credit_transactions_id")
+  @@index([user_id], map: "ix_credit_transactions_user_id")
+}
+
+model image_gen_config {
+  id              BigInt    @id @default(autoincrement())
+  provider        String    @db.VarChar(100)
+  model_name      String    @db.VarChar(200)
+  api_base        String?   @db.VarChar(500)
+  api_key         String    @db.VarChar(500)
+  is_default      Int?      @db.SmallInt
+  enabled         Int?      @db.SmallInt
+  credit_rate     Float?    @db.Float
+  default_width   Int?
+  default_height  Int?
+  max_width       Int?
+  max_height      Int?
+  supports_styles String?   @db.Text
+  created_at      DateTime  @db.DateTime(0)
+  updated_at      DateTime? @db.DateTime(0)
+
+  @@index([id], map: "ix_image_gen_config_id")
+  @@index([provider], map: "ix_image_gen_config_provider")
+}
+
+model image_generation_task {
+  id               String    @id @db.VarChar(50)
+  user_id          BigInt
+  status           String    @db.VarChar(20)
+  prompt           String    @db.Text
+  config_id        BigInt
+  width            Int?
+  height           Int?
+  style            String?   @db.VarChar(100)
+  reference_images String?   @db.LongText
+  strength         Float?    @db.Float
+  image_url        String?   @db.LongText
+  error_message    String?   @db.Text
+  credits_consumed Float?    @db.Float
+  created_at       DateTime  @db.DateTime(0)
+  started_at       DateTime? @db.DateTime(0)
+  completed_at     DateTime? @db.DateTime(0)
+
+  @@index([created_at], map: "idx_image_task_created")
+  @@index([user_id, status], map: "idx_image_task_user_status")
+  @@index([id], map: "ix_image_generation_task_id")
+  @@index([status], map: "ix_image_generation_task_status")
+  @@index([user_id], map: "ix_image_generation_task_user_id")
+}
+
+model knowledge {
+  id                       BigInt    @id @default(autoincrement())
+  name                     String    @db.VarChar(200)
+  content                  String    @db.Text
+  novel_creation_method_id BigInt?
+  built_in                 Int       @db.SmallInt
+  created_at               DateTime  @db.DateTime(0)
+  updated_at               DateTime? @db.DateTime(0)
+
+  @@index([name], map: "idx_knowledge_name")
+  @@index([id], map: "ix_knowledge_id")
+}
+
+model llm_config {
+  id                   BigInt    @id @default(autoincrement())
+  model_name           String    @unique(map: "model_name") @db.VarChar(200)
+  owned_by             String?   @db.VarChar(100)
+  display_name         String?   @db.VarChar(200)
+  tags                 String?   @db.Text
+  is_default           Int?      @db.SmallInt
+  enabled              Int?      @db.SmallInt
+  credit_rate          Float?    @db.Float
+  model_tier           String?   @db.VarChar(20)
+  normalization_factor Float?    @db.Float
+  created_at           DateTime  @db.DateTime(0)
+  updated_at           DateTime? @db.DateTime(0)
+
+  @@index([id], map: "ix_llm_config_id")
+}
+
+model module_type {
+  id                       BigInt    @id @default(autoincrement())
+  name                     String    @db.VarChar(200)
+  description              String?   @db.VarChar(1000)
+  json_schema              String?   @db.Text
+  temperature              Float?    @db.Float
+  prompt_id                BigInt?
+  novel_creation_method_id BigInt?
+  save_workflow_id         BigInt?
+  create_workflow_id       BigInt?
+  enable_ai                Int       @db.SmallInt
+  singleton                Int       @db.SmallInt
+  built_in                 Int       @db.SmallInt
+  ai_context_template      String?   @db.Text
+  entity_category          String?   @db.VarChar(50)
+  created_at               DateTime  @db.DateTime(0)
+  updated_at               DateTime? @db.DateTime(0)
+
+  @@index([name], map: "idx_module_type_name")
+  @@index([id], map: "ix_module_type_id")
+}
+
+model novel_creation_method {
+  id                 BigInt    @id @default(autoincrement())
+  name               String    @db.VarChar(100)
+  workflow_id        BigInt?
+  description        String?   @db.Text
+  novel_type         String?   @db.VarChar(50)
+  language           String?   @db.VarChar(20)
+  visible_categories String?   @db.Text
+  is_preset          Int       @db.SmallInt
+  user_id            BigInt?
+  status             String    @db.VarChar(20)
+  created_at         DateTime  @db.DateTime(0)
+  updated_at         DateTime? @db.DateTime(0)
+
+  @@index([id], map: "ix_novel_creation_method_id")
+  @@index([user_id], map: "ix_novel_creation_method_user_id")
+}
+
+model orders {
+  id             BigInt    @id @default(autoincrement())
+  order_no       String    @unique(map: "order_no") @db.VarChar(32)
+  user_id        BigInt
+  plan_id        BigInt
+  plan_name      String    @db.VarChar(50)
+  amount         Decimal   @db.Decimal(10, 2)
+  status         String    @db.VarChar(20)
+  payment_method String?   @db.VarChar(20)
+  created_at     DateTime  @db.DateTime(0)
+  updated_at     DateTime  @db.DateTime(0)
+  paid_at        DateTime? @db.DateTime(0)
+  expired_at     DateTime  @db.DateTime(0)
+
+  @@index([id], map: "ix_orders_id")
+}
+
+model prompt {
+  id                       BigInt    @id @default(autoincrement())
+  name                     String    @db.VarChar(200)
+  role                     String?   @db.Text
+  context                  String?   @db.Text
+  workflow                 String?   @db.Text
+  constraints              String?   @db.Text
+  format                   String?   @db.Text
+  goal                     String?   @db.Text
+  positive_example         String?   @db.Text
+  negative_example         String?   @db.Text
+  novel_creation_method_id BigInt?
+  built_in                 Int       @db.SmallInt
+  created_at               DateTime  @db.DateTime(0)
+  updated_at               DateTime? @db.DateTime(0)
+
+  @@index([name], map: "idx_prompt_name")
+  @@index([id], map: "ix_prompt_id")
+}
+
+model prompt_template {
+  id         BigInt    @id @default(autoincrement())
+  slug       String    @unique(map: "ix_prompt_template_slug") @db.VarChar(100)
+  name       String    @db.VarChar(200)
+  category   String    @db.VarChar(50)
+  content    String    @db.Text
+  variables  String?   @db.Text
+  version    Int
+  is_active  Int       @db.SmallInt
+  created_at DateTime  @db.DateTime(0)
+  updated_at DateTime? @db.DateTime(0)
+
+  @@index([is_active], map: "idx_prompt_template_active")
+  @@index([category], map: "idx_prompt_template_category")
+  @@index([category], map: "ix_prompt_template_category")
+  @@index([id], map: "ix_prompt_template_id")
+}
+
+model referral_rewards {
+  id           BigInt   @id @default(autoincrement())
+  user_id      BigInt
+  referral_id  BigInt
+  reward_type  String   @db.VarChar(20)
+  credits      BigInt
+  credits_used BigInt
+  expire_at    DateTime @db.DateTime(0)
+  created_at   DateTime @db.DateTime(0)
+
+  @@index([id], map: "ix_referral_rewards_id")
+}
+
+model referrals {
+  id            BigInt    @id @default(autoincrement())
+  inviter_id    BigInt
+  invitee_id    BigInt?
+  referral_code String    @unique(map: "referral_code") @db.VarChar(32)
+  status        String    @db.VarChar(20)
+  created_at    DateTime  @db.DateTime(0)
+  completed_at  DateTime? @db.DateTime(0)
+
+  @@index([id], map: "ix_referrals_id")
+}
+
+model refresh_tokens {
+  id         BigInt    @id @default(autoincrement())
+  user_id    BigInt
+  token_hash String    @unique(map: "token_hash") @db.VarChar(64)
+  family_id  String    @db.VarChar(36)
+  is_revoked Boolean
+  revoked_at DateTime? @db.DateTime(0)
+  expires_at DateTime  @db.DateTime(0)
+  created_at DateTime  @db.DateTime(0)
+  users      users     @relation(fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "refresh_tokens_ibfk_1")
+
+  @@index([family_id], map: "ix_refresh_tokens_family_id")
+  @@index([id], map: "ix_refresh_tokens_id")
+  @@index([user_id], map: "ix_refresh_tokens_user_id")
+}
+
+model subscription_plans {
+  id              BigInt   @id @default(autoincrement())
+  name            String   @unique(map: "name") @db.VarChar(20)
+  display_name    String   @db.VarChar(50)
+  price           Decimal  @db.Decimal(10, 2)
+  monthly_credits BigInt
+  max_projects    BigInt
+  descriptions    Json?
+  features_i18n   Json?
+  is_active       Boolean
+  created_at      DateTime @db.DateTime(0)
+
+  @@index([id], map: "ix_subscription_plans_id")
+}
+
+model system_config {
+  id           BigInt    @id @default(autoincrement())
+  config_key   String    @unique(map: "ix_system_config_config_key") @db.VarChar(100)
+  config_value String?   @db.Text
+  description  String?   @db.VarChar(500)
+  created_at   DateTime  @db.DateTime(0)
+  updated_at   DateTime? @db.DateTime(0)
+
+  @@index([id], map: "ix_system_config_id")
+}
+
+model token_blacklist {
+  id         BigInt   @id @default(autoincrement())
+  token      String   @unique(map: "token") @db.VarChar(500)
+  expires_at DateTime @db.DateTime(0)
+  user_id    BigInt
+  created_at DateTime @db.DateTime(0)
+
+  @@index([id], map: "ix_token_blacklist_id")
+}
+
+model user_settings {
+  id             BigInt   @id @default(autoincrement())
+  user_id        BigInt   @unique(map: "ix_user_settings_user_id")
+  language       String   @db.VarChar(10)
+  notify_updates Boolean
+  created_at     DateTime @db.DateTime(0)
+  updated_at     DateTime @db.DateTime(0)
+  users          users    @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "user_settings_ibfk_1")
+
+  @@index([id], map: "ix_user_settings_id")
+}
+
+model user_subscriptions {
+  id           BigInt   @id @default(autoincrement())
+  user_id      BigInt
+  plan_id      BigInt
+  status       String   @db.VarChar(20)
+  start_at     DateTime @db.DateTime(0)
+  expire_at    DateTime @db.DateTime(0)
+  credits      BigInt
+  credits_used BigInt
+  auto_renew   Boolean
+  created_at   DateTime @db.DateTime(0)
+  updated_at   DateTime @db.DateTime(0)
+
+  @@index([id], map: "ix_user_subscriptions_id")
+}
+
+model users {
+  id             BigInt           @id @default(autoincrement())
+  nickname       String           @db.VarChar(50)
+  avatar         String?          @db.VarChar(500)
+  email          String           @unique(map: "ix_users_email") @db.VarChar(100)
+  password       String           @db.VarChar(255)
+  role           users_role
+  created_at     DateTime         @db.DateTime(0)
+  updated_at     DateTime         @db.DateTime(0)
+  last_login_at  DateTime?        @db.DateTime(0)
+  refresh_tokens refresh_tokens[]
+  user_settings  user_settings?
+
+  @@index([id], map: "ix_users_id")
+}
+
+model video_gen_config {
+  id               BigInt    @id @default(autoincrement())
+  provider         String    @db.VarChar(100)
+  model_name       String    @db.VarChar(200)
+  api_base         String?   @db.VarChar(500)
+  api_key          String    @db.VarChar(500)
+  is_default       Int?      @db.SmallInt
+  enabled          Int?      @db.SmallInt
+  credit_rate      Float?    @db.Float
+  default_width    Int?
+  default_height   Int?
+  max_width        Int?
+  max_height       Int?
+  default_duration Int?
+  max_duration     Int?
+  supports_audio   Int?      @db.SmallInt
+  created_at       DateTime  @db.DateTime(0)
+  updated_at       DateTime? @db.DateTime(0)
+
+  @@index([id], map: "ix_video_gen_config_id")
+  @@index([provider], map: "ix_video_gen_config_provider")
+}
+
+model workflow {
+  id                       BigInt    @id @default(autoincrement())
+  name                     String    @db.VarChar(200)
+  description              String?   @db.VarChar(1000)
+  novel_creation_method_id BigInt?
+  nodes_json               String?   @db.Text
+  edges_json               String?   @db.Text
+  created_at               DateTime  @db.DateTime(0)
+  updated_at               DateTime? @db.DateTime(0)
+
+  @@index([id], map: "ix_workflow_id")
+}
+
+enum users_role {
+  USER
+  ADMIN
+}

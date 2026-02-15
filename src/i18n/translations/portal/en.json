@@ -1,0 +1,859 @@
+{
+    "seo": {
+        "landing": {
+            "title": "AI Novel Writing Platform",
+            "description": "Qritor is a next-generation AI-powered creative platform offering AI writing assistant, modular creation, workflow engine and more. Make writing easier and more efficient."
+        },
+        "pricing": {
+            "title": "Pricing Plans",
+            "description": "Choose the right Qritor subscription plan for you. Free, Pro, and Ultra plans to meet different creative needs."
+        },
+        "download": {
+            "title": "Download App",
+            "description": "Download Qritor desktop app for macOS and Windows. Get a smoother creative experience."
+        },
+        "docs": {
+            "title": "Documentation",
+            "description": "Qritor user guide and tutorials to help you get started with AI-assisted creation."
+        },
+        "login": {
+            "title": "Login",
+            "description": "Log in to your Qritor account and start your AI creative journey."
+        },
+        "register": {
+            "title": "Sign Up",
+            "description": "Create a free Qritor account and experience the magic of AI-assisted creation."
+        },
+        "terms": {
+            "title": "Terms of Service",
+            "description": "Qritor Terms of Service. Understand the rules for using our platform."
+        },
+        "privacy": {
+            "title": "Privacy Policy",
+            "description": "Qritor Privacy Policy. Learn how we protect your personal information."
+        },
+        "refund": {
+            "title": "Refund Policy",
+            "description": "Qritor Refund Policy. Understand refund conditions and process."
+        },
+        "changelog": {
+            "title": "Changelog",
+            "description": "Explore the latest updates from Qritor, including version updates and feature improvements."
+        }
+    },
+    "common": {
+        "login": "Login",
+        "register": "Sign Up",
+        "logout": "Logout",
+        "save": "Save",
+        "cancel": "Cancel",
+        "confirm": "Confirm",
+        "delete": "Delete",
+        "deleting": "Deleting...",
+        "loading": "Loading...",
+        "error": "Error",
+        "success": "Success",
+        "settings": "Settings",
+        "language": "Language",
+        "languageSetting": "Language Setting",
+        "user": "User",
+        "learnMore": "Learn More",
+        "freeStart": "Start Free",
+        "freeStartCreating": "Start Creating for Free",
+        "downloadNow": "Download Now",
+        "allDownloads": "All Downloads",
+        "getMoreCredits": "Get More Credits",
+        "month": "month",
+        "networkError": "Network error, please try again",
+        "sending": "Sending...",
+        "resetting": "Resetting...",
+        "verifying": "Verifying login status..."
+    },
+    "header": {
+        "pricing": "Pricing",
+        "docs": "Docs",
+        "community": "Community",
+        "profile": "Profile",
+        "admin": "Admin",
+        "start": "Download",
+        "changelog": "Changelog",
+        "social": {
+            "discord": "Discord",
+            "reddit": "Reddit",
+            "x": "X (Twitter)",
+            "wechat": "WeChat",
+            "youtube": "YouTube",
+            "douyin": "Douyin",
+            "tiktok": "TikTok",
+            "xiaohongshu": "Xiaohongshu"
+        }
+    },
+    "footer": {
+        "brand": "AI-powered creative writing platform, turning imagination into stories.",
+        "product": "Product",
+        "pricing": "Pricing",
+        "download": "Get Started",
+        "changelog": "Changelog",
+        "resources": "Resources",
+        "docs": "Docs",
+        "tutorials": "Tutorials",
+        "community": "Community",
+        "legal": "Legal",
+        "privacy": "Privacy Policy",
+        "terms": "Terms of Service",
+        "refund": "Refund Policy",
+        "contact": "Contact Us",
+        "feedback": "Feedback",
+        "copyright": "© 2025 Pixel Harbor LLC. All rights reserved. | Powered by Qritor",
+        "social": {
+            "douyin": "Douyin",
+            "douyinId": "Douyin ID: {{id}}"
+        }
+    },
+    "landing": {
+        "heroBadge": "AI-Powered Next-Gen Creative Experience",
+        "heroTitle": "Intelligent Writing Platform",
+        "heroSubtitle": "AI empowers creativity, turning imagination into stories. Qritor helps you easily create novels, generate comics, and produce animated comics, unleashing unlimited creative potential.",
+        "features": {
+            "aiWriting": {
+                "tag": "Smart Writing",
+                "title": "AI Writing Assistant",
+                "description": "A powerful AI assistant understands your creative intent, intelligently continues plots, generates dialogue, and enriches details. Like having a creative partner who understands you, always inspiring."
+            },
+            "modular": {
+                "tag": "Structured Management",
+                "title": "Modular Creation",
+                "description": "Character profiles, world-building, plot outlines, chapter content - everything organized. Let AI understand your complete creative blueprint, generating more coherent and in-depth content."
+            },
+            "workflow": {
+                "tag": "Automation",
+                "title": "Workflow Engine",
+                "description": "Define your creative process, let AI execute automatically. From outline generation to chapter splitting, from content creation to format optimization, fully automated, efficiency doubled."
+            },
+            "comic": {
+                "tag": "Coming Soon",
+                "title": "Comic Generation",
+                "description": "Transform your text stories into beautiful comics. AI understands scenes, characters, emotions, automatically generating storyboards and visuals, bringing stories to life."
+            },
+            "animation": {
+                "tag": "Coming Soon",
+                "title": "Animated Comics",
+                "description": "Bring static comics to life! AI adds effects, voiceovers, background music to your comics, creating watchable animated comics reaching wider audiences."
+            }
+        },
+        "ctaTitle": "Start Your Creative Journey",
+        "ctaDescription": "Register for free, experience the magic of AI-assisted creation instantly. Let Qritor become your most powerful creative partner."
+    },
+    "auth": {
+        "loginTitle": "Welcome Back",
+        "loginSubtitle": "Sign in to your account",
+        "registerTitle": "Create Account",
+        "registerSubtitle": "Start your creative journey",
+        "email": "Email",
+        "emailPlaceholder": "Enter your email",
+        "password": "Password",
+        "passwordPlaceholder": "Enter your password",
+        "nickname": "Nickname",
+        "nicknamePlaceholder": "Enter nickname (optional)",
+        "forgotPassword": "Forgot password?",
+        "noAccount": "Don't have an account?",
+        "hasAccount": "Already have an account?",
+        "verificationCode": "Verification Code",
+        "verificationCodePlaceholder": "Enter 6-digit code",
+        "sendCode": "Send Code",
+        "resendCode": "Resend",
+        "agreeTerms": "I have read and agree to the",
+        "termsLink": "Terms of Service",
+        "andText": "and",
+        "privacyLink": "Privacy Policy",
+        "orLoginWith": "Or login with email",
+        "googleLogin": "Continue with Google",
+        "googleRegister": "Sign up with Google",
+        "resetPassword": "Reset Password",
+        "newPassword": "New Password",
+        "confirmPassword": "Confirm Password",
+        "backToLogin": "Back to Login",
+        "passwordPolicy": "Password must be at least 8 characters and include uppercase, lowercase, number, and special character, and must not be a common password"
+    },
+    "register": {
+        "or": "or",
+        "optional": "(optional)",
+        "nicknamePlaceholder": "Leave empty to use email as nickname",
+        "passwordPlaceholder": "At least 8 characters",
+        "continue": "Continue",
+        "back": "Back",
+        "sendingCode": "Sending code...",
+        "verifyEmail": "Verify Email",
+        "codeSentTo": "Enter the verification code sent to:",
+        "noCodeReceived": "Didn't receive the code?",
+        "resendIn": "Resend in {{seconds}}s",
+        "verifying": "Verifying...",
+        "processingGoogle": "Logging in...",
+        "errors": {
+            "emailRequired": "Please enter your email",
+            "emailInvalid": "Please enter a valid email address",
+            "nicknameLength": "Nickname must be 2-20 characters",
+            "agreeTerms": "Please agree to the Terms of Service and Privacy Policy",
+            "passwordRequired": "Please enter a password",
+            "passwordLength": "Password must be at least 8 characters",
+            "sendCodeFailed": "Failed to send verification code",
+            "registerFailed": "Registration failed",
+            "googleFailed": "Google login failed, please try again",
+            "googleUnavailable": "Google login is temporarily unavailable",
+            "googleConnectFailed": "Unable to connect to Google login service"
+        }
+    },
+    "login": {
+        "errors": {
+            "emailRequired": "Please enter your email",
+            "emailInvalid": "Please enter a valid email address",
+            "passwordRequired": "Please enter your password",
+            "loginFailed": "Login failed",
+            "googleFailed": "Google login failed, please try again",
+            "googleUnavailable": "Google login is temporarily unavailable",
+            "googleConnectFailed": "Unable to connect to Google login service"
+        }
+    },
+    "forgotPassword": {
+        "title": "Reset Password",
+        "step1Subtitle": "Enter your email and we'll send you a verification code",
+        "step2Subtitle": "Enter the verification code and new password",
+        "emailPlaceholder": "Enter the email you registered with",
+        "codePlaceholder": "Enter 6-digit code",
+        "newPasswordPlaceholder": "At least 8 characters",
+        "confirmPasswordPlaceholder": "Re-enter your new password",
+        "resetButton": "Reset Password",
+        "successMessage": "Password reset successful, please log in again",
+        "errors": {
+            "emailRequired": "Please enter your email",
+            "emailInvalid": "Please enter a valid email address",
+            "sendFailed": "Failed to send",
+            "codeInvalid": "Please enter a 6-digit code",
+            "passwordLength": "Password must be at least 8 characters",
+            "passwordMismatch": "Passwords do not match",
+            "resetFailed": "Reset failed"
+        }
+    },
+    "pricing": {
+        "title": "Pricing",
+        "subtitle": "Choose the best plan and start your AI creative journey.",
+        "monthly": "Monthly",
+        "yearly": "Yearly",
+        "yearlyDiscount": "Save 20%",
+        "free": "Free",
+        "pro": "Pro",
+        "enterprise": "Enterprise",
+        "currentPlan": "Current Plan",
+        "upgrade": "Upgrade",
+        "contact": "Contact Us",
+        "perMonth": "/month",
+        "perYear": "/year",
+        "features": "Features",
+        "credits": "Credits",
+        "creditsPerMonth": "credits/month",
+        "mostPopular": "Most Popular",
+        "freeStart": "Start Free",
+        "download": "Download",
+        "subscribe": "Subscribe",
+        "boostPack": "Boost Pack",
+        "comingSoon": "Coming Soon",
+        "creditsNote": "Qritor usage is measured in Credits.",
+        "taxNote": "Prices do not include applicable taxes and duties, including VAT and applicable sales tax.",
+        "upgradeTo": "Upgrade to {{plan}}",
+        "plans": {
+            "free": {
+                "name": "Free",
+                "desc": "Perfect for first-time creators"
+            },
+            "pro": {
+                "name": "Pro",
+                "desc": "The choice for professional creators"
+            },
+            "ultra": {
+                "name": "Ultra",
+                "desc": "Unlimited creation"
+            }
+        }
+    },
+    "faq": {
+        "title": "FAQ",
+        "q1": "What are credits? How do I use them?",
+        "a1": "Credits are virtual currency used to consume AI services. Each use of AI features (such as smart continuation, plot generation, etc.) consumes a certain amount of credits. Different subscription plans provide different monthly credit quotas.",
+        "q2": "Can I cancel my subscription at any time?",
+        "a2": "Yes, you can cancel your subscription at any time. After cancellation, service benefits remain valid until the end of the current billing cycle. No charges will be made for the next billing cycle.",
+        "q3": "What happens when I run out of credits?",
+        "a3": "When your credits are exhausted, we will continue to provide service using basic models. You can also upgrade your subscription plan or purchase boost packs to get more credits.",
+        "q4": "What payment methods are supported?",
+        "a4": "We support WeChat Pay, Alipay, credit cards, and other payment methods. Payments are secured by Stripe."
+    },
+    "profile": {
+        "title": "Profile",
+        "avatar": "Avatar",
+        "name": "Name",
+        "namePlaceholder": "Enter nickname",
+        "enterNickname": "Enter nickname",
+        "email": "Email",
+        "advancedSettings": "Advanced Settings",
+        "notifications": "Notifications",
+        "updatesAndTips": "Updates & Tips",
+        "updatesAndTipsDesc": "Get the latest updates, best practices, and technical insights.",
+        "subscribedUpdates": "Subscribed to updates and tips",
+        "unsubscribedUpdates": "Unsubscribed from updates and tips",
+        "dangerZone": "Danger Zone",
+        "deleteAccount": "Delete Account",
+        "deleteAccountDesc": "Account deletion is irreversible. Please proceed with caution.",
+        "tabs": {
+            "profile": "Profile",
+            "usage": "Usage",
+            "billing": "Billing"
+        },
+        "usage": {
+            "title": "Usage Details",
+            "subscriptionCredits": "Subscription Credits",
+            "subscriptionCreditsDesc": "Monthly credits from your subscription plan.",
+            "referralCredits": "Referral Credits",
+            "referralCreditsDesc": "Credits earned from referring friends.",
+            "boostPackCredits": "Boost Pack Credits",
+            "boostPackCreditsDesc": "Additional credits from boost pack purchases.",
+            "getMoreCredits": "Get More Credits",
+            "getMoreCreditsDesc": "When your credits run out, we'll continue serving you with basic models. Upgrade your plan for more credits.",
+            "inviteFriends": "Invite friends, earn credit rewards",
+            "creditsHistory": "Credit History",
+            "earned": "Earned",
+            "earnedDesc": "Showing unexpired credit earning records",
+            "time": "Time",
+            "source": "Source",
+            "earnedCredits": "Credits Earned",
+            "remaining": "Remaining",
+            "expireTime": "Expires",
+            "noRecords": "No records"
+        },
+        "billing": {
+            "title": "Billing",
+            "currentPlan": "Current Plan",
+            "free": "Free",
+            "upgradeNote": "Upgrade your subscription to unlock all features and get more credits.",
+            "manageBilling": "Manage Billing",
+            "manageBillingDesc": "Manage your payment methods and billing information.",
+            "manage": "Manage",
+            "invoices": "Invoices",
+            "date": "Date",
+            "amount": "Amount",
+            "status": "Status",
+            "description": "Description",
+            "noInvoices": "No invoices found."
+        },
+        "deleteAccountModal": {
+            "title": "Delete Account",
+            "warning": "Are you sure you want to delete your account? Your data and credits will be permanently deleted. This action cannot be undone.",
+            "codeLabel": "Please enter the verification code sent to:",
+            "codePlaceholder": "Enter verification code"
+        },
+        "errors": {
+            "avatarUploadFailed": "Failed to upload avatar, please try again",
+            "nicknameLengthInvalid": "Nickname must be 2-20 characters",
+            "saveFailed": "Failed to save",
+            "sendCodeFailed": "Failed to send verification code",
+            "codeInvalid": "Please enter a 6-digit verification code",
+            "deleteFailed": "Failed to delete account"
+        }
+    },
+    "referral": {
+        "title": "Invite Friends, Earn Credits",
+        "subtitle": "Share your referral link. When friends sign up, both of you earn credit rewards!",
+        "yourLink": "Your Referral Link",
+        "copy": "Copy",
+        "copied": "Copied",
+        "howItWorks": "How It Works",
+        "step1": "Share your unique referral link",
+        "step2": "Friends sign up through your link",
+        "step3": "Both of you earn credit rewards",
+        "yourRewards": "Your Rewards",
+        "invitee": "Invitee",
+        "rewardCredits": "Reward Credits",
+        "status": "Status",
+        "completed": "Completed",
+        "pending": "Pending",
+        "noRewards": "No rewards yet"
+    },
+    "download": {
+        "title": "Download",
+        "pageSubtitle": "Download the version of Qritor for your operating system",
+        "subtitle": "Choose your preferred way to start creating",
+        "webApp": "Web App",
+        "webAppDesc": "No download required, use directly in your browser",
+        "openWebApp": "Open Web App",
+        "desktop": "Desktop App",
+        "desktopDesc": "Download the desktop app for a better creative experience",
+        "desktopFullDesc": "Qritor Desktop seamlessly integrates enhanced contextual engineering with intelligent agents, fully understanding your content and effortlessly handling complex development tasks to boost your creative efficiency.",
+        "comingSoon": "Coming Soon",
+        "mobile": "Mobile App",
+        "mobileDesc": "Create anywhere, never miss inspiration",
+        "iosComingSoon": "iOS Coming Soon",
+        "androidComingSoon": "Android Coming Soon",
+        "macosInstallTitle": "macOS Installation Guide",
+        "macosInstallStep1": "Download and open the .dmg file, drag Qritor to Applications folder",
+        "macosInstallStep2": "If blocked, go to System Settings → Privacy & Security",
+        "macosInstallStep3": "Find the blocked app notice at bottom, click 'Open Anyway'",
+        "macosInstallTip": "💡 Tip: macOS blocks unsigned apps. We're working on developer certificates for auto-trust in future versions."
+    },
+    "desktop": {
+        "loginSuccess": "Login Successful",
+        "account": "Account",
+        "allReady": "All set!",
+        "returnToQritor": "Now you can return to Qritor and start your AI-powered creative journey.",
+        "openQritor": "Open Qritor",
+        "canCloseWindow": "You can close this window"
+    },
+    "checkout": {
+        "title": "Confirm Order",
+        "subtitle": "You are about to subscribe to the {{plan}} plan",
+        "orderSummary": "Order Summary",
+        "plan": "Plan",
+        "billingCycle": "Billing Cycle",
+        "monthlyBilling": "Monthly",
+        "yearlyBilling": "Yearly",
+        "subtotal": "Subtotal",
+        "discount": "Discount",
+        "total": "Amount Due",
+        "payNow": "Pay Now",
+        "redirecting": "Redirecting to payment...",
+        "processing": "Processing...",
+        "paymentMethod": "Payment Method",
+        "creditCard": "Credit Card",
+        "wechat": "WeChat Pay",
+        "alipay": "Alipay",
+        "securePayment": "Secure Payment",
+        "securePaymentDesc": "Secure payment powered by Stripe",
+        "recommended": "Recommended",
+        "featuresIncluded": "Features Included",
+        "monthlyCredits": "{{count}} credits per month",
+        "monthlyProjects": "{{count}} projects per month",
+        "unlimitedProjects": "Unlimited projects",
+        "backToPricing": "Back to Pricing",
+        "supportedPaymentMethods": "Supported Payment Methods",
+        "errors": {
+            "planNotFound": "Plan not found",
+            "fetchFailed": "Failed to fetch plan information",
+            "networkError": "Network error, please try again",
+            "createOrderFailed": "Failed to create order",
+            "getPaymentLinkFailed": "Failed to get payment link, please retry",
+            "initiatePaymentFailed": "Failed to initiate payment"
+        }
+    },
+    "payment": {
+        "success": "Payment Successful",
+        "successDesc": "Thank you for your subscription! You now have access to all features.",
+        "failed": "Payment Failed",
+        "failedDesc": "There was an issue processing your payment. Please try again.",
+        "pending": "Payment Processing",
+        "pendingDesc": "Your payment is being processed. Please wait...",
+        "backToHome": "Back to Home",
+        "goToStudio": "Go to Studio",
+        "retry": "Retry Payment"
+    },
+    "legal": {
+        "relatedDocs": "Related Documents",
+        "privacy": {
+            "title": "Privacy Policy",
+            "lastUpdated": "Last Updated: December 16, 2025",
+            "intro": "Qritor (hereinafter referred to as \"the Platform\" or \"we\") understands the importance of your personal information. We will protect your personal information in accordance with laws and regulations. Please read and understand this Privacy Policy carefully before using the Platform's services.",
+            "companyInfo": {
+                "title": "Data Controller Information",
+                "companyName": "Company Name",
+                "companyNameValue": "Pixel Harbor LLC",
+                "address": "Registered Address",
+                "addressValue": "1500 N Grant St Ste R, Denver, CO 80203, USA",
+                "email": "Contact Email",
+                "emailValue": "nick@qritor.com"
+            },
+            "section1": {
+                "title": "1. Information Collection",
+                "subtitle1": "1.1 Information You Provide",
+                "desc1": "During your use of the Platform's services, we may collect the following information:",
+                "item1": "Account Information",
+                "item1Desc": "Email address, nickname, password (encrypted storage) provided during registration;",
+                "item2": "Identity Information",
+                "item2Desc": "Phone number (optional, for security verification);",
+                "item3": "Payment Information",
+                "item3Desc": "Order information, payment method (we do not directly store sensitive information such as bank card numbers);",
+                "item4": "Creative Content",
+                "item4Desc": "Novels, settings, outlines, and other content you create and save on the Platform.",
+                "subtitle2": "1.2 Automatically Collected Information",
+                "desc2": "When you use the Platform, we automatically collect:",
+                "item5": "Device Information",
+                "item5Desc": "Device model, operating system, browser type, etc.;",
+                "item6": "Log Information",
+                "item6Desc": "Access time, page browsing history, error logs;",
+                "item7": "Usage Data",
+                "item7Desc": "Feature usage frequency, credit consumption, etc."
+            },
+            "section2": {
+                "title": "2. Information Use",
+                "desc": "The information we collect will be used for the following purposes:",
+                "item1": "Providing Services",
+                "item1Desc": "To provide you with core services such as creation, storage, and AI-assisted writing;",
+                "item2": "Account Management",
+                "item2Desc": "To verify identity and process account-related requests;",
+                "item3": "Payment Processing",
+                "item3Desc": "To process subscription payments, credit purchases, and other transactions;",
+                "item4": "Service Improvement",
+                "item4Desc": "To analyze usage data and optimize product features and user experience;",
+                "item5": "Security Protection",
+                "item5Desc": "To detect and prevent security risks and fraudulent activities;",
+                "item6": "Customer Service",
+                "item6Desc": "To respond to your inquiries, feedback, and complaints;",
+                "item7": "Notifications",
+                "item7Desc": "Service updates, account security reminders, and other important notifications."
+            },
+            "section3": {
+                "title": "3. Information Sharing",
+                "desc": "We will not sell your personal information to third parties. However, we may share your information in the following circumstances:",
+                "subtitle1": "3.1 With Your Consent",
+                "desc1": "Share your information with third parties after obtaining your explicit consent.",
+                "subtitle2": "3.2 Service Providers",
+                "desc2": "We may entrust third-party service providers to handle certain services (such as payment processing, cloud storage). These service providers can only access your information to the extent necessary to provide services and are bound by confidentiality obligations.",
+                "subtitle3": "3.3 Legal Requirements",
+                "desc3": "To comply with laws, regulations, court judgments, or mandatory requirements of government agencies, we may disclose your information.",
+                "subtitle4": "3.4 Protecting Rights",
+                "desc4": "To protect the rights, property safety of the Platform, users, or the public, we may share information within reasonable limits."
+            },
+            "section4": {
+                "title": "4. Data Security",
+                "desc": "We take various security measures to protect your information:",
+                "item1": "Encrypted Transmission",
+                "item1Desc": "Use HTTPS protocol to encrypt data transmission;",
+                "item2": "Password Encryption",
+                "item2Desc": "User passwords are stored with hash encryption;",
+                "item3": "Access Control",
+                "item3Desc": "Only authorized personnel can access user data;",
+                "item4": "Security Audits",
+                "item4Desc": "Regular security audits and vulnerability scanning;",
+                "item5": "Data Backup",
+                "item5Desc": "Regular data backups to ensure data recoverability.",
+                "note": "Although we strive to protect your information security, please understand that there is no absolutely secure transmission method on the Internet. In case of a security incident, we will notify you promptly and take remedial measures."
+            },
+            "section5": {
+                "title": "5. Cookies and Similar Technologies",
+                "desc": "We use cookies and similar technologies to:",
+                "item1": "Remember your login status to provide a seamless experience;",
+                "item2": "Analyze platform usage to improve services;",
+                "item3": "Save your preference settings.",
+                "note": "You can manage or delete cookies through your browser settings. However, please note that disabling cookies may affect your normal use of some features of the Platform."
+            },
+            "section6": {
+                "title": "6. Your Rights",
+                "desc": "According to applicable laws and regulations, you have the following rights:",
+                "subtitle1": "6.1 Right of Access",
+                "desc1": "You have the right to access personal information we hold about you.",
+                "subtitle2": "6.2 Right of Rectification",
+                "desc2": "You can correct inaccurate personal information through account settings or by contacting us.",
+                "subtitle3": "6.3 Right of Deletion",
+                "desc3": "In certain circumstances, you have the right to request that we delete your personal information. You can also achieve this by deleting your account. Please note that some information may need to be retained for a certain period due to regulatory requirements.",
+                "subtitle4": "6.4 Right to Withdraw Consent",
+                "desc4": "For data processing based on consent, you have the right to withdraw consent at any time. Withdrawal of consent does not affect the lawfulness of data processing before withdrawal.",
+                "subtitle5": "6.5 Right to Export",
+                "desc5": "You have the right to export your creative content in a common format."
+            },
+            "section7": {
+                "title": "7. Children's Privacy Protection",
+                "desc1": "The Platform primarily provides services to adults. If you are a minor under 14 years old, please use this service with the guidance and supervision of your guardian, and your guardian's consent to this Privacy Policy is required.",
+                "desc2": "We will not intentionally collect personal information of children. If we discover that we have collected children's information without the consent of a guardian, we will delete the relevant information as soon as possible."
+            },
+            "section8": {
+                "title": "8. Data Storage and Cross-Border Transfer",
+                "subtitle1": "8.1 Storage Location",
+                "desc1": "Your personal information is stored on servers located in the United States. If you access the Platform from other countries or regions, please note that your information will be transferred to and processed and stored in the United States.",
+                "subtitle2": "8.2 Storage Period",
+                "desc2": "We will retain your information for the period necessary to provide services to you. When you delete your account or the information is no longer needed, we will delete or anonymize your personal information, unless otherwise required by laws and regulations."
+            },
+            "section9": {
+                "title": "9. Policy Changes",
+                "desc1": "We may update this Privacy Policy based on business development and changes in laws and regulations. The updated policy will be published on the Platform with the effective date noted.",
+                "desc2": "In case of significant changes (such as substantial changes in the types of information collected or purposes of use), we will notify you by email or platform notification. If you do not agree with the changed policy, please stop using the Platform's services."
+            },
+            "section10": {
+                "title": "10. Contact Us",
+                "desc": "If you have any questions, comments, or suggestions about this Privacy Policy, or wish to exercise your data subject rights, you can contact us through the following:",
+                "companyName": "Company Name",
+                "email": "Contact Email",
+                "address": "Mailing Address",
+                "note": "We will process and respond to your request as soon as possible after receiving it."
+            }
+        },
+        "terms": {
+            "title": "Terms of Service",
+            "lastUpdated": "Last Updated: December 16, 2025",
+            "intro": "Welcome to Qritor (hereinafter referred to as \"the Platform\" or \"we\"). Before using the Platform's services, please read and fully understand the entire contents of these Terms of Service (hereinafter referred to as \"these Terms\"). Your use of any service of the Platform indicates that you have read, understood, and agreed to be bound by these Terms.",
+            "companyInfo": {
+                "title": "Operating Entity Information",
+                "companyName": "Company Name",
+                "companyNameValue": "Pixel Harbor LLC",
+                "companyType": "Company Type",
+                "companyTypeValue": "Colorado Limited Liability Company",
+                "regNumber": "Registration Number",
+                "regNumberValue": "20258351687",
+                "address": "Registered Address",
+                "addressValue": "1500 N Grant St Ste R, Denver, CO 80203, USA"
+            },
+            "section1": {
+                "title": "1. Service Overview",
+                "desc": "Qritor is an AI-powered creative writing platform that primarily provides the following services:",
+                "item1": "AI Writing Assistant",
+                "item1Desc": "Uses artificial intelligence technology to assist users in novel creation, including smart continuation, plot generation, dialogue generation, and other features;",
+                "item2": "Modular Creation",
+                "item2Desc": "Provides structured creation management tools such as character profiles, world-building, plot outlines, etc.;",
+                "item3": "Workflow Engine",
+                "item3Desc": "Supports custom creation processes and automated task execution;",
+                "item4": "Comic Generation",
+                "item4Desc": "(Coming Soon) Creative tools to transform text content into comic form;",
+                "item5": "Other Services",
+                "item5Desc": "New features and services continuously launched based on business development."
+            },
+            "section2": {
+                "title": "2. User Registration and Accounts",
+                "subtitle1": "2.1 Registration Requirements",
+                "desc1": "You must have full civil capacity to register as a user of the Platform. If you are a minor, please read these Terms accompanied by your legal guardian and use the Platform's services only after obtaining your guardian's consent.",
+                "subtitle2": "2.2 Account Security",
+                "desc2": "You are responsible for properly maintaining your account information and password security. Any loss caused by your negligence shall be borne by you. If you discover that your account has been stolen or there are other security risks, please contact us immediately.",
+                "subtitle3": "2.3 Account Authenticity",
+                "desc3": "You need to provide true and accurate personal information when registering. If the information changes, you should update it promptly. Any consequences arising from providing false information shall be borne by you."
+            },
+            "section3": {
+                "title": "3. User Conduct Guidelines",
+                "subtitle1": "3.1 Prohibited Conduct",
+                "desc1": "When using the Platform's services, you must not:",
+                "item1": "Publish or disseminate illegal, obscene, violent, terrorist, discriminatory, or hateful content;",
+                "item2": "Infringe on other people's intellectual property rights, privacy rights, reputation rights, or other legal rights;",
+                "item3": "Use the Platform for fraud, pyramid schemes, gambling, or other illegal activities;",
+                "item4": "Interfere with or destroy the normal operation of the Platform or attack the Platform's systems;",
+                "item5": "Use automated tools to register accounts in bulk or abuse Platform resources;",
+                "item6": "Maliciously farm credits, reputation, or engage in false transactions;",
+                "item7": "Other behaviors that violate laws, regulations, or these Terms.",
+                "subtitle2": "3.2 Content Responsibility",
+                "desc2": "You are legally responsible for content you create and publish through the Platform. We have the right to delete or block violating content and reserve the right to pursue legal liability."
+            },
+            "section4": {
+                "title": "4. Intellectual Property",
+                "subtitle1": "4.1 Platform Rights",
+                "desc1": "The Platform's name, logo, interface design, software code, technical solutions, etc. are our intellectual property and are protected by law. Without authorization, you may not copy, modify, distribute, or use them in any way.",
+                "subtitle2": "4.2 User Content",
+                "desc2a": "Original Content",
+                "desc2aText": "The intellectual property rights of purely original works you create on the Platform belong to you.",
+                "desc2b": "AI-Assisted Content",
+                "desc2bText": "For content generated or assisted by AI features, you have the right to use and profit from it, but must comply with the following provisions:",
+                "item1": "You may not claim AI-generated content as entirely original work;",
+                "item2": "If using relevant content for commercial purposes, you must ensure no infringement of third-party rights;",
+                "item3": "We reserve the right to use anonymized creative data to improve AI models.",
+                "subtitle3": "4.3 Authorization License",
+                "desc3": "You authorize us to store, process, and transmit your content to the extent necessary to provide services. Content you publish publicly on the Platform is deemed to authorize other users to browse and learn from it."
+            },
+            "section5": {
+                "title": "5. Paid Services",
+                "subtitle1": "5.1 Subscription Plans",
+                "desc1": "The Platform offers subscription plans including Free, Pro, and Ultra. The features, benefits, and prices of each plan are subject to the latest announcements on the Platform. After subscribing, the corresponding benefits will take effect immediately.",
+                "subtitle2": "5.2 Credit System",
+                "desc2": "Credits are used to consume AI services. You can receive monthly credit quotas through subscription plans or purchase credit packs separately. Credits are non-transferable and non-redeemable for cash. Specific usage rules are subject to Platform descriptions.",
+                "subtitle3": "5.3 Payment Methods",
+                "desc3": "We support payment methods including WeChat Pay, Alipay, and credit cards. Once payment is successful, the order takes effect.",
+                "subtitle4": "5.4 Refund Policy",
+                "desc4": "For detailed refund provisions, please refer to our",
+                "refundLink": "Refund Policy"
+            },
+            "section6": {
+                "title": "6. Service Changes and Termination",
+                "subtitle1": "6.1 Service Changes",
+                "desc1": "We may adjust or update service content, features, interfaces, etc. based on business development needs. Significant changes will be notified to you in advance through Platform announcements or other means.",
+                "subtitle2": "6.2 Service Termination",
+                "desc2": "We have the right to suspend or terminate providing services to you in the following circumstances:",
+                "item1": "You violate these Terms or relevant laws and regulations;",
+                "item2": "Your account has security risks or abnormal behavior;",
+                "item3": "Service cannot continue due to force majeure;",
+                "item4": "Other reasonable circumstances.",
+                "subtitle3": "6.3 Account Deletion",
+                "desc3": "You can request to delete your account. After account deletion, we will delete your personal information within a reasonable period, except as required by laws and regulations. Please ensure there are no unused paid benefits in your account before deletion."
+            },
+            "section7": {
+                "title": "7. Disclaimer",
+                "subtitle1": "7.1 AI-Generated Content",
+                "desc1": "AI-generated content is based on machine learning algorithms and may be inaccurate, incomplete, or inappropriate. We make no commitments regarding the accuracy, completeness, or suitability of AI-generated content. You need to review and process AI-generated content yourself.",
+                "subtitle2": "7.2 Service Interruption",
+                "desc2": "For service interruptions caused by system maintenance, upgrades, network failures, force majeure, etc., we will try to restore service as soon as possible but are not liable for losses caused thereby.",
+                "subtitle3": "7.3 Third-Party Links",
+                "desc3": "The Platform may contain links to third-party websites. The content, privacy policies, etc. of third-party websites are their own responsibility and have nothing to do with us.",
+                "subtitle4": "7.4 Limitation of Liability",
+                "desc4": "To the maximum extent permitted by law, we are not liable for any indirect, incidental, or punitive damages arising from the use or inability to use the Platform's services."
+            },
+            "section8": {
+                "title": "8. Dispute Resolution",
+                "subtitle1": "8.1 Applicable Law",
+                "desc1": "The conclusion, execution, and interpretation of these Terms shall be governed by the laws of the State of Colorado, United States, without regard to its conflict of law principles.",
+                "subtitle2": "8.2 Dispute Handling",
+                "desc2": "Disputes arising from these Terms or the use of the Platform's services shall first be resolved through friendly negotiation. If negotiation fails, either party has the right to file a lawsuit with a court of competent jurisdiction in Denver, Colorado, United States."
+            },
+            "section9": {
+                "title": "9. Terms Modification",
+                "desc": "We reserve the right to modify these Terms at any time. The modified Terms will be published on the Platform. If you continue to use the Platform's services after the Terms are modified, you are deemed to have accepted the modified Terms. If you do not agree with the modified Terms, please stop using the Platform's services."
+            },
+            "section10": {
+                "title": "10. Contact Us",
+                "desc": "If you have any questions or suggestions about these Terms, please contact us through the following:",
+                "companyName": "Company Name",
+                "email": "Contact Email",
+                "address": "Mailing Address"
+            }
+        },
+        "refund": {
+            "title": "Refund Policy",
+            "lastUpdated": "Last Updated: December 16, 2025",
+            "intro": "Thank you for choosing Qritor. We hope you are satisfied with our services. If you need to request a refund, please read the following refund policy carefully to understand the conditions and process for refunds.",
+            "companyInfo": {
+                "title": "Service Provider",
+                "companyName": "Company Name",
+                "companyNameValue": "Pixel Harbor LLC",
+                "address": "Registered Address",
+                "addressValue": "1500 N Grant St Ste R, Denver, CO 80203, USA"
+            },
+            "section1": {
+                "title": "1. Refund Scope",
+                "desc": "This refund policy applies to the following paid items:",
+                "item1": "Subscription Plans",
+                "item1Desc": "Pro and Ultra monthly/yearly subscriptions;",
+                "item2": "Credit Packs",
+                "item2Desc": "Various credit packs (Boost Packs) purchased separately."
+            },
+            "section2": {
+                "title": "2. Subscription Refunds",
+                "subtitle1": "2.1 First-time Subscription",
+                "desc1": "If you are subscribing to our paid plan for the first time and request a refund within 7 days of purchase, we will process a full refund after review, provided the following conditions are met:",
+                "item1": "Credits used during the subscription period do not exceed 20% of the monthly quota;",
+                "item2": "You have not used exclusive premium features (such as AI models available only to Pro/Ultra);",
+                "item3": "You have not violated the Terms of Service or engaged in abusive behavior.",
+                "subtitle2": "2.2 Renewal Subscriptions",
+                "desc2": "For renewal (non-first-time subscription) situations:",
+                "item4": "Auto-renewal",
+                "item4Desc": "If you have auto-renewal enabled, you can request a refund within 3 days after the renewal charge (provided no benefits have been used in the new cycle);",
+                "item5": "Manual renewal",
+                "item5Desc": "After manual renewal, the same refund conditions as first-time subscriptions apply.",
+                "subtitle3": "2.3 Subscription Cancellation",
+                "desc3": "You can cancel your subscription at any time:",
+                "item6": "After cancellation, service benefits for the current billing cycle remain valid until the end of the cycle;",
+                "item7": "Simply canceling the subscription (rather than requesting a refund) will not result in any refund;",
+                "item8": "After cancellation, you will not be charged for the next billing cycle."
+            },
+            "section3": {
+                "title": "3. Credit Pack Refunds",
+                "subtitle1": "3.1 Refund Conditions",
+                "desc1": "Within 7 days of purchasing a credit pack, if the following conditions are met, you can request a full refund:",
+                "item1": "Credits in the pack are completely unused;",
+                "item2": "Credit pack credits have not been used for any AI generation operations.",
+                "subtitle2": "3.2 Partial Use",
+                "desc2": "If the credit pack has been partially used:",
+                "item3": "Usage ratio not exceeding 10%: 80% of the purchase amount can be refunded;",
+                "item4": "Usage ratio exceeding 10%: No refund will be issued."
+            },
+            "section4": {
+                "title": "4. Non-refundable Situations",
+                "desc": "The following situations are not eligible for refunds:",
+                "item1": "Refund requests exceeding the specified refund period;",
+                "item2": "Subscriptions where service benefits have been heavily used;",
+                "item3": "Accounts suspended or terminated for violating Terms of Service;",
+                "item4": "Orders purchased through promotional activities, discount codes, or special prices (unless otherwise stated);",
+                "item5": "Gifted credits, reward credits, or referral rewards;",
+                "item6": "Repeated charges due to user's own reasons (such as forgetting to cancel auto-renewal), but you can request to cancel subsequent subscriptions;",
+                "item7": "Malicious refunds or abuse of the refund policy."
+            },
+            "section5": {
+                "title": "5. Refund Process",
+                "subtitle1": "5.1 How to Apply",
+                "desc1": "Please submit your refund request through the following:",
+                "item1": "Send an email to",
+                "emailValue": "nick@qritor.com",
+                "item2": "Email subject should include: [Refund Request] Your registered email",
+                "item3": "Email content should include: Order number, purchase date, reason for refund",
+                "subtitle2": "5.2 Processing Time",
+                "item4": "Review Time",
+                "item4Desc": "We will complete the review within 3 business days of receiving the request;",
+                "item5": "Refund Arrival",
+                "item5Desc": "After approval, the refund will be returned to your original payment account within 5-10 business days.",
+                "note": "The actual arrival time may vary depending on the payment channel (WeChat, Alipay, credit card, etc.).",
+                "subtitle3": "5.3 Refund Amount",
+                "desc3": "The refund amount is based on the actual amount paid. If coupons or discounts were used for the order, the refund amount will be the amount paid after deducting the discount."
+            },
+            "section6": {
+                "title": "6. Special Circumstances",
+                "subtitle1": "6.1 Service Issues",
+                "desc1": "If you are unable to use the service normally due to major platform failures or technical issues, we will compensate or refund based on the actual impact duration. The specific plan will be negotiated with you.",
+                "subtitle2": "6.2 Dispute Resolution",
+                "desc2": "If you have any objections to the refund result, you can communicate with us via email. We will carefully handle every feedback and seek solutions within reasonable limits."
+            },
+            "section7": {
+                "title": "7. Contact Us",
+                "desc": "If you have any questions about this refund policy or need to request a refund, please contact us:",
+                "companyName": "Company Name",
+                "companyNameValue": "Pixel Harbor LLC",
+                "email": "Customer Service Email",
+                "emailValue": "nick@qritor.com",
+                "address": "Mailing Address",
+                "addressValue": "1500 N Grant St Ste R, Denver, CO 80203, USA",
+                "hours": "Business Hours",
+                "hoursValue": "Monday to Friday 9:00 AM - 6:00 PM (MST)"
+            },
+            "section8": {
+                "title": "8. Policy Changes",
+                "desc": "We reserve the right to modify this refund policy at any time. The modified policy will be published on the Platform with the update date noted. The refund policy applicable when you purchase services is the version effective at the time of purchase."
+            }
+        }
+    },
+    "changelog": {
+        "heroTitle": "Changelog",
+        "heroSubtitle": "Explore the latest updates from Qritor, discover innovations and improvements we've brought to you.",
+        "tags": {
+            "new": "New",
+            "improved": "Improved",
+            "fixed": "Fixed",
+            "breaking": "Breaking"
+        },
+        "sections": {
+            "newFeatures": "New Features",
+            "improvements": "Improvements",
+            "bugFixes": "Bug Fixes"
+        },
+        "entries": {
+            "v1_2_0": {
+                "title": "Changelog Page Launch & Multiple Experience Improvements",
+                "new": {
+                    "item1": "Added changelog page to view version update history and feature changes",
+                    "item2": "Added changelog entry in portal footer",
+                    "item3": "Support timeline display for browsing updates by date"
+                },
+                "improved": {
+                    "item1": "Optimized page loading performance and response speed",
+                    "item2": "Improved mobile device adaptation"
+                }
+            },
+            "v1_1_0": {
+                "title": "Desktop Enhancements & Logging System Optimization",
+                "new": {
+                    "item1": "Desktop app supports user-configurable auto-update settings",
+                    "item2": "Added release script to automate version release process"
+                },
+                "fixed": {
+                    "item1": "Fixed IPC handler registration timing issues in some scenarios",
+                    "item2": "Fixed log file rotation configuration issues",
+                    "item3": "Fixed API endpoint configuration in development environment"
+                }
+            },
+            "v1_0_0": {
+                "title": "Qritor Official Release",
+                "new": {
+                    "item1": "AI Writing Assistant: Smart continuation, plot generation, dialogue generation",
+                    "item2": "Modular Creation: Character profiles, world-building, plot outlines",
+                    "item3": "Workflow Engine: Custom creative processes, automated task execution",
+                    "item4": "Multi-platform Support: macOS and Windows desktop apps",
+                    "item5": "Multi-language Support: 12 languages including Chinese and English"
+                }
+            }
+        }
+    }
+}

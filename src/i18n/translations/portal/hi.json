@@ -1,0 +1,370 @@
+{
+    "common": {
+        "login": "लॉगिन",
+        "register": "पंजीकरण",
+        "logout": "लॉगआउट",
+        "save": "सहेजें",
+        "cancel": "रद्द करें",
+        "confirm": "पुष्टि करें",
+        "loading": "लोड हो रहा है...",
+        "error": "त्रुटि",
+        "success": "सफल",
+        "settings": "सेटिंग्स",
+        "language": "भाषा",
+        "languageSetting": "भाषा सेटिंग",
+        "user": "उपयोगकर्ता",
+        "learnMore": "और जानें",
+        "freeStart": "मुफ्त शुरू करें",
+        "freeStartCreating": "मुफ्त में बनाना शुरू करें",
+        "getMoreCredits": "और क्रेडिट प्राप्त करें"
+    },
+    "header": {
+        "pricing": "मूल्य निर्धारण",
+        "docs": "दस्तावेज़",
+        "community": "समुदाय",
+        "profile": "प्रोफ़ाइल",
+        "admin": "व्यवस्थापक",
+        "start": "डाउनलोड",
+        "changelog": "चेंजलॉग",
+        "social": {
+            "discord": "Discord",
+            "reddit": "Reddit",
+            "x": "X (Twitter)",
+            "wechat": "WeChat",
+            "youtube": "YouTube",
+            "douyin": "Douyin",
+            "tiktok": "TikTok",
+            "xiaohongshu": "Xiaohongshu"
+        }
+    },
+    "footer": {
+        "brand": "AI-संचालित रचनात्मक लेखन प्लेटफॉर्म, कल्पना को कहानियों में बदलना।",
+        "product": "उत्पाद",
+        "pricing": "मूल्य निर्धारण",
+        "download": "शुरू करें",
+        "changelog": "चेंजलॉग",
+        "resources": "संसाधन",
+        "docs": "दस्तावेज़",
+        "tutorials": "ट्यूटोरियल",
+        "community": "समुदाय",
+        "legal": "कानूनी",
+        "privacy": "गोपनीयता नीति",
+        "terms": "सेवा की शर्तें",
+        "refund": "रिफंड नीति",
+        "contact": "संपर्क करें",
+        "feedback": "प्रतिक्रिया",
+        "copyright": "© 2025 Pixel Harbor LLC. सर्वाधिकार सुरक्षित। | Qritor द्वारा संचालित",
+        "social": {
+            "douyin": "Douyin",
+            "douyinId": "Douyin ID: {{id}}"
+        }
+    },
+    "landing": {
+        "heroBadge": "AI-संचालित अगली पीढ़ी का रचनात्मक अनुभव",
+        "heroTitle": "स्मार्ट लेखन प्लेटफॉर्म",
+        "heroSubtitle": "AI रचनात्मकता को सशक्त बनाता है, कल्पना को कहानियों में बदलता है। Qritor आपको उपन्यास बनाने, कॉमिक्स बनाने और एनिमेटेड कॉमिक्स बनाने में मदद करता है।",
+        "features": {
+            "aiWriting": {
+                "tag": "स्मार्ट लेखन",
+                "title": "AI लेखन सहायक",
+                "description": "एक शक्तिशाली AI सहायक जो आपके रचनात्मक इरादे को समझता है, कथानक को आगे बढ़ाता है, संवाद उत्पन्न करता है।"
+            },
+            "modular": {
+                "tag": "संरचित प्रबंधन",
+                "title": "मॉड्यूलर निर्माण",
+                "description": "चरित्र प्रोफाइल, विश्व निर्माण, कथानक रूपरेखा - सब कुछ व्यवस्थित।"
+            },
+            "workflow": {
+                "tag": "स्वचालन",
+                "title": "वर्कफ़्लो इंजन",
+                "description": "अपनी रचनात्मक प्रक्रिया को परिभाषित करें, AI को स्वचालित रूप से निष्पादित करने दें।"
+            },
+            "comic": {
+                "tag": "जल्द आ रहा है",
+                "title": "कॉमिक जनरेशन",
+                "description": "अपनी टेक्स्ट कहानियों को सुंदर कॉमिक्स में बदलें।"
+            },
+            "animation": {
+                "tag": "जल्द आ रहा है",
+                "title": "एनिमेटेड कॉमिक्स",
+                "description": "स्थिर कॉमिक्स को प्रभाव और वॉयसओवर के साथ जीवंत करें।"
+            }
+        },
+        "ctaTitle": "अपनी रचनात्मक यात्रा शुरू करें",
+        "ctaDescription": "मुफ्त में पंजीकरण करें और AI-सहायता प्राप्त निर्माण के जादू का अनुभव करें।"
+    },
+    "auth": {
+        "loginTitle": "वापस स्वागत है",
+        "loginSubtitle": "अपने खाते में लॉगिन करें",
+        "registerTitle": "खाता बनाएं",
+        "registerSubtitle": "अपनी रचनात्मक यात्रा शुरू करें",
+        "email": "ईमेल",
+        "emailPlaceholder": "अपना ईमेल दर्ज करें",
+        "password": "पासवर्ड",
+        "passwordPlaceholder": "अपना पासवर्ड दर्ज करें",
+        "nickname": "उपनाम",
+        "nicknamePlaceholder": "उपनाम दर्ज करें (वैकल्पिक)",
+        "forgotPassword": "पासवर्ड भूल गए?",
+        "noAccount": "खाता नहीं है?",
+        "hasAccount": "पहले से खाता है?",
+        "verificationCode": "सत्यापन कोड",
+        "verificationCodePlaceholder": "6-अंकीय कोड दर्ज करें",
+        "sendCode": "कोड भेजें",
+        "resendCode": "पुनः भेजें",
+        "agreeTerms": "मैंने पढ़ लिया है और सहमत हूँ",
+        "termsLink": "सेवा की शर्तें",
+        "andText": "और",
+        "privacyLink": "गोपनीयता नीति",
+        "orLoginWith": "या ईमेल से लॉगिन करें",
+        "googleLogin": "Google से जारी रखें",
+        "googleRegister": "Google से पंजीकरण करें",
+        "resetPassword": "पासवर्ड रीसेट करें",
+        "newPassword": "नया पासवर्ड",
+        "confirmPassword": "पासवर्ड की पुष्टि करें",
+        "backToLogin": "लॉगिन पर वापस जाएं",
+        "passwordPolicy": "पासवर्ड कम से कम 8 अक्षर का होना चाहिए और इसमें बड़े अक्षर, छोटे अक्षर, संख्या और विशेष वर्ण शामिल होने चाहिए, और यह सामान्य पासवर्ड नहीं होना चाहिए"
+    },
+    "forgotPassword": {
+        "title": "पासवर्ड रीसेट करें",
+        "step1Subtitle": "अपना ईमेल दर्ज करें और हम आपको एक सत्यापन कोड भेजेंगे",
+        "step2Subtitle": "सत्यापन कोड और नया पासवर्ड दर्ज करें",
+        "emailPlaceholder": "वह ईमेल दर्ज करें जिससे आपने पंजीकरण किया",
+        "codePlaceholder": "6 अंकों का कोड दर्ज करें",
+        "newPasswordPlaceholder": "कम से कम 8 अक्षर",
+        "confirmPasswordPlaceholder": "नया पासवर्ड फिर से दर्ज करें",
+        "resetButton": "पासवर्ड रीसेट करें",
+        "successMessage": "पासवर्ड सफलतापूर्वक रीसेट हो गया, कृपया फिर से लॉगिन करें",
+        "errors": {
+            "emailRequired": "कृपया अपना ईमेल दर्ज करें",
+            "emailInvalid": "कृपया एक वैध ईमेल पता दर्ज करें",
+            "sendFailed": "भेजना विफल",
+            "codeInvalid": "कृपया 6 अंकों का कोड दर्ज करें",
+            "passwordLength": "पासवर्ड कम से कम 8 अक्षर का होना चाहिए",
+            "passwordMismatch": "पासवर्ड मेल नहीं खाते",
+            "resetFailed": "रीसेट विफल"
+        }
+    },
+    "pricing": {
+        "title": "अपनी योजना चुनें",
+        "subtitle": "मुफ्त योजना से शुरू करें, कभी भी अपग्रेड करें",
+        "monthly": "मासिक",
+        "yearly": "वार्षिक",
+        "yearlyDiscount": "20% बचाएं",
+        "free": "मुफ्त",
+        "pro": "प्रो",
+        "enterprise": "एंटरप्राइज",
+        "currentPlan": "वर्तमान योजना",
+        "upgrade": "अपग्रेड",
+        "contact": "संपर्क करें",
+        "perMonth": "/माह",
+        "perYear": "/वर्ष",
+        "features": "सुविधाएं",
+        "credits": "क्रेडिट",
+        "creditsPerMonth": "क्रेडिट/माह",
+        "mostPopular": "सबसे लोकप्रिय",
+        "freeStart": "मुफ्त शुरू करें",
+        "download": "डाउनलोड करें",
+        "subscribe": "सदस्यता लें",
+        "boostPack": "बूस्ट पैक",
+        "comingSoon": "जल्द आ रहा है",
+        "creditsNote": "Qritor का उपयोग क्रेडिट में मापा जाता है।",
+        "taxNote": "कीमतों में लागू कर और शुल्क शामिल नहीं हैं, जिसमें वैट और लागू बिक्री कर शामिल हैं।",
+        "upgradeTo": "{{plan}} में अपग्रेड करें",
+        "plans": {
+            "free": {
+                "name": "मुफ्त",
+                "desc": "नए रचनाकारों के लिए उपयुक्त"
+            },
+            "pro": {
+                "name": "प्रो",
+                "desc": "पेशेवर रचनाकारों की पसंद"
+            },
+            "ultra": {
+                "name": "अल्ट्रा",
+                "desc": "असीमित निर्माण"
+            }
+        }
+    },
+    "faq": {
+        "title": "अक्सर पूछे जाने वाले प्रश्न",
+        "q1": "क्रेडिट क्या हैं? मैं इनका उपयोग कैसे करूं?",
+        "a1": "क्रेडिट AI सेवाओं का उपभोग करने के लिए वर्चुअल मुद्रा है। AI सुविधाओं (जैसे स्मार्ट कंटिन्यूएशन, प्लॉट जेनरेशन आदि) का प्रत्येक उपयोग एक निश्चित मात्रा में क्रेडिट खर्च करता है। विभिन्न सब्सक्रिप्शन प्लान अलग-अलग मासिक क्रेडिट कोटा प्रदान करते हैं।",
+        "q2": "क्या मैं कभी भी अपनी सदस्यता रद्द कर सकता हूं?",
+        "a2": "हां, आप कभी भी अपनी सदस्यता रद्द कर सकते हैं। रद्द करने के बाद, सेवा लाभ वर्तमान बिलिंग चक्र के अंत तक मान्य रहते हैं। अगले बिलिंग चक्र के लिए कोई शुल्क नहीं लिया जाएगा।",
+        "q3": "जब मेरे क्रेडिट खत्म हो जाते हैं तो क्या होता है?",
+        "a3": "जब आपके क्रेडिट समाप्त हो जाते हैं, तो हम बेसिक मॉडल का उपयोग करके सेवा प्रदान करना जारी रखेंगे। आप अधिक क्रेडिट प्राप्त करने के लिए अपने सब्सक्रिप्शन प्लान को अपग्रेड भी कर सकते हैं या बूस्ट पैक खरीद सकते हैं।",
+        "q4": "कौन से भुगतान विधियां समर्थित हैं?",
+        "a4": "हम WeChat Pay, Alipay, क्रेडिट कार्ड और अन्य भुगतान विधियों का समर्थन करते हैं। भुगतान Stripe द्वारा सुरक्षित हैं।"
+    },
+    "profile": {
+        "title": "प्रोफ़ाइल",
+        "avatar": "अवतार",
+        "name": "नाम",
+        "namePlaceholder": "उपनाम दर्ज करें",
+        "email": "ईमेल",
+        "advancedSettings": "उन्नत सेटिंग्स",
+        "notifications": "सूचनाएं",
+        "updatesAndTips": "अपडेट और टिप्स",
+        "updatesAndTipsDesc": "&",
+        "subscribedUpdates": "Subscribed to updates and tips",
+        "unsubscribedUpdates": "Unsubscribed from updates and tips",
+        "dangerZone": "खतरे का क्षेत्र",
+        "deleteAccount": "खाता हटाएं",
+        "deleteAccountDesc": "खाता हटाना अपरिवर्तनीय है।",
+        "tabs": {
+            "profile": "प्रोफ़ाइल",
+            "usage": "उपयोग",
+            "billing": "बिलिंग"
+        },
+        "usage": {
+            "title": "उपयोग विवरण",
+            "subscriptionCredits": "सदस्यता क्रेडिट",
+            "subscriptionCreditsDesc": "आपकी सदस्यता योजना से मासिक क्रेडिट।",
+            "referralCredits": "रेफरल क्रेडिट",
+            "referralCreditsDesc": "मित्रों को रेफर करने से अर्जित क्रेडिट।",
+            "boostPackCredits": "बूस्ट पैक क्रेडिट",
+            "boostPackCreditsDesc": "बूस्ट पैक खरीद से अतिरिक्त क्रेडिट।",
+            "getMoreCredits": "और क्रेडिट प्राप्त करें",
+            "getMoreCreditsDesc": "जब आपके क्रेडिट समाप्त हो जाएं, हम बुनियादी मॉडल से सेवा जारी रखेंगे।",
+            "inviteFriends": "मित्रों को आमंत्रित करें, पुरस्कार अर्जित करें",
+            "creditsHistory": "क्रेडिट इतिहास",
+            "earned": "अर्जित",
+            "earnedDesc": "गैर-समाप्त क्रेडिट रिकॉर्ड दिखा रहा है",
+            "time": "समय",
+            "source": "स्रोत",
+            "earnedCredits": "अर्जित क्रेडिट",
+            "remaining": "शेष",
+            "expireTime": "समाप्ति",
+            "noRecords": "कोई रिकॉर्ड नहीं"
+        },
+        "billing": {
+            "title": "बिलिंग",
+            "currentPlan": "वर्तमान योजना",
+            "free": "मुफ्त",
+            "upgradeNote": "सभी सुविधाओं को अनलॉक करने के लिए अपग्रेड करें।",
+            "manageBilling": "बिलिंग प्रबंधित करें",
+            "manageBillingDesc": "भुगतान विधियां और बिलिंग जानकारी प्रबंधित करें।",
+            "manage": "प्रबंधित करें",
+            "invoices": "चालान",
+            "date": "दिनांक",
+            "amount": "राशि",
+            "status": "स्थिति",
+            "description": "विवरण",
+            "noInvoices": "कोई चालान नहीं मिला।"
+        }
+    },
+    "referral": {
+        "title": "मित्रों को आमंत्रित करें, क्रेडिट अर्जित करें",
+        "subtitle": "अपना रेफरल लिंक साझा करें। जब मित्र पंजीकरण करें, दोनों को पुरस्कार!",
+        "yourLink": "आपका रेफरल लिंक",
+        "copy": "कॉपी",
+        "copied": "कॉपी किया गया",
+        "howItWorks": "यह कैसे काम करता है",
+        "step1": "अपना अद्वितीय रेफरल लिंक साझा करें",
+        "step2": "मित्र आपके लिंक से पंजीकरण करें",
+        "step3": "दोनों को क्रेडिट पुरस्कार मिलें",
+        "yourRewards": "आपके पुरस्कार",
+        "invitee": "आमंत्रित",
+        "rewardCredits": "पुरस्कार क्रेडिट",
+        "status": "स्थिति",
+        "completed": "पूर्ण",
+        "pending": "लंबित",
+        "noRewards": "अभी तक कोई पुरस्कार नहीं"
+    },
+    "download": {
+        "title": "Qritor के साथ शुरू करें",
+        "subtitle": "बनाना शुरू करने का अपना पसंदीदा तरीका चुनें",
+        "webApp": "वेब ऐप",
+        "webAppDesc": "कोई डाउनलोड आवश्यक नहीं, सीधे ब्राउज़र में उपयोग करें",
+        "openWebApp": "वेब ऐप खोलें",
+        "desktop": "डेस्कटॉप ऐप",
+        "desktopDesc": "बेहतर अनुभव के लिए डेस्कटॉप ऐप डाउनलोड करें",
+        "comingSoon": "जल्द आ रहा है",
+        "mobile": "मोबाइल ऐप",
+        "mobileDesc": "कहीं भी बनाएं, प्रेरणा न चूकें",
+        "iosComingSoon": "iOS जल्द आ रहा है",
+        "androidComingSoon": "Android Coming Soon"
+    },
+    "desktop": {
+        "loginSuccess": "桌面登录成功",
+        "account": "账号",
+        "allReady": "一切就绪！",
+        "returnToQritor": "现在，你可以返回 Qritor，开始你的 AI 创作之旅。",
+        "openQritor": "打开 Qritor",
+        "canCloseWindow": "此页面可以关闭"
+    },
+    "checkout": {
+        "title": "आदेश की पुष्टि करें",
+        "subtitle": "आप {{plan}} योजना की सदस्यता लेने वाले हैं",
+        "orderSummary": "आदेश सारांश",
+        "plan": "योजना",
+        "billingCycle": "बिलिंग चक्र",
+        "monthlyBilling": "मासिक",
+        "yearlyBilling": "वार्षिक",
+        "subtotal": "उप-योग",
+        "discount": "छूट",
+        "total": "देय राशि",
+        "payNow": "अभी भुगतान करें",
+        "redirecting": "भुगतान पर रीडायरेक्ट हो रहा है...",
+        "processing": "प्रोसेसिंग...",
+        "paymentMethod": "भुगतान विधि",
+        "creditCard": "क्रेडिट कार्ड",
+        "wechat": "WeChat Pay",
+        "alipay": "Alipay",
+        "securePayment": "सुरक्षित भुगतान",
+        "securePaymentDesc": "Stripe द्वारा संचालित सुरक्षित भुगतान",
+        "recommended": "अनुशंसित",
+        "featuresIncluded": "शामिल सुविधाएं",
+        "monthlyCredits": "{{count}} क्रेडिट प्रति माह",
+        "monthlyProjects": "{{count}} प्रोजेक्ट प्रति माह",
+        "unlimitedProjects": "असीमित प्रोजेक्ट",
+        "backToPricing": "मूल्य निर्धारण पर वापस",
+        "supportedPaymentMethods": "समर्थित भुगतान विधियां",
+        "errors": {
+            "planNotFound": "योजना नहीं मिली",
+            "fetchFailed": "योजना जानकारी प्राप्त करने में विफल",
+            "networkError": "नेटवर्क त्रुटि, कृपया पुनः प्रयास करें",
+            "createOrderFailed": "आदेश बनाने में विफल",
+            "getPaymentLinkFailed": "भुगतान लिंक प्राप्त करने में विफल",
+            "initiatePaymentFailed": "भुगतान शुरू करने में विफल"
+        }
+    },
+    "payment": {
+        "success": "भुगतान सफल",
+        "successDesc": "सदस्यता के लिए धन्यवाद! अब आप सभी सुविधाओं तक पहुंच सकते हैं।",
+        "failed": "भुगतान विफल",
+        "failedDesc": "भुगतान प्रोसेसिंग में समस्या। कृपया पुनः प्रयास करें।",
+        "pending": "भुगतान प्रोसेसिंग",
+        "pendingDesc": "आपका भुगतान प्रोसेस हो रहा है। कृपया प्रतीक्षा करें...",
+        "backToHome": "होम पर वापस",
+        "goToStudio": "स्टूडियो पर जाएं",
+        "retry": "पुनः प्रयास करें"
+    },
+    "legal": {
+        "relatedDocs": "संबंधित दस्तावेज़",
+        "privacy": {
+            "title": "गोपनीयता नीति",
+            "lastUpdated": "अंतिम अपडेट: 16 दिसंबर, 2025",
+            "intro": "Qritor आपकी व्यक्तिगत जानकारी के महत्व को समझता है। हम कानूनों और विनियमों के अनुसार आपकी व्यक्तिगत जानकारी की रक्षा करेंगे।",
+            "companyInfo": {
+                "title": "डेटा नियंत्रक जानकारी",
+                "companyName": "कंपनी का नाम",
+                "companyNameValue": "Pixel Harbor LLC",
+                "address": "पंजीकृत पता",
+                "addressValue": "1500 N Grant St Ste R, Denver, CO 80203, USA",
+                "email": "संपर्क ईमेल",
+                "emailValue": "nick@qritor.com"
+            }
+        },
+        "terms": {
+            "title": "सेवा की शर्तें",
+            "lastUpdated": "अंतिम अपडेट: 16 दिसंबर, 2025",
+            "intro": "Qritor में आपका स्वागत है। प्लेटफॉर्म की सेवाओं का उपयोग करने से पहले, कृपया इन सेवा शर्तों को ध्यान से पढ़ें।"
+        },
+        "refund": {
+            "title": "रिफंड नीति",
+            "lastUpdated": "अंतिम अपडेट: 16 दिसंबर, 2025",
+            "intro": "Qritor चुनने के लिए धन्यवाद। यदि आपको रिफंड का अनुरोध करना है, कृपया इस रिफंड नीति को ध्यान से पढ़ें।"
+        }
+    }
+}

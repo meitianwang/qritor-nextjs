@@ -1,0 +1,35 @@
+/* ========================================
+   Portal 样式入口
+   
+   该文件已重构为模块化结构，通过 @import 导入各子模块
+   ======================================== */
+
+/* 布局与导航 */
+@import './_layout.css';
+
+/* 通用组件（按钮、表单等） */
+@import './_components.css';
+
+/* 英雄区与 CTA */
+@import './_hero.css';
+
+/* 功能展示区 */
+@import './_features.css';
+
+/* 定价与 FAQ */
+@import './_pricing.css';
+
+/* 页面样式（下载/文档/博客） */
+@import './_pages.css';
+
+/* 用户菜单与个人资料 */
+@import './_user.css';
+
+/* 法律文档页面 */
+@import './_legal.css';
+
+/* 订单和支付页面 */
+@import './_checkout.css';
+
+/* 响应式布局 */
+@import './_responsive.css';

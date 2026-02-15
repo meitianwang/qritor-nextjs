@@ -1,0 +1,906 @@
+{
+    "seo": {
+        "landing": {
+            "title": "AI 小说创作平台",
+            "description": "Qritor 是新一代 AI 辅助创作平台，提供 AI 写作助手、模块化创作、工作流引擎等功能，让创作更简单、更高效。"
+        },
+        "pricing": {
+            "title": "定价方案",
+            "description": "选择适合你的 Qritor 订阅计划。免费版、Pro 版、Ultra 版满足不同创作需求。"
+        },
+        "download": {
+            "title": "下载应用",
+            "description": "下载 Qritor 桌面应用，支持 macOS 和 Windows 系统，获得更流畅的创作体验。"
+        },
+        "docs": {
+            "title": "帮助文档",
+            "description": "Qritor 使用指南和教程，帮助你快速上手 AI 辅助创作。"
+        },
+        "login": {
+            "title": "登录",
+            "description": "登录 Qritor 账号，开始你的 AI 创作之旅。"
+        },
+        "register": {
+            "title": "注册",
+            "description": "免费注册 Qritor 账号，体验 AI 辅助创作的魅力。"
+        },
+        "terms": {
+            "title": "服务条款",
+            "description": "Qritor 服务条款，了解使用本平台的相关规定。"
+        },
+        "privacy": {
+            "title": "隐私政策",
+            "description": "Qritor 隐私政策，了解我们如何保护您的个人信息。"
+        },
+        "refund": {
+            "title": "退款政策",
+            "description": "Qritor 退款政策，了解退款条件和流程。"
+        },
+        "changelog": {
+            "title": "更新日志",
+            "description": "探索 Qritor 的最新动态，了解版本更新和功能优化。",
+            "heroTitle": "产品更新日志",
+            "heroSubtitle": "持续迭代，为您打造极致的创作体验。",
+            "tags": {
+                "new": "新功能",
+                "improved": "优化",
+                "fixed": "修复",
+                "breaking": "架构调整"
+            },
+            "sections": {
+                "newFeatures": "✨ 新功能",
+                "improvements": "🚀 优化改进",
+                "bugFixes": "🐛 问题修复"
+            },
+            "entries": {
+                "v0_3_0": {
+                    "title": "漫画创作与推文功能预览",
+                    "new": {
+                        "item1": "新增漫画创作模块：支持分镜脚本与整页生成模式，集成 AI 生图能力。",
+                        "item2": "新增小说推文 (Novel Tweet) 功能：一键将精彩段落转化为社群分享卡片。",
+                        "item3": "Windows 体验升级：新增原生风格的自定义窗口控制按钮。",
+                        "item4": "多语言支持：创作方法页新增语言筛选，小说类型支持多语言配置。"
+                    },
+                    "fixed": {
+                        "item1": "修复右键菜单在屏幕底部被截断的 UI 问题。",
+                        "item2": "修复 Windows 平台窗口控制按钮点击无响应的问题。"
+                    }
+                },
+                "v0_2_1": {
+                    "title": "macOS 签名与构建优化",
+                    "improved": {
+                        "item1": "集成 macOS 代码签名与公证 (Notarization) 流程，提升应用安全性。",
+                        "item2": "优化构建产物上传路径，下载结构更清晰。",
+                        "item3": "按平台 (macOS/Windows) 自动归档下载资源。"
+                    }
+                },
+                "v0_2_0": {
+                    "title": "自动更新与 Windows 兼容性修复",
+                    "new": {
+                        "item1": "新增自动更新配置：支持自定义检查频率，集成 Cloudflare Worker 最新版本接口。",
+                        "item2": "引入 electron-log 结构化日志系统，便于问题排查。"
+                    },
+                    "fixed": {
+                        "item1": "彻底修复 Windows 平台启动黑屏问题 (TitleBarStyle 配置优化)。",
+                        "item2": "修复 Windows 打包脚本兼容性问题。",
+                        "item3": "修复便携版 (Portable) 构建配置。"
+                    }
+                }
+            }
+        }
+    },
+    "common": {
+        "login": "登录",
+        "register": "注册",
+        "logout": "退出",
+        "save": "保存",
+        "cancel": "取消",
+        "confirm": "确认",
+        "delete": "删除",
+        "deleting": "删除中...",
+        "loading": "加载中...",
+        "error": "出错了",
+        "success": "成功",
+        "settings": "设置",
+        "language": "语言",
+        "languageSetting": "语言设置",
+        "user": "用户",
+        "learnMore": "了解更多",
+        "freeStart": "免费开始",
+        "freeStartCreating": "免费开始创作",
+        "downloadNow": "立即下载",
+        "allDownloads": "所有下载",
+        "getMoreCredits": "获取更多积分",
+        "month": "月",
+        "networkError": "网络错误，请重试",
+        "sending": "发送中...",
+        "resetting": "重置中...",
+        "verifying": "正在验证登录状态..."
+    },
+    "header": {
+        "pricing": "价格",
+        "docs": "文档",
+        "community": "社区",
+        "profile": "个人设置",
+        "admin": "运营后台",
+        "start": "下载",
+        "changelog": "更新日志",
+        "social": {
+            "discord": "Discord",
+            "reddit": "Reddit",
+            "x": "X (推特)",
+            "wechat": "微信",
+            "youtube": "YouTube",
+            "douyin": "抖音",
+            "tiktok": "TikTok",
+            "xiaohongshu": "小红书"
+        }
+    },
+    "footer": {
+        "brand": "AI 智能创作平台，助力创意，让想象变成故事。",
+        "product": "产品",
+        "pricing": "价格",
+        "download": "开始使用",
+        "changelog": "更新日志",
+        "resources": "资源",
+        "docs": "文档",
+        "tutorials": "教程",
+        "community": "社区",
+        "legal": "法律",
+        "privacy": "隐私政策",
+        "terms": "服务条款",
+        "refund": "退款政策",
+        "contact": "联系我们",
+        "feedback": "意见反馈",
+        "copyright": "© 2025 Pixel Harbor LLC. All rights reserved. | Powered by Qritor",
+        "social": {
+            "douyin": "抖音",
+            "douyinId": "抖音号: {{id}}"
+        }
+    },
+    "landing": {
+        "heroBadge": "AI 驱动的新一代创作体验",
+        "heroTitle": "智能创作平台",
+        "heroSubtitle": "AI 助力创意，让想象变成故事。Qritor 帮助你轻松创作小说、生成漫画、制作漫剧，释放无限创意潜能。",
+        "features": {
+            "aiWriting": {
+                "tag": "智能写作",
+                "title": "AI 写作助手",
+                "description": "强大的 AI 助手理解你的创作意图，智能续写情节、生成对话、丰富细节。就像有一位懂你的创作伙伴，随时激发灵感。"
+            },
+            "modular": {
+                "tag": "结构化管理",
+                "title": "模块化创作",
+                "description": "人物档案、世界观设定、剧情大纲、章节内容，一切井井有条。让 AI 理解你的完整创作蓝图，生成更连贯、更有深度的内容。"
+            },
+            "workflow": {
+                "tag": "自动化",
+                "title": "工作流引擎",
+                "description": "定义你的创作流程，让 AI 自动执行。从大纲生成到章节拆分，从内容创作到格式优化，全程自动化，效率倍增。"
+            },
+            "comic": {
+                "tag": "Coming Soon",
+                "title": "漫画生成",
+                "description": "将你的文字故事转化为精美漫画。AI 理解场景、人物、情感，自动生成分镜和画面，让故事跃然纸上。"
+            },
+            "animation": {
+                "tag": "Coming Soon",
+                "title": "漫剧制作",
+                "description": "静态漫画动起来！AI 为你的漫画添加动效、配音、背景音乐，制作成可观看的动态漫剧，触达更广泛的受众。"
+            }
+        },
+        "ctaTitle": "开启你的创作之旅",
+        "ctaDescription": "免费注册，即刻体验 AI 辅助创作的魅力。让 Qritor 成为你最强大的创作伙伴。"
+    },
+    "auth": {
+        "loginTitle": "欢迎回来",
+        "loginSubtitle": "登录您的账户",
+        "registerTitle": "创建账号",
+        "registerSubtitle": "开始您的创作之旅",
+        "email": "邮箱",
+        "emailPlaceholder": "请输入邮箱",
+        "password": "密码",
+        "passwordPlaceholder": "请输入密码",
+        "nickname": "昵称",
+        "nicknamePlaceholder": "请输入昵称（可选）",
+        "forgotPassword": "忘记密码？",
+        "noAccount": "还没有账号？",
+        "hasAccount": "已有账号？",
+        "verificationCode": "验证码",
+        "verificationCodePlaceholder": "请输入6位验证码",
+        "sendCode": "发送验证码",
+        "resendCode": "重新发送",
+        "agreeTerms": "我已阅读并同意",
+        "termsLink": "服务条款",
+        "andText": "和",
+        "privacyLink": "隐私政策",
+        "orLoginWith": "或使用邮箱登录",
+        "googleLogin": "使用 Google 账号登录",
+        "googleRegister": "使用 Google 账号注册",
+        "resetPassword": "重置密码",
+        "newPassword": "新密码",
+        "confirmPassword": "确认密码",
+        "backToLogin": "返回登录",
+        "passwordPolicy": "密码至少8位，需包含大写字母、小写字母、数字和特殊字符，且不能是常见密码"
+    },
+    "register": {
+        "or": "或",
+        "optional": "（选填）",
+        "nicknamePlaceholder": "留空则使用邮箱作为昵称",
+        "passwordPlaceholder": "至少8位字符",
+        "continue": "继续",
+        "back": "返回",
+        "sendingCode": "发送验证码中...",
+        "verifyEmail": "验证邮箱",
+        "codeSentTo": "请输入发送至以下邮箱的验证码：",
+        "noCodeReceived": "没有收到验证码？",
+        "resendIn": "{{seconds}}秒后重新发送",
+        "verifying": "正在验证...",
+        "processingGoogle": "正在登录...",
+        "errors": {
+            "emailRequired": "请输入邮箱",
+            "emailInvalid": "请输入正确的邮箱格式",
+            "nicknameLength": "昵称长度需在2-20个字符之间",
+            "agreeTerms": "请先同意服务条款和隐私政策",
+            "passwordRequired": "请输入密码",
+            "passwordLength": "密码长度至少为8位",
+            "sendCodeFailed": "验证码发送失败",
+            "registerFailed": "注册失败",
+            "googleFailed": "Google 登录失败，请重试",
+            "googleUnavailable": "Google 登录暂不可用",
+            "googleConnectFailed": "无法连接到 Google 登录服务"
+        }
+    },
+    "login": {
+        "errors": {
+            "emailRequired": "请输入邮箱",
+            "emailInvalid": "请输入正确的邮箱格式",
+            "passwordRequired": "请输入密码",
+            "loginFailed": "登录失败",
+            "googleFailed": "Google 登录失败，请重试",
+            "googleUnavailable": "Google 登录暂不可用",
+            "googleConnectFailed": "无法连接到 Google 登录服务"
+        }
+    },
+    "forgotPassword": {
+        "title": "重置密码",
+        "step1Subtitle": "输入您的邮箱，我们将发送验证码",
+        "step2Subtitle": "输入验证码和新密码",
+        "emailPlaceholder": "请输入注册时使用的邮箱",
+        "codePlaceholder": "请输入6位验证码",
+        "newPasswordPlaceholder": "至少8位字符",
+        "confirmPasswordPlaceholder": "请再次输入新密码",
+        "resetButton": "重置密码",
+        "successMessage": "密码重置成功，请重新登录",
+        "errors": {
+            "emailRequired": "请输入邮箱",
+            "emailInvalid": "请输入正确的邮箱格式",
+            "sendFailed": "发送失败",
+            "codeInvalid": "请输入6位验证码",
+            "passwordLength": "密码长度至少为8位",
+            "passwordMismatch": "两次输入的密码不一致",
+            "resetFailed": "重置失败"
+        }
+    },
+    "pricing": {
+        "title": "价格",
+        "subtitle": "选择最适合的方案，开启你的 AI 创作之旅。",
+        "monthly": "月付",
+        "yearly": "年付",
+        "yearlyDiscount": "省20%",
+        "free": "免费版",
+        "pro": "专业版",
+        "enterprise": "企业版",
+        "currentPlan": "当前方案",
+        "upgrade": "升级",
+        "contact": "联系我们",
+        "perMonth": "/月",
+        "perYear": "/年",
+        "features": "功能特点",
+        "credits": "积分",
+        "creditsPerMonth": "积分/月",
+        "mostPopular": "最受欢迎",
+        "freeStart": "免费开始",
+        "download": "下载",
+        "subscribe": "订阅",
+        "boostPack": "积分包",
+        "comingSoon": "敬请期待",
+        "creditsNote": "Qritor 的使用以积分（Credits）计量。",
+        "taxNote": "价格不含适用的税费和关税，包括增值税（VAT）和适用的销售税。",
+        "upgradeTo": "升级到 {{plan}}",
+        "plans": {
+            "free": {
+                "name": "免费版",
+                "desc": "适合初次体验的创作者"
+            },
+            "pro": {
+                "name": "Pro",
+                "desc": "专业创作者的不二之选"
+            },
+            "ultra": {
+                "name": "Ultra",
+                "desc": "创作无限制"
+            }
+        }
+    },
+    "faq": {
+        "title": "常见问题",
+        "q1": "什么是积分？如何使用？",
+        "a1": "积分是用于消费 AI 服务的虚拟货币。每次使用 AI 功能（如智能续写、情节生成等）都会消耗一定数量的积分。不同的订阅计划提供不同的月度积分额度。",
+        "q2": "订阅后可以随时取消吗？",
+        "a2": "是的，您可以随时取消订阅。取消后，当前计费周期内的服务权益仍然有效，直至周期结束。取消后不会再收取下一个计费周期的费用。",
+        "q3": "积分用完了怎么办？",
+        "a3": "当您的积分消耗完毕后，我们会继续使用基础模型为您提供服务。您也可以升级订阅计划或购买积分包来获取更多积分。",
+        "q4": "支持哪些支付方式？",
+        "a4": "我们支持微信支付、支付宝、信用卡等多种支付方式。支付由 Stripe 提供安全保障。"
+    },
+    "profile": {
+        "title": "个人信息",
+        "avatar": "头像",
+        "name": "名称",
+        "namePlaceholder": "请输入昵称",
+        "enterNickname": "请输入昵称",
+        "email": "邮箱",
+        "advancedSettings": "高级设置",
+        "notifications": "通知",
+        "updatesAndTips": "更新与技巧",
+        "updatesAndTipsDesc": "获取功能更新、最佳实践、技术洞察等最新信息。",
+        "subscribedUpdates": "已订阅更新与技巧",
+        "unsubscribedUpdates": "已取消订阅更新与技巧",
+        "dangerZone": "高危操作",
+        "deleteAccount": "删除账号",
+        "deleteAccountDesc": "删除账号后将无法恢复，请谨慎操作。",
+        "tabs": {
+            "profile": "个人信息",
+            "usage": "用量详情",
+            "billing": "订阅与账单"
+        },
+        "usage": {
+            "title": "用量详情",
+            "subscriptionCredits": "订阅计划积分",
+            "subscriptionCreditsDesc": "每月订阅计划赠送的积分额度。",
+            "referralCredits": "邀请奖励积分",
+            "referralCreditsDesc": "通过邀请好友获得的积分奖励。",
+            "boostPackCredits": "加油包积分",
+            "boostPackCreditsDesc": "购买加油包获得的额外积分。",
+            "getMoreCredits": "获取更多积分",
+            "getMoreCreditsDesc": "当你的积分消耗达到上限，我们将继续使用基础模型为你服务。你可以升级套餐以获得更多积分。",
+            "inviteFriends": "邀请好友，赢取积分奖励",
+            "creditsHistory": "积分记录",
+            "earned": "已获得",
+            "earnedDesc": "显示未过期的积分获取记录",
+            "time": "时间",
+            "source": "来源",
+            "earnedCredits": "获得积分",
+            "remaining": "剩余",
+            "expireTime": "过期时间",
+            "noRecords": "暂无记录"
+        },
+        "billing": {
+            "title": "订阅与账单",
+            "currentPlan": "当前方案",
+            "free": "免费",
+            "upgradeNote": "升级订阅计划解锁所有功能，获得更多积分。",
+            "manageBilling": "管理账单信息",
+            "manageBillingDesc": "管理你的付款方式与账单信息。",
+            "manage": "管理",
+            "invoices": "账单",
+            "date": "日期",
+            "amount": "金额",
+            "status": "状态",
+            "description": "描述",
+            "noInvoices": "未找到账单。"
+        },
+        "deleteAccountModal": {
+            "title": "删除账号",
+            "warning": "确定要删除你的账号吗？你的数据和积分将被永久删除，此操作不可撤销。",
+            "codeLabel": "请输入发送至邮箱的验证码：",
+            "codePlaceholder": "输入验证码"
+        },
+        "errors": {
+            "avatarUploadFailed": "头像上传失败，请重试",
+            "nicknameLengthInvalid": "昵称长度需在2-20个字符之间",
+            "saveFailed": "保存失败",
+            "sendCodeFailed": "验证码发送失败",
+            "codeInvalid": "请输入6位验证码",
+            "deleteFailed": "删除失败"
+        }
+    },
+    "referral": {
+        "title": "邀请好友，赢取积分",
+        "subtitle": "分享你的邀请链接，每成功邀请一位好友注册，你和好友都将获得积分奖励！",
+        "yourLink": "你的邀请链接",
+        "copy": "复制",
+        "copied": "已复制",
+        "howItWorks": "如何运作",
+        "step1": "分享你的专属邀请链接",
+        "step2": "好友通过链接注册",
+        "step3": "双方都获得积分奖励",
+        "yourRewards": "你的奖励记录",
+        "invitee": "被邀请人",
+        "rewardCredits": "奖励积分",
+        "status": "状态",
+        "completed": "已完成",
+        "pending": "待完成",
+        "noRewards": "暂无奖励记录"
+    },
+    "download": {
+        "title": "下载",
+        "pageSubtitle": "下载适合你操作系统的 Qritor 版本",
+        "subtitle": "选择你喜欢的方式开始创作",
+        "webApp": "网页版",
+        "webAppDesc": "无需下载，直接在浏览器中使用",
+        "openWebApp": "打开网页版",
+        "desktop": "桌面版",
+        "desktopDesc": "下载桌面应用，获得更好的创作体验",
+        "desktopFullDesc": "Qritor Desktop 将增强上下文工程与智能体无缝集成，全面理解你的内容，轻松处理复杂的开发任务，提升创作效率。",
+        "comingSoon": "即将推出",
+        "mobile": "移动版",
+        "mobileDesc": "随时随地，灵感不错过",
+        "iosComingSoon": "iOS 即将推出",
+        "androidComingSoon": "Android 即将推出",
+        "macosInstallTitle": "macOS 安装说明",
+        "macosInstallStep1": "下载后打开 .dmg 文件，将 Qritor 拖入应用程序文件夹",
+        "macosInstallStep2": "首次打开时提示「已损坏」，前往 系统设置 → 隐私与安全性",
+        "macosInstallStep3": "在底部找到被阻止的应用提示，点击「仍要打开」即可",
+        "macosInstallTip": "💡 提示：由于应用尚未签名，macOS 会阻止运行。我们正在申请开发者证书，未来版本将自动信任。"
+    },
+    "desktop": {
+        "loginSuccess": "登录成功",
+        "account": "账号",
+        "allReady": "一切就绪！",
+        "returnToQritor": "现在，你可以返回 Qritor，开始你的 AI 创作之旅。",
+        "openQritor": "打开 Qritor",
+        "canCloseWindow": "此页面可以关闭"
+    },
+    "checkout": {
+        "title": "确认订单",
+        "subtitle": "您即将订阅 {{plan}} 计划",
+        "orderSummary": "订单摘要",
+        "plan": "计划",
+        "billingCycle": "计费周期",
+        "monthlyBilling": "按月",
+        "yearlyBilling": "按年",
+        "subtotal": "小计",
+        "discount": "折扣",
+        "total": "应付金额",
+        "payNow": "立即支付",
+        "redirecting": "正在跳转支付...",
+        "processing": "处理中...",
+        "paymentMethod": "支付方式",
+        "creditCard": "银行卡",
+        "wechat": "微信支付",
+        "alipay": "支付宝",
+        "securePayment": "安全支付",
+        "securePaymentDesc": "安全支付，由 Stripe 提供支付服务保障",
+        "recommended": "推荐",
+        "featuresIncluded": "包含以下功能",
+        "monthlyCredits": "每月 {{count}} 积分",
+        "monthlyProjects": "每月 {{count}} 个创作项目",
+        "unlimitedProjects": "无限创作项目",
+        "backToPricing": "返回价格页面",
+        "supportedPaymentMethods": "支持的支付方式",
+        "errors": {
+            "planNotFound": "未找到该订阅计划",
+            "fetchFailed": "获取计划信息失败",
+            "networkError": "网络错误，请稍后重试",
+            "createOrderFailed": "创建订单失败",
+            "getPaymentLinkFailed": "获取支付链接失败，请重试",
+            "initiatePaymentFailed": "发起支付失败"
+        }
+    },
+    "payment": {
+        "success": "支付成功",
+        "successDesc": "感谢您的订阅！您现在可以使用全部功能。",
+        "failed": "支付失败",
+        "failedDesc": "支付处理时出现问题，请重试。",
+        "pending": "支付处理中",
+        "pendingDesc": "您的支付正在处理中，请稍候...",
+        "backToHome": "返回首页",
+        "goToStudio": "进入创作平台",
+        "retry": "重新支付"
+    },
+    "legal": {
+        "relatedDocs": "相关文档",
+        "privacy": {
+            "title": "隐私政策",
+            "lastUpdated": "最后更新日期：2025年12月16日",
+            "intro": "Qritor（以下简称\"本平台\"或\"我们\"）深知个人信息对您的重要性，我们将按照法律法规的规定，保护您的个人信息安全。请您在使用本平台服务前，仔细阅读并理解本隐私政策。",
+            "companyInfo": {
+                "title": "数据控制者信息",
+                "companyName": "公司名称",
+                "companyNameValue": "Pixel Harbor LLC",
+                "address": "注册地址",
+                "addressValue": "1500 N Grant St Ste R, Denver, CO 80203, USA",
+                "email": "联系邮箱",
+                "emailValue": "nick@qritor.com"
+            },
+            "section1": {
+                "title": "1. 信息收集",
+                "subtitle1": "1.1 您主动提供的信息",
+                "desc1": "在您使用本平台服务过程中，我们可能会收集以下信息：",
+                "item1": "账户信息",
+                "item1Desc": "注册时提供的邮箱地址、昵称、密码（加密存储）；",
+                "item2": "身份信息",
+                "item2Desc": "手机号码（可选，用于安全验证）；",
+                "item3": "支付信息",
+                "item3Desc": "订单信息、支付方式（我们不直接存储银行卡号等敏感信息）；",
+                "item4": "创作内容",
+                "item4Desc": "您在平台上创作、保存的小说、设定、大纲等内容。",
+                "subtitle2": "1.2 自动收集的信息",
+                "desc2": "当您使用本平台时，我们会自动收集：",
+                "item5": "设备信息",
+                "item5Desc": "设备型号、操作系统、浏览器类型等；",
+                "item6": "日志信息",
+                "item6Desc": "访问时间、页面浏览记录、错误日志；",
+                "item7": "使用数据",
+                "item7Desc": "功能使用频率、积分消耗情况等。"
+            },
+            "section2": {
+                "title": "2. 信息使用",
+                "desc": "我们收集的信息将用于以下目的：",
+                "item1": "提供服务",
+                "item1Desc": "为您提供创作、存储、AI 辅助写作等核心服务；",
+                "item2": "账户管理",
+                "item2Desc": "验证身份、处理账户相关请求；",
+                "item3": "支付处理",
+                "item3Desc": "处理订阅付款、积分购买等交易；",
+                "item4": "服务改进",
+                "item4Desc": "分析使用数据，优化产品功能和用户体验；",
+                "item5": "安全保障",
+                "item5Desc": "检测、防范安全风险和欺诈行为；",
+                "item6": "客户服务",
+                "item6Desc": "回应您的咨询、反馈和投诉；",
+                "item7": "发送通知",
+                "item7Desc": "服务更新、账户安全提醒等重要通知。"
+            },
+            "section3": {
+                "title": "3. 信息共享",
+                "desc": "我们不会将您的个人信息出售给第三方。但在以下情况下，我们可能会共享您的信息：",
+                "subtitle1": "3.1 经您同意",
+                "desc1": "在获得您明确同意后，与第三方共享您的信息。",
+                "subtitle2": "3.2 服务提供商",
+                "desc2": "我们可能委托第三方服务提供商处理某些服务（如支付处理、云存储），这些服务提供商只能在提供服务所必需的范围内访问您的信息，并受保密义务约束。",
+                "subtitle3": "3.3 法律要求",
+                "desc3": "为遵守法律法规、法院判决或政府机关的强制性要求，我们可能会披露您的信息。",
+                "subtitle4": "3.4 保护权益",
+                "desc4": "为保护本平台、用户或公众的权利、财产安全，我们可能在合理范围内共享信息。"
+            },
+            "section4": {
+                "title": "4. 数据安全",
+                "desc": "我们采取多种安全措施保护您的信息：",
+                "item1": "加密传输",
+                "item1Desc": "使用 HTTPS 协议加密数据传输；",
+                "item2": "密码加密",
+                "item2Desc": "用户密码经过哈希加密存储；",
+                "item3": "访问控制",
+                "item3Desc": "仅授权人员可访问用户数据；",
+                "item4": "安全审计",
+                "item4Desc": "定期进行安全审计和漏洞扫描；",
+                "item5": "数据备份",
+                "item5Desc": "定期备份数据，确保数据可恢复性。",
+                "note": "尽管我们努力保护您的信息安全，但请理解互联网上不存在绝对安全的传输方法。如发生安全事件，我们将及时通知您并采取补救措施。"
+            },
+            "section5": {
+                "title": "5. Cookie 及类似技术",
+                "desc": "我们使用 Cookie 和类似技术来：",
+                "item1": "记住您的登录状态，提供无缝体验；",
+                "item2": "分析平台使用情况，改进服务；",
+                "item3": "保存您的偏好设置。",
+                "note": "您可以通过浏览器设置管理或删除 Cookie。但请注意，禁用 Cookie 可能影响您正常使用本平台的部分功能。"
+            },
+            "section6": {
+                "title": "6. 您的权利",
+                "desc": "根据适用的法律法规，您享有以下权利：",
+                "subtitle1": "6.1 访问权",
+                "desc1": "您有权访问我们持有的关于您的个人信息。",
+                "subtitle2": "6.2 更正权",
+                "desc2": "您可以通过账户设置或联系我们，更正不准确的个人信息。",
+                "subtitle3": "6.3 删除权",
+                "desc3": "在特定情况下，您有权要求我们删除您的个人信息。您也可以通过注销账户来实现。请注意，部分信息可能因法规要求需保留一定期限。",
+                "subtitle4": "6.4 撤回同意",
+                "desc4": "对于基于同意的数据处理，您有权随时撤回同意。撤回同意不影响撤回前的数据处理的合法性。",
+                "subtitle5": "6.5 导出权",
+                "desc5": "您有权以通用格式导出您的创作内容。"
+            },
+            "section7": {
+                "title": "7. 儿童隐私保护",
+                "desc1": "本平台主要面向成年人提供服务。如您为未满 14 周岁的未成年人，请在监护人的陪同和指导下使用本服务，且需要监护人同意本隐私政策。",
+                "desc2": "我们不会故意收集儿童的个人信息。如发现在未经监护人同意的情况下收集了儿童信息，我们将尽快删除相关信息。"
+            },
+            "section8": {
+                "title": "8. 数据存储与跨境传输",
+                "subtitle1": "8.1 存储位置",
+                "desc1": "您的个人信息存储在位于美国的服务器上。如您从其他国家或地区访问本平台，请注意您的信息将传输至美国并在此处理和存储。",
+                "subtitle2": "8.2 存储期限",
+                "desc2": "我们会在为您提供服务所必需的期限内保留您的信息。当您注销账户或信息不再需要时，我们将删除或匿名化处理您的个人信息，法律法规另有规定的除外。"
+            },
+            "section9": {
+                "title": "9. 政策变更",
+                "desc1": "我们可能会根据业务发展和法律法规变化，更新本隐私政策。更新后的政策将在平台上公布，并注明生效日期。",
+                "desc2": "如有重大变更（如收集信息类型、使用目的发生实质变化），我们会通过邮件或平台通知的方式提醒您。如您不同意变更后的政策，请停止使用本平台服务。"
+            },
+            "section10": {
+                "title": "10. 联系我们",
+                "desc": "如您对本隐私政策有任何疑问、意见或建议，或希望行使您的数据主体权利，可通过以下方式与我们联系：",
+                "companyName": "公司名称",
+                "email": "联系邮箱",
+                "address": "通讯地址",
+                "note": "我们将在收到您的请求后尽快处理并回复您。"
+            }
+        },
+        "terms": {
+            "title": "服务条款",
+            "lastUpdated": "最后更新日期：2025年12月16日",
+            "intro": "欢迎使用 Qritor（以下简称\"本平台\"或\"我们\"）。在使用本平台的服务之前，请您仔细阅读并充分理解本服务条款（以下简称\"本条款\"）的全部内容。您使用本平台的任何服务，即表示您已阅读、理解并同意接受本条款的约束。",
+            "companyInfo": {
+                "title": "运营主体信息",
+                "companyName": "公司名称",
+                "companyNameValue": "Pixel Harbor LLC",
+                "companyType": "公司类型",
+                "companyTypeValue": "Colorado Limited Liability Company",
+                "regNumber": "注册编号",
+                "regNumberValue": "20258351687",
+                "address": "注册地址",
+                "addressValue": "1500 N Grant St Ste R, Denver, CO 80203, USA"
+            },
+            "section1": {
+                "title": "1. 服务概述",
+                "desc": "Qritor 是一个 AI 智能创作平台，主要提供以下服务：",
+                "item1": "AI 写作助手",
+                "item1Desc": "利用人工智能技术辅助用户进行小说创作，包括智能续写、情节生成、对话生成等功能；",
+                "item2": "模块化创作",
+                "item2Desc": "提供人物档案、世界观设定、剧情大纲等结构化创作管理工具；",
+                "item3": "工作流引擎",
+                "item3Desc": "支持自定义创作流程和自动化任务执行；",
+                "item4": "漫画生成",
+                "item4Desc": "（即将上线）将文字内容转化为漫画形式的创作工具；",
+                "item5": "其他增值服务",
+                "item5Desc": "根据业务发展不断推出的新功能和服务。"
+            },
+            "section2": {
+                "title": "2. 用户注册与账户",
+                "subtitle1": "2.1 注册条件",
+                "desc1": "您需要具备完全民事行为能力，方可注册成为本平台用户。如您为未成年人，请在法定监护人的陪同下阅读本条款，并在取得监护人的同意后使用本平台服务。",
+                "subtitle2": "2.2 账户安全",
+                "desc2": "您有责任妥善保管您的账户信息和密码安全。因您保管不善导致的任何损失，由您自行承担。如发现账户被盗用或存在其他安全风险，请立即联系我们。",
+                "subtitle3": "2.3 账户真实性",
+                "desc3": "您在注册时需提供真实、准确的个人信息，如信息发生变化，应及时更新。因提供虚假信息导致的任何后果，由您自行承担。"
+            },
+            "section3": {
+                "title": "3. 用户行为规范",
+                "subtitle1": "3.1 禁止行为",
+                "desc1": "在使用本平台服务时，您不得：",
+                "item1": "发布、传播违法违规、淫秽色情、暴力恐怖、歧视仇恨等有害内容；",
+                "item2": "侵犯他人知识产权、隐私权、名誉权等合法权益；",
+                "item3": "利用平台从事欺诈、传销、赌博等违法活动；",
+                "item4": "干扰、破坏平台正常运行或攻击平台系统；",
+                "item5": "使用自动化工具批量注册账号或滥用平台资源；",
+                "item6": "恶意刷取积分、信用或进行虚假交易；",
+                "item7": "其他违反法律法规或本条款的行为。",
+                "subtitle2": "3.2 内容责任",
+                "desc2": "您通过本平台创作、发布的内容，由您自行承担法律责任。我们有权对违规内容进行删除、屏蔽处理，并保留追究法律责任的权利。"
+            },
+            "section4": {
+                "title": "4. 知识产权",
+                "subtitle1": "4.1 平台权利",
+                "desc1": "本平台的名称、标识、界面设计、软件代码、技术方案等均为我们的知识产权，受法律保护。未经授权，您不得复制、修改、传播或以任何方式使用。",
+                "subtitle2": "4.2 用户内容",
+                "desc2a": "原创内容",
+                "desc2aText": "您在本平台创作的纯原创作品，知识产权归您所有。",
+                "desc2b": "AI 辅助内容",
+                "desc2bText": "对于使用 AI 功能生成或辅助生成的内容，您享有使用权和收益权，但需遵守以下规定：",
+                "item1": "您不得声称 AI 生成内容为完全原创作品；",
+                "item2": "如将相关内容用于商业用途，需确保不侵犯第三方权益；",
+                "item3": "我们保留将匿名化的创作数据用于改进 AI 模型的权利。",
+                "subtitle3": "4.3 授权许可",
+                "desc3": "您授权我们在提供服务所必需的范围内，对您的内容进行存储、处理和传输。您在平台公开发布的内容，视为授权其他用户浏览和学习。"
+            },
+            "section5": {
+                "title": "5. 付费服务",
+                "subtitle1": "5.1 订阅计划",
+                "desc1": "本平台提供 Free（免费版）、Pro（专业版）、Ultra（旗舰版）等订阅计划。各计划的功能权益和价格以平台最新公示为准。订阅后，相应权益将立即生效。",
+                "subtitle2": "5.2 积分系统",
+                "desc2": "积分用于消费 AI 服务。您可通过订阅计划获得月度积分配额，也可单独购买积分包。积分不可转让、不可提现，具体使用规则以平台说明为准。",
+                "subtitle3": "5.3 支付方式",
+                "desc3": "我们支持微信支付、支付宝、信用卡等支付方式。支付成功后，订单即生效。",
+                "subtitle4": "5.4 退款政策",
+                "desc4": "有关退款的详细规定，请参阅我们的",
+                "refundLink": "退款政策"
+            },
+            "section6": {
+                "title": "6. 服务变更与终止",
+                "subtitle1": "6.1 服务变更",
+                "desc1": "我们可能根据业务发展需要，对服务内容、功能、界面等进行调整或更新。重大变更将通过平台公告或其他方式提前通知您。",
+                "subtitle2": "6.2 服务终止",
+                "desc2": "在以下情况下，我们有权暂停或终止向您提供服务：",
+                "item1": "您违反本条款或相关法律法规；",
+                "item2": "您的账户存在安全风险或异常行为；",
+                "item3": "因不可抗力导致无法继续提供服务；",
+                "item4": "其他合理情形。",
+                "subtitle3": "6.3 账户注销",
+                "desc3": "您可以申请注销账户。账户注销后，我们将在合理期限内删除您的个人信息，但法律法规要求保留的除外。注销前请确保账户内无未使用完的付费权益。"
+            },
+            "section7": {
+                "title": "7. 免责声明",
+                "subtitle1": "7.1 AI 生成内容",
+                "desc1": "AI 生成的内容基于机器学习算法，可能存在不准确、不完整或不适当的情况。我们不对 AI 生成内容的准确性、完整性、适用性作任何承诺。您需自行审核和处理 AI 生成的内容。",
+                "subtitle2": "7.2 服务中断",
+                "desc2": "因系统维护、升级、网络故障、不可抗力等原因导致的服务中断，我们将尽力及时恢复，但不承担由此造成的损失。",
+                "subtitle3": "7.3 第三方链接",
+                "desc3": "本平台可能包含第三方网站的链接。第三方网站的内容、隐私政策等由其自行负责，与我们无关。",
+                "subtitle4": "7.4 责任限制",
+                "desc4": "在法律允许的最大范围内，我们对因使用或无法使用本平台服务而导致的任何间接、附带、惩罚性损害不承担责任。"
+            },
+            "section8": {
+                "title": "8. 争议解决",
+                "subtitle1": "8.1 适用法律",
+                "desc1": "本条款的订立、执行和解释均适用美国科罗拉多州法律，不考虑其法律冲突原则。",
+                "subtitle2": "8.2 纠纷处理",
+                "desc2": "因本条款或使用本平台服务产生的争议，双方应首先友好协商解决。协商不成的，任何一方均有权向美国科罗拉多州丹佛市具有管辖权的法院提起诉讼。"
+            },
+            "section9": {
+                "title": "9. 条款修改",
+                "desc": "我们保留随时修改本条款的权利。修改后的条款将在平台上公布。如您在条款修改后继续使用本平台服务，视为您接受修改后的条款。如您不同意修改后的条款，请停止使用本平台服务。"
+            },
+            "section10": {
+                "title": "10. 联系我们",
+                "desc": "如您对本条款有任何疑问或建议，请通过以下方式联系我们：",
+                "companyName": "公司名称",
+                "email": "联系邮箱",
+                "address": "通讯地址"
+            }
+        },
+        "refund": {
+            "title": "退款政策",
+            "lastUpdated": "最后更新日期：2025年12月16日",
+            "intro": "感谢您选择 Qritor。我们希望您对我们的服务感到满意。如果您需要申请退款，请仔细阅读以下退款政策，了解退款的条件和流程。",
+            "companyInfo": {
+                "title": "服务提供方",
+                "companyName": "公司名称",
+                "companyNameValue": "Pixel Harbor LLC",
+                "address": "注册地址",
+                "addressValue": "1500 N Grant St Ste R, Denver, CO 80203, USA"
+            },
+            "section1": {
+                "title": "1. 退款适用范围",
+                "desc": "本退款政策适用于以下付费项目：",
+                "item1": "订阅计划",
+                "item1Desc": "Pro（专业版）、Ultra（旗舰版）月度/年度订阅；",
+                "item2": "积分包",
+                "item2Desc": "单独购买的各类积分包（Boost Pack）。"
+            },
+            "section2": {
+                "title": "2. 订阅服务退款",
+                "subtitle1": "2.1 首次订阅",
+                "desc1": "如您是首次订阅我们的付费计划，且在购买后 7 天内申请退款，我们将在审核确认后为您办理全额退款，但需满足以下条件：",
+                "item1": "在订阅期间使用的积分不超过月度配额的 20%；",
+                "item2": "未使用过专属高级功能（如仅Pro/Ultra可用的AI模型）；",
+                "item3": "未违反服务条款或存在滥用行为。",
+                "subtitle2": "2.2 续订订阅",
+                "desc2": "对于续订（非首次订阅）的情况：",
+                "item4": "自动续订",
+                "item4Desc": "如您开启了自动续订，在续订扣款后 3 天内可申请退款（前提是新周期内未使用任何权益）；",
+                "item5": "手动续订",
+                "item5Desc": "手动续订后，适用与首次订阅相同的退款条件。",
+                "subtitle3": "2.3 取消订阅",
+                "desc3": "您可以随时取消订阅：",
+                "item6": "取消后，当前计费周期内的服务权益仍然有效，直至周期结束；",
+                "item7": "单纯取消订阅（而非申请退款）不会产生任何退款；",
+                "item8": "取消后，下一个计费周期将不再收费。"
+            },
+            "section3": {
+                "title": "3. 积分包退款",
+                "subtitle1": "3.1 退款条件",
+                "desc1": "购买积分包后 7 天内，如满足以下条件，可申请全额退款：",
+                "item1": "积分包内的积分完全未使用；",
+                "item2": "未将积分包积分用于任何AI生成操作。",
+                "subtitle2": "3.2 部分使用",
+                "desc2": "如已部分使用积分包：",
+                "item3": "使用比例不超过 10%：可退还 80% 的购买金额；",
+                "item4": "使用比例超过 10%：不予退款。"
+            },
+            "section4": {
+                "title": "4. 不予退款的情况",
+                "desc": "以下情况不在退款范围内：",
+                "item1": "超过规定退款期限的退款申请；",
+                "item2": "已大量使用服务权益的订阅；",
+                "item3": "因违反服务条款被暂停或终止的账户；",
+                "item4": "通过促销活动、优惠码或特价购买的订单（除非另有说明）；",
+                "item5": "赠送的积分、奖励积分或推荐奖励；",
+                "item6": "因用户自身原因（如忘记取消自动续订）导致的重复扣款，但可申请取消后续订阅；",
+                "item7": "恶意退款或滥用退款政策的行为。"
+            },
+            "section5": {
+                "title": "5. 退款流程",
+                "subtitle1": "5.1 申请方式",
+                "desc1": "请通过以下方式提交退款申请：",
+                "item1": "发送邮件至",
+                "emailValue": "nick@qritor.com",
+                "item2": "邮件标题请注明：【退款申请】您的注册邮箱",
+                "item3": "邮件内容请包含：订单编号、购买日期、退款原因",
+                "subtitle2": "5.2 处理时间",
+                "item4": "审核时间",
+                "item4Desc": "我们将在收到申请后 3 个工作日内完成审核；",
+                "item5": "退款到账",
+                "item5Desc": "审核通过后，退款将在 5-10 个工作日内原路退回您的支付账户。",
+                "note": "具体到账时间可能因支付渠道（微信、支付宝、信用卡等）不同而有所差异。",
+                "subtitle3": "5.3 退款金额",
+                "desc3": "退款金额以实际支付金额为准。如订单使用了优惠券或折扣，退款金额为扣除优惠后的实付金额。"
+            },
+            "section6": {
+                "title": "6. 特殊情况",
+                "subtitle1": "6.1 服务问题",
+                "desc1": "如因平台重大故障或技术问题导致您无法正常使用服务，我们将根据实际影响时长进行补偿或退款，具体方案将与您协商确定。",
+                "subtitle2": "6.2 争议处理",
+                "desc2": "如您对退款结果有异议，可以通过邮件与我们沟通。我们将认真处理每一个反馈，并在合理范围内寻求解决方案。"
+            },
+            "section7": {
+                "title": "7. 联系我们",
+                "desc": "如您对本退款政策有任何疑问，或需要申请退款，请联系我们：",
+                "companyName": "公司名称",
+                "companyNameValue": "Pixel Harbor LLC",
+                "email": "客服邮箱",
+                "emailValue": "nick@qritor.com",
+                "address": "通讯地址",
+                "addressValue": "1500 N Grant St Ste R, Denver, CO 80203, USA",
+                "hours": "工作时间",
+                "hoursValue": "周一至周五 9:00 - 18:00 (MST)"
+            },
+            "section8": {
+                "title": "8. 政策变更",
+                "desc": "我们保留随时修改本退款政策的权利。修改后的政策将在平台上公布并标注更新日期。您购买服务时适用的退款政策以购买当时有效的版本为准。"
+            }
+        }
+    },
+    "changelog": {
+        "heroTitle": "更新日志",
+        "heroSubtitle": "探索 Qritor 的最新动态，了解我们为您带来的创新与优化。",
+        "tags": {
+            "new": "新功能",
+            "improved": "优化",
+            "fixed": "修复",
+            "breaking": "重大变更"
+        },
+        "sections": {
+            "newFeatures": "新功能",
+            "improvements": "优化改进",
+            "bugFixes": "问题修复"
+        },
+        "entries": {
+            "v0_3_0": {
+                "title": "漫画创作与推文功能预览",
+                "new": {
+                    "item1": "新增漫画创作模块：支持分镜脚本与整页生成模式，集成 AI 生图能力",
+                    "item2": "新增小说推文 (Novel Tweet) 功能：一键将精彩段落转化为社群分享卡片",
+                    "item3": "Windows 体验升级：新增原生风格的自定义窗口控制按钮",
+                    "item4": "多语言支持：创作方法页新增语言筛选，小说类型支持多语言配置"
+                },
+                "fixed": {
+                    "item1": "修复右键菜单在屏幕底部被截断的 UI 问题",
+                    "item2": "修复 Windows 平台窗口控制按钮点击无响应的问题"
+                }
+            },
+            "v0_2_1": {
+                "title": "macOS 签名与构建优化",
+                "improved": {
+                    "item1": "集成 macOS 代码签名与公证 (Notarization) 流程，提升应用安全性",
+                    "item2": "优化构建产物上传路径，下载结构更清晰",
+                    "item3": "按平台 (macOS/Windows) 自动归档下载资源"
+                }
+            },
+            "v0_2_0": {
+                "title": "自动更新与 Windows 兼容性修复",
+                "new": {
+                    "item1": "新增自动更新配置：支持自定义检查频率，集成 Cloudflare Worker 最新版本接口",
+                    "item2": "引入 electron-log 结构化日志系统，便于问题排查"
+                },
+                "fixed": {
+                    "item1": "彻底修复 Windows 平台启动黑屏问题 (TitleBarStyle 配置优化)",
+                    "item2": "修复 Windows 打包脚本兼容性问题",
+                    "item3": "修复便携版 (Portable) 构建配置"
+                }
+            }
+        }
+    }
+}

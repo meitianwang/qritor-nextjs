@@ -1,0 +1,15 @@
+# Qritor Portal robots.txt
+# 指导搜索引擎爬虫行为
+
+User-agent: *
+Allow: /
+
+# 不索引需要登录的页面
+Disallow: /profile
+Disallow: /checkout
+Disallow: /payment
+Disallow: /referral
+Disallow: /desktop-login-success
+
+# 站点地图
+Sitemap: https://qritor.com/sitemap.xml

@@ -1,0 +1,23 @@
+import { NextRequest } from 'next/server'
+import { getCurrentUser } from '@/lib/middleware/auth-middleware'
+import { apiSuccess, apiError } from '@/lib/api-response'
+import { payOrder } from '@/lib/services/order-service'
+
+export async function GET(
+  request: NextRequest,
+  { params }: { params: Promise<{ order_no: string }> },
+) {
+  try {
+    await getCurrentUser(request)
+    const { order_no } = await params
+
+    const order = await payOrder(order_no, 'STRIPE')
+    return apiSuccess(order)
+  } catch (e) {
+    if (e instanceof Response || (e && typeof e === 'object' && 'status' in e)) {
+      return e as Response
+    }
+    const message = e instanceof Error ? e.message : '获取支付链接失败'
+    return apiError(500, message)
+  }
+}
