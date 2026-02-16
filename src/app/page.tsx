@@ -225,18 +225,26 @@ export default function LandingPage() {
             <section className="cta-starfield">
                 {/* Flowing stars */}
                 <div className="stars-container">
-                    {[...Array(50)].map((_, i) => (
-                        <div
-                            key={i}
-                            className="star"
-                            style={{
-                                left: `${Math.random() * 100}%`,
-                                top: `${Math.random() * 100}%`,
-                                animationDelay: `${Math.random() * 3}s`,
-                                animationDuration: `${2 + Math.random() * 3}s`
-                            }}
-                        />
-                    ))}
+                    {[...Array(50)].map((_, i) => {
+                        // Deterministic pseudo-random based on index to avoid hydration mismatch
+                        const seed = (i * 2654435761) >>> 0
+                        const left = ((seed % 10000) / 100)
+                        const top = (((seed * 31) % 10000) / 100)
+                        const delay = ((seed * 7) % 300) / 100
+                        const duration = 2 + ((seed * 13) % 300) / 100
+                        return (
+                            <div
+                                key={i}
+                                className="star"
+                                style={{
+                                    left: `${left}%`,
+                                    top: `${top}%`,
+                                    animationDelay: `${delay}s`,
+                                    animationDuration: `${duration}s`
+                                }}
+                            />
+                        )
+                    })}
                 </div>
                 <div className="container">
                     <div className="cta-content">
