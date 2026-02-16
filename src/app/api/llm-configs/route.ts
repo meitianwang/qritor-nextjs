@@ -2,6 +2,73 @@ import { prisma } from '@/lib/prisma'
 import { apiSuccess, apiError } from '@/lib/api-response'
 import { parseLlmTags } from '@/lib/llm-tags'
 
+const CONTEXT_WINDOW_COLUMN_CANDIDATES = ['context_window', 'max_tokens'] as const
+let cachedContextWindowColumn: string | null | undefined
+
+function toPositiveInt(value: unknown): number | undefined {
+  if (value === null || value === undefined || value === '') return undefined
+  const num = typeof value === 'bigint' ? Number(value) : Number(value)
+  if (!Number.isFinite(num) || num <= 0) return undefined
+  return Math.floor(num)
+}
+
+async function resolveContextWindowColumn(): Promise<string | null> {
+  if (cachedContextWindowColumn !== undefined) return cachedContextWindowColumn
+
+  try {
+    const rows = await prisma.$queryRawUnsafe<Array<{ COLUMN_NAME: string }>>(
+      `SELECT COLUMN_NAME
+       FROM INFORMATION_SCHEMA.COLUMNS
+       WHERE TABLE_SCHEMA = DATABASE()
+         AND TABLE_NAME = 'llm_config'
+         AND COLUMN_NAME IN ('context_window', 'max_tokens')`,
+    )
+
+    cachedContextWindowColumn =
+      CONTEXT_WINDOW_COLUMN_CANDIDATES.find((name) =>
+        rows.some((row) => row.COLUMN_NAME === name),
+      ) ?? null
+  } catch {
+    cachedContextWindowColumn = null
+  }
+
+  return cachedContextWindowColumn
+}
+
+async function loadContextWindowByConfigId(
+  configIds: number[],
+): Promise<Map<number, number>> {
+  if (configIds.length === 0) return new Map()
+
+  const column = await resolveContextWindowColumn()
+  if (!column) return new Map()
+
+  try {
+    const idList = configIds.join(',')
+    const rows = await prisma.$queryRawUnsafe<
+      Array<{ id: bigint | number | string; context_window: unknown }>
+    >(
+      `SELECT id, ${column} AS context_window
+       FROM llm_config
+       WHERE enabled = 1
+         AND id IN (${idList})`,
+    )
+
+    const byId = new Map<number, number>()
+    for (const row of rows) {
+      const id = Number(row.id)
+      if (!Number.isFinite(id)) continue
+      const contextWindow = toPositiveInt(row.context_window)
+      if (contextWindow !== undefined) {
+        byId.set(id, contextWindow)
+      }
+    }
+    return byId
+  } catch {
+    return new Map()
+  }
+}
+
 export async function GET() {
   try {
     const configs = await prisma.llm_config.findMany({
@@ -9,17 +76,27 @@ export async function GET() {
       orderBy: { credit_rate: 'asc' },
     })
 
+    const configIds = configs.map((c) => Number(c.id))
+    const contextWindowById = await loadContextWindowByConfigId(configIds)
+
     return apiSuccess(
-      configs.map((c) => ({
-        id: Number(c.id),
-        modelName: c.model_name,
-        displayName: c.display_name || c.model_name,
-        platform: c.owned_by,
-        isDefault: c.is_default === 1,
-        creditRate: c.credit_rate ?? 1.0,
-        modelTier: c.model_tier || 'base',
-        tags: parseLlmTags(c.tags),
-      }))
+      configs.map((c) => {
+        const configId = Number(c.id)
+        const contextWindow = contextWindowById.get(configId)
+
+        return {
+          id: configId,
+          modelName: c.model_name,
+          displayName: c.display_name || c.model_name,
+          platform: c.owned_by,
+          isDefault: c.is_default === 1,
+          creditRate: c.credit_rate ?? 1.0,
+          modelTier: c.model_tier || 'base',
+          tags: parseLlmTags(c.tags),
+          contextWindow,
+          maxTokens: contextWindow,
+        }
+      }),
     )
   } catch {
     return apiError(500, '获取LLM配置列表失败')

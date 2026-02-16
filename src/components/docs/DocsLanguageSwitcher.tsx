@@ -38,10 +38,10 @@ function DocsLanguageSwitcher({ currentLang }: DocsLanguageSwitcherProps) {
 
         // Check if using /docs/ prefix pattern
         if (currentPath.startsWith('/docs/')) {
-            newPath = currentPath.replace(/^\/docs\/(zh-TW|zh|en|de|fr|ja|ko|es|pt|ar|ru|hi)/, `/docs/${langCode}`)
+            newPath = currentPath.replace(/^\/docs\/(zh|en)/, `/docs/${langCode}`)
         } else {
             // Subdomain pattern: path starts with /zh or /en, or is root
-            newPath = currentPath.replace(/^\/(zh-TW|zh|en|de|fr|ja|ko|es|pt|ar|ru|hi)(\/|$)/, `/${langCode}$2`)
+            newPath = currentPath.replace(/^\/(zh|en)(\/|$)/, `/${langCode}$2`)
             // If path is root /, replace with /langCode
             if (newPath === '/' || newPath === '') {
                 newPath = `/${langCode}/`

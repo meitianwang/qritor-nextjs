@@ -5,18 +5,8 @@ import { useRouter } from 'next/navigation'
 
 // Search texts multilingual
 const searchTexts: Record<string, { placeholder: string; noResults: string; shortcut: string }> = {
-    zh: { placeholder: '搜索...', noResults: '未找到结果', shortcut: '\u2318K' },
-    'zh-TW': { placeholder: '搜尋...', noResults: '未找到結果', shortcut: '\u2318K' },
-    en: { placeholder: 'Search...', noResults: 'No results found', shortcut: '\u2318K' },
-    de: { placeholder: 'Suchen...', noResults: 'Keine Ergebnisse', shortcut: '\u2318K' },
-    fr: { placeholder: 'Rechercher...', noResults: 'Aucun résultat', shortcut: '\u2318K' },
-    ja: { placeholder: '検索...', noResults: '結果なし', shortcut: '\u2318K' },
-    ko: { placeholder: '검색...', noResults: '결과 없음', shortcut: '\u2318K' },
-    es: { placeholder: 'Buscar...', noResults: 'Sin resultados', shortcut: '\u2318K' },
-    pt: { placeholder: 'Pesquisar...', noResults: 'Sem resultados', shortcut: '\u2318K' },
-    ar: { placeholder: 'بحث...', noResults: 'لا توجد نتائج', shortcut: '\u2318K' },
-    ru: { placeholder: 'Поиск...', noResults: 'Нет результатов', shortcut: '\u2318K' },
-    hi: { placeholder: 'खोजें...', noResults: 'कोई परिणाम नहीं', shortcut: '\u2318K' }
+    zh: { placeholder: '搜索...', noResults: '未找到结果', shortcut: '⌘K' },
+    en: { placeholder: 'Search...', noResults: 'No results found', shortcut: '⌘K' }
 }
 
 interface SearchItem {

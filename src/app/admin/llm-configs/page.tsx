@@ -18,6 +18,7 @@ interface LlmConfig {
     isDefault: boolean
     tags: string[]
     normalizationFactor: number
+    contextWindow?: number
 }
 
 interface TestResult {
@@ -224,13 +225,19 @@ export default function LlmConfigPage() {
                                         <span className="admin-card-label">积分倍率</span>
                                         <span className="admin-card-value">{config.creditRate ?? 1.0}x</span>
                                     </div>
+                                    {config.contextWindow && (
+                                        <div className="admin-card-row">
+                                            <span className="admin-card-label">上下文窗口</span>
+                                            <span className="admin-card-value">{config.contextWindow.toLocaleString()} tokens</span>
+                                        </div>
+                                    )}
                                     <div className="admin-card-row">
                                         <span className="admin-card-label">状态</span>
                                         <span className="admin-card-value">
                                             <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${config.enabled ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-600'}`}>
                                                 {config.enabled ? '启用' : '禁用'}
                                             </span>
-                                            {config.isDefault && (
+                                            {!!config.isDefault && (
                                                 <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800 ml-2">
                                                     默认
                                                 </span>

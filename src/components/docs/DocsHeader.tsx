@@ -12,33 +12,13 @@ import { LogoutIcon } from '@/components/Icons'
 // Download button multilingual text
 const downloadTexts: Record<string, string> = {
     zh: '下载',
-    'zh-TW': '下載',
-    en: 'Download',
-    de: 'Herunterladen',
-    fr: 'Télécharger',
-    ja: 'ダウンロード',
-    ko: '다운로드',
-    es: 'Descargar',
-    pt: 'Baixar',
-    ar: 'تحميل',
-    ru: 'Скачать',
-    hi: 'डाउनलोड'
+    en: 'Download'
 }
 
 // Login button multilingual text
 const loginTexts: Record<string, string> = {
     zh: '登录',
-    'zh-TW': '登入',
-    en: 'Login',
-    de: 'Anmelden',
-    fr: 'Connexion',
-    ja: 'ログイン',
-    ko: '로그인',
-    es: 'Iniciar sesión',
-    pt: 'Entrar',
-    ar: 'تسجيل الدخول',
-    ru: 'Войти',
-    hi: 'लॉग इन'
+    en: 'Login'
 }
 
 function getDownloadText(lang: string): string {

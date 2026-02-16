@@ -16,17 +16,7 @@ export interface LanguageInfo {
 
 export const SUPPORTED_LANGUAGES: Record<string, LanguageInfo> = {
     zh: { code: 'zh', name: '简体中文', flag: '🇨🇳' },
-    'zh-TW': { code: 'zh-TW', name: '繁體中文', flag: '🇹🇼' },
-    en: { code: 'en', name: 'English', flag: '🇺🇸' },
-    ja: { code: 'ja', name: '日本語', flag: '🇯🇵' },
-    ko: { code: 'ko', name: '한국어', flag: '🇰🇷' },
-    de: { code: 'de', name: 'Deutsch', flag: '🇩🇪' },
-    fr: { code: 'fr', name: 'Français', flag: '🇫🇷' },
-    es: { code: 'es', name: 'Español', flag: '🇪🇸' },
-    pt: { code: 'pt', name: 'Português', flag: '🇧🇷' },
-    ar: { code: 'ar', name: 'العربية', flag: '🇸🇦' },
-    ru: { code: 'ru', name: 'Русский', flag: '🇷🇺' },
-    hi: { code: 'hi', name: 'हिन्दी', flag: '🇮🇳' }
+    en: { code: 'en', name: 'English', flag: '🇺🇸' }
 }
 
 // Default language

@@ -54,6 +54,7 @@ interface LlmConfig {
     enabled: boolean
     creditRate: number
     normalizationFactor: number
+    contextWindow?: number
 }
 
 interface LlmFormData {
@@ -65,6 +66,7 @@ interface LlmFormData {
     enabled: boolean
     creditRate: number
     normalizationFactor: number
+    contextWindow: number | ''
 }
 
 interface LlmConfigModalProps {
@@ -91,7 +93,8 @@ function LlmConfigModal({ isOpen, onClose, config, onSave, apiBasePath = '/api',
     isDefault: false,
     enabled: true,
     creditRate: 1.0,
-    normalizationFactor: 1.0
+    normalizationFactor: 1.0,
+    contextWindow: ''
   })
 
   useEffect(() => {
@@ -105,7 +108,8 @@ function LlmConfigModal({ isOpen, onClose, config, onSave, apiBasePath = '/api',
           isDefault: false,
           enabled: true,
           creditRate: 1.0,
-          normalizationFactor: 1.0
+          normalizationFactor: 1.0,
+          contextWindow: ''
         })
       } else if (config) {
         setFormData({
@@ -116,7 +120,8 @@ function LlmConfigModal({ isOpen, onClose, config, onSave, apiBasePath = '/api',
           isDefault: config.isDefault || false,
           enabled: config.enabled !== false,
           creditRate: config.creditRate ?? 1.0,
-          normalizationFactor: config.normalizationFactor ?? 1.0
+          normalizationFactor: config.normalizationFactor ?? 1.0,
+          contextWindow: config.contextWindow || ''
         })
       }
     }
@@ -125,9 +130,20 @@ function LlmConfigModal({ isOpen, onClose, config, onSave, apiBasePath = '/api',
   const handleInputChange = (e: ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target
     const isCheckbox = e.target instanceof HTMLInputElement && e.target.type === 'checkbox'
+    const isNumberInput = e.target instanceof HTMLInputElement && e.target.type === 'number'
+
+    const normalizedValue = (() => {
+      if (isCheckbox) return (e.target as HTMLInputElement).checked
+      if (isNumberInput) {
+        const num = Number(value)
+        return Number.isFinite(num) ? num : value
+      }
+      return value
+    })()
+
     setFormData(prev => ({
       ...prev,
-      [name]: isCheckbox ? (e.target as HTMLInputElement).checked : value
+      [name]: normalizedValue
     }))
   }
 
@@ -151,6 +167,7 @@ function LlmConfigModal({ isOpen, onClose, config, onSave, apiBasePath = '/api',
             enabled: formData.enabled ? 1 : 0,
             credit_rate: formData.creditRate,
             normalization_factor: formData.normalizationFactor,
+            context_window: formData.contextWindow || undefined,
           }
         })
 
@@ -182,6 +199,7 @@ function LlmConfigModal({ isOpen, onClose, config, onSave, apiBasePath = '/api',
             enabled: formData.enabled ? 1 : 0,
             credit_rate: Number(formData.creditRate),
             normalization_factor: Number(formData.normalizationFactor),
+            context_window: formData.contextWindow || undefined,
           }
         })
 
@@ -341,6 +359,32 @@ function LlmConfigModal({ isOpen, onClose, config, onSave, apiBasePath = '/api',
             />
             <span style={{ color: 'rgba(255,255,255,0.8)' }}>设为默认</span>
           </label>
+        </div>
+
+        {/* 模型配置区域 */}
+        <div style={{ paddingTop: '20px', borderTop: '1px solid rgba(139, 92, 246, 0.2)', marginBottom: '20px' }}>
+          <h3 style={{ color: '#fff', fontSize: '0.9rem', fontWeight: '500', marginBottom: '16px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <svg style={{ width: '16px', height: '16px', color: '#a855f7' }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M7 19h10a2 2 0 002-2V7a2 2 0 00-2-2H7a2 2 0 00-2 2v10a2 2 0 002 2zM9 9h6v6H9V9z" />
+            </svg>
+            模型配置
+          </h3>
+          <div className="admin-form-group" style={{ marginBottom: 0 }}>
+            <label className="admin-form-label">上下文窗口 (tokens)</label>
+            <input
+              type="number"
+              name="contextWindow"
+              value={formData.contextWindow}
+              onChange={handleInputChange}
+              step="1024"
+              min="0"
+              className="admin-form-input"
+              placeholder="例如: 128000, 200000"
+            />
+            <p style={{ fontSize: '0.75rem', color: 'rgba(255,255,255,0.4)', marginTop: '8px' }}>
+              模型支持的最大上下文长度，留空表示不限制
+            </p>
+          </div>
         </div>
 
         {/* 积分配置区域 */}

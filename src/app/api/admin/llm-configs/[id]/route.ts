@@ -68,6 +68,13 @@ export async function PUT(
       return Number.isFinite(num) ? num : undefined
     }
 
+    const toPositiveInt = (value: unknown): number | undefined => {
+      if (value === undefined || value === null || value === '') return undefined
+      const num = typeof value === 'number' ? value : Number(value)
+      if (!Number.isFinite(num) || num <= 0) return undefined
+      return Math.floor(num)
+    }
+
     const pickString = (...values: unknown[]): string | undefined => {
       for (const value of values) {
         if (typeof value === 'string') return value
@@ -83,6 +90,7 @@ export async function PUT(
     const normalizationFactor = toNumber(
       body.normalization_factor ?? body.normalizationFactor,
     )
+    const contextWindow = toPositiveInt(body.context_window ?? body.contextWindow)
 
     const updateData: Record<string, unknown> = { updated_at: new Date() }
     if (displayName !== undefined) updateData.display_name = displayName
@@ -96,6 +104,7 @@ export async function PUT(
     if (normalizationFactor !== undefined) {
       updateData.normalization_factor = normalizationFactor
     }
+    if (contextWindow !== undefined) updateData.context_window = contextWindow
 
     const updated = await prisma.llm_config.update({
       where: { id: BigInt(id) },

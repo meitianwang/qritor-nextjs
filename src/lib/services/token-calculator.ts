@@ -1,27 +1,42 @@
 import { prisma } from '@/lib/prisma'
 
 // ---------------------------------------------------------------------------
-// Credit calculation
+// Credit calculation (based on real model pricing)
 // ---------------------------------------------------------------------------
 
 /**
  * Calculate the number of credits consumed for a given token usage.
  *
- * @param inputTokens  - Number of input (prompt) tokens.
+ * Pricing model: 1 USD = 1000 credits
+ *
+ * Formula:
+ *   credits = (inputTokens × inputPricePerM + outputTokens × outputPricePerM) / 1000
+ *
+ * Where:
+ *   - inputPricePerM: Price per million input tokens in USD
+ *   - outputPricePerM: Price per million output tokens in USD
+ *
+ * @param inputTokens - Number of input (prompt) tokens.
  * @param outputTokens - Number of output (completion) tokens.
- * @param normalizationFactor - Model-specific normalization factor (default 1.0).
- * @param creditRate - Credit rate multiplier (default 1.0).
- * @returns The credit cost (minimum 1).
+ * @param inputPricePerM - Price per million input tokens in USD (e.g., 0.10 for GLM-5).
+ * @param outputPricePerM - Price per million output tokens in USD (e.g., 0.40 for GLM-5).
+ * @returns The credit cost (minimum 1, rounded up).
  */
 export function calculateCredits(
   inputTokens: number,
   outputTokens: number,
-  normalizationFactor = 1.0,
-  creditRate = 1.0,
+  inputPricePerM: number,
+  outputPricePerM: number,
 ): number {
-  const credits =
-    (inputTokens + outputTokens) * normalizationFactor * creditRate
-  return Math.max(1, Math.round(credits))
+  // Calculate cost in USD
+  const costInUSD =
+    (inputTokens * inputPricePerM + outputTokens * outputPricePerM) / 1_000_000
+
+  // Convert to credits (1 USD = 1000 credits)
+  const credits = costInUSD * 1000
+
+  // Round up and ensure minimum of 1 credit
+  return Math.max(1, Math.ceil(credits))
 }
 
 // ---------------------------------------------------------------------------
@@ -54,53 +69,54 @@ export function estimateInputTokens(text: string): number {
 // ---------------------------------------------------------------------------
 
 interface ConfigParams {
-  normalizationFactor: number
-  creditRate: number
+  inputPricePerM: number
+  outputPricePerM: number
   configId: number | null
 }
 
 /**
- * Retrieve the normalization factor and credit rate from `llm_config`.
+ * Retrieve the input and output pricing from `llm_config`.
  *
  * If `configId` is supplied the specific row is fetched; otherwise the default
  * enabled configuration is used.
  *
- * Falls back to `{ normalizationFactor: 1.0, creditRate: 1.0 }` when no
- * matching config is found.
+ * Falls back to GLM-5 pricing when no matching config is found:
+ *   - inputPricePerM: $0.10/1M tokens
+ *   - outputPricePerM: $0.40/1M tokens
  */
 export async function getConfigParams(
   configId?: number,
 ): Promise<ConfigParams> {
   const fallback: ConfigParams = {
-    normalizationFactor: 1.0,
-    creditRate: 1.0,
+    inputPricePerM: 0.1, // GLM-5 input price as fallback
+    outputPricePerM: 0.4, // GLM-5 output price as fallback
     configId: null,
   }
 
   try {
     let config: {
       id: bigint
-      normalization_factor: number | null
-      credit_rate: number | null
+      input_price_per_m: number | null
+      output_price_per_m: number | null
     } | null = null
 
     if (configId !== undefined) {
       config = await prisma.llm_config.findUnique({
         where: { id: BigInt(configId) },
-        select: { id: true, normalization_factor: true, credit_rate: true },
+        select: { id: true, input_price_per_m: true, output_price_per_m: true },
       })
     } else {
       config = await prisma.llm_config.findFirst({
         where: { is_default: 1, enabled: 1 },
-        select: { id: true, normalization_factor: true, credit_rate: true },
+        select: { id: true, input_price_per_m: true, output_price_per_m: true },
       })
     }
 
     if (!config) return fallback
 
     return {
-      normalizationFactor: config.normalization_factor ?? 1.0,
-      creditRate: config.credit_rate ?? 1.0,
+      inputPricePerM: config.input_price_per_m ?? fallback.inputPricePerM,
+      outputPricePerM: config.output_price_per_m ?? fallback.outputPricePerM,
       configId: Number(config.id),
     }
   } catch {

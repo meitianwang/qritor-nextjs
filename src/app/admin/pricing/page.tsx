@@ -15,17 +15,7 @@ interface SupportedLanguage {
 // 支持的语言列表
 const SUPPORTED_LANGUAGES: SupportedLanguage[] = [
     { code: 'zh', name: '简体中文', flag: '\u{1F1E8}\u{1F1F3}' },
-    { code: 'zh-TW', name: '繁體中文', flag: '\u{1F1F9}\u{1F1FC}' },
-    { code: 'en', name: 'English', flag: '\u{1F1FA}\u{1F1F8}' },
-    { code: 'de', name: 'Deutsch', flag: '\u{1F1E9}\u{1F1EA}' },
-    { code: 'fr', name: 'Fran\u00e7ais', flag: '\u{1F1EB}\u{1F1F7}' },
-    { code: 'ja', name: '日本語', flag: '\u{1F1EF}\u{1F1F5}' },
-    { code: 'ko', name: '한국어', flag: '\u{1F1F0}\u{1F1F7}' },
-    { code: 'es', name: 'Espa\u00f1ol', flag: '\u{1F1EA}\u{1F1F8}' },
-    { code: 'pt', name: 'Portugu\u00eas', flag: '\u{1F1E7}\u{1F1F7}' },
-    { code: 'ar', name: '\u0627\u0644\u0639\u0631\u0628\u064A\u0629', flag: '\u{1F1F8}\u{1F1E6}' },
-    { code: 'ru', name: '\u0420\u0443\u0441\u0441\u043A\u0438\u0439', flag: '\u{1F1F7}\u{1F1FA}' },
-    { code: 'hi', name: '\u0939\u093F\u0928\u094D\u0926\u0940', flag: '\u{1F1EE}\u{1F1F3}' }
+    { code: 'en', name: 'English', flag: '\u{1F1FA}\u{1F1F8}' }
 ]
 
 interface Plan {

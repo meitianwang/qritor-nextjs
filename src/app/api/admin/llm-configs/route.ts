@@ -40,33 +40,74 @@ export async function POST(request: NextRequest) {
       credit_rate,
       model_tier,
       normalization_factor,
+      context_window,
     } = body as {
       model_name: string
       owned_by?: string
       display_name?: string
       tags?: unknown
-      is_default?: number
-      enabled?: number
-      credit_rate?: number
+      is_default?: unknown
+      enabled?: unknown
+      credit_rate?: unknown
       model_tier?: string
-      normalization_factor?: number
+      normalization_factor?: unknown
+      context_window?: unknown
     }
 
-    if (!model_name) {
+    const toTinyInt = (value: unknown, fallback: number): number => {
+      if (value === undefined || value === null) return fallback
+      if (typeof value === 'boolean') return value ? 1 : 0
+      if (typeof value === 'number' && Number.isFinite(value)) {
+        return value !== 0 ? 1 : 0
+      }
+      if (typeof value === 'string') {
+        const normalized = value.trim().toLowerCase()
+        if (normalized === '1' || normalized === 'true') return 1
+        if (normalized === '0' || normalized === 'false') return 0
+      }
+      return fallback
+    }
+
+    const toNumber = (value: unknown, fallback: number): number => {
+      if (value === undefined || value === null || value === '') return fallback
+      const num = typeof value === 'number' ? value : Number(value)
+      return Number.isFinite(num) ? num : fallback
+    }
+
+    const toPositiveInt = (value: unknown): number | undefined => {
+      if (value === undefined || value === null || value === '') return undefined
+      const num = typeof value === 'number' ? value : Number(value)
+      if (!Number.isFinite(num) || num <= 0) return undefined
+      return Math.floor(num)
+    }
+
+    const normalizedModelName = String(model_name ?? '').trim()
+    if (!normalizedModelName) {
       return apiError(400, '缺少必要字段: model_name')
     }
 
+    const normalizedDisplayName = String(display_name ?? normalizedModelName).trim()
+    const normalizedOwnedBy = String(owned_by ?? '').trim()
+    const normalizedIsDefault = toTinyInt(is_default, 0)
+    const normalizedEnabled = toTinyInt(enabled, 1)
+    const normalizedCreditRate = toNumber(credit_rate, 1.0)
+    const normalizedNormalizationFactor = toNumber(normalization_factor, 1.0)
+    const normalizedModelTier =
+      typeof model_tier === 'string' && model_tier.trim() ? model_tier.trim() : null
+    const normalizedContextWindow = toPositiveInt(context_window)
+
     const config = await prisma.llm_config.create({
       data: {
-        model_name,
-        owned_by: owned_by ?? '',
-        display_name: display_name ?? model_name,
+        model_name: normalizedModelName,
+        owned_by: normalizedOwnedBy,
+        display_name: normalizedDisplayName || normalizedModelName,
         tags: serializeLlmTags(tags),
-        is_default: is_default ?? 0,
-        enabled: enabled ?? 1,
-        credit_rate: credit_rate ?? 1.0,
-        model_tier: model_tier ?? null,
-        normalization_factor: normalization_factor ?? 1.0,
+        is_default: normalizedIsDefault,
+        enabled: normalizedEnabled,
+        credit_rate: normalizedCreditRate,
+        model_tier: normalizedModelTier,
+        normalization_factor: normalizedNormalizationFactor,
+        context_window: normalizedContextWindow,
         created_at: new Date(),
         updated_at: new Date(),
       },
@@ -79,6 +120,14 @@ export async function POST(request: NextRequest) {
     })
   } catch (error) {
     if (error instanceof Response) return error
+    if (
+      typeof error === 'object' &&
+      error !== null &&
+      'code' in error &&
+      (error as { code?: unknown }).code === 'P2002'
+    ) {
+      return apiError(409, '模型名称已存在，请使用其他 model_name')
+    }
     return apiError(500, `创建 LLM 配置失败: ${String(error)}`)
   }
 }
