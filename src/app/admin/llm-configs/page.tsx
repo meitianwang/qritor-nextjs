@@ -12,17 +12,12 @@ interface LlmConfig {
     id: number
     modelName: string
     displayName: string
-    ownedBy?: string
+    platform?: string
     creditRate: number
     enabled: boolean
     isDefault: boolean
     tags: string[]
     normalizationFactor: number
-}
-
-interface ProxyStatus {
-    status: string
-    message?: string
 }
 
 interface TestResult {
@@ -39,35 +34,25 @@ const CpuChipIcon = ({ className }: { className?: string }) => (
     </svg>
 )
 
-// ArrowPath 图标 (内联)
-const ArrowPathIcon = ({ className }: { className?: string }) => (
-    <svg className={className} fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182m0-4.991v4.99" />
-    </svg>
-)
-
 /**
  * 运营后台 - 模型配置管理页面
- * 支持从 Proxy 同步模型，admin 可维护模型计费参数
+ * 手动添加和管理模型配置，包括展示名称和计费参数
  */
 export default function LlmConfigPage() {
     const { notification, showToast } = useToast()
     const [configs, setConfigs] = useState<LlmConfig[]>([])
     const [loading, setLoading] = useState(true)
-    const [syncing, setSyncing] = useState(false)
-    const [proxyStatus, setProxyStatus] = useState<ProxyStatus | null>(null)
     const [testingId, setTestingId] = useState<number | null>(null)
     const [modalOpen, setModalOpen] = useState(false)
+    const [modalMode, setModalMode] = useState<'create' | 'edit'>('edit')
     const [editingConfig, setEditingConfig] = useState<LlmConfig | null>(null)
     const [testResultOpen, setTestResultOpen] = useState(false)
     const [testResult, setTestResult] = useState<TestResult | null>(null)
     const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false)
     const [deletingId, setDeletingId] = useState<number | null>(null)
-    const [syncConfirmOpen, setSyncConfirmOpen] = useState(false)
 
     useEffect(() => {
         fetchConfigs()
-        checkProxyStatus()
     }, [])
 
     const fetchConfigs = async () => {
@@ -76,7 +61,12 @@ export default function LlmConfigPage() {
             const response = await adminFetch('/api/admin/llm-configs')
             const data = await response.json()
             if (data.code === 200) {
-                setConfigs(data.data || [])
+                // API 返回 ownedBy (from owned_by)，映射为 platform
+                const items = (data.data || []).map((item: Record<string, unknown>) => ({
+                    ...item,
+                    platform: item.ownedBy || item.platform,
+                }))
+                setConfigs(items)
             }
         } catch (error) {
             console.error('获取 LLM 配置失败:', error)
@@ -85,47 +75,15 @@ export default function LlmConfigPage() {
         }
     }
 
-    const checkProxyStatus = async () => {
-        try {
-            const response = await adminFetch('/api/admin/llm-configs/proxy-status')
-            const data = await response.json()
-            if (data.code === 200) {
-                setProxyStatus(data.data?.proxy || data.data)
-            }
-        } catch (error) {
-            console.error('检查服务状态失败:', error)
-            setProxyStatus({ status: 'error', message: '请求失败' })
-        }
-    }
-
-    const handleSyncClick = () => {
-        setSyncConfirmOpen(true)
-    }
-
-    const handleSyncConfirm = async () => {
-        setSyncConfirmOpen(false)
-        try {
-            setSyncing(true)
-            const response = await adminFetch('/api/admin/llm-configs/sync', {
-                method: 'POST'
-            })
-            const data = await response.json()
-            if (data.code === 200) {
-                showToast('success', data.data?.message || '同步成功')
-                fetchConfigs()
-            } else {
-                showToast('error', '同步失败: ' + data.message)
-            }
-        } catch (error) {
-            console.error('同步模型列表失败:', error)
-            showToast('error', '同步失败，请检查 Proxy 服务状态')
-        } finally {
-            setSyncing(false)
-        }
+    const handleAdd = () => {
+        setEditingConfig(null)
+        setModalMode('create')
+        setModalOpen(true)
     }
 
     const handleEdit = (config: LlmConfig) => {
         setEditingConfig(config)
+        setModalMode('edit')
         setModalOpen(true)
     }
 
@@ -197,53 +155,24 @@ export default function LlmConfigPage() {
         }
     }
 
-    const renderStatusBadge = (label: string, status: ProxyStatus | null) => {
-        if (!status) return null
-        const statusColors: Record<string, string> = {
-            online: 'bg-green-500/20 text-green-400',
-            offline: 'bg-red-500/20 text-red-400',
-            error: 'bg-yellow-500/20 text-yellow-400'
-        }
-        const dotColors: Record<string, string> = {
-            online: 'bg-green-400',
-            offline: 'bg-red-400',
-            error: 'bg-yellow-400'
-        }
-        const statusText: Record<string, string> = {
-            online: '在线',
-            offline: '离线',
-            error: '异常'
-        }
-        return (
-            <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${statusColors[status.status] || statusColors.error}`}>
-                <span className={`w-2 h-2 rounded-full mr-1.5 ${dotColors[status.status] || dotColors.error}`}></span>
-                {label} {statusText[status.status] || '异常'}
-            </span>
-        )
-    }
-
     return (
         <div className="admin-page">
             <div className="admin-page-header">
                 <div>
                     <h1 className="admin-page-title">模型配置</h1>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginTop: '8px' }}>
-                        <p className="admin-page-subtitle" style={{ margin: 0 }}>
-                            从 Proxy 同步模型并配置展示名称和计费参数
-                        </p>
-                        {renderStatusBadge('Proxy', proxyStatus)}
-                    </div>
+                    <p className="admin-page-subtitle">
+                        管理 LLM 模型的展示名称和计费参数
+                    </p>
                 </div>
-                <div>
-                    <button
-                        className="admin-btn admin-btn-primary"
-                        onClick={handleSyncClick}
-                        disabled={syncing || proxyStatus?.status !== 'online'}
-                    >
-                        <ArrowPathIcon className={`w-5 h-5 ${syncing ? 'animate-spin' : ''}`} />
-                        {syncing ? '同步中...' : '从 Proxy 同步'}
-                    </button>
-                </div>
+                <button
+                    className="admin-btn admin-btn-primary"
+                    onClick={handleAdd}
+                >
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+                    </svg>
+                    添加模型
+                </button>
             </div>
 
             <div className="admin-content">
@@ -257,16 +186,17 @@ export default function LlmConfigPage() {
                         <CpuChipIcon className="w-12 h-12" />
                         <p>暂无模型配置</p>
                         <p style={{ fontSize: '0.85rem', color: 'rgba(255,255,255,0.5)', marginTop: '8px' }}>
-                            点击「从 Proxy 同步」导入模型列表
+                            点击「添加模型」创建第一个模型配置
                         </p>
                         <div style={{ marginTop: '16px' }}>
                             <button
                                 className="admin-btn admin-btn-primary"
-                                onClick={handleSyncClick}
-                                disabled={syncing || proxyStatus?.status !== 'online'}
+                                onClick={handleAdd}
                             >
-                                <ArrowPathIcon className={`w-5 h-5 ${syncing ? 'animate-spin' : ''}`} />
-                                {syncing ? '同步中...' : '从 Proxy 同步'}
+                                <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+                                </svg>
+                                添加模型
                             </button>
                         </div>
                     </div>
@@ -284,10 +214,10 @@ export default function LlmConfigPage() {
                                     </div>
                                 </div>
                                 <div className="admin-card-body">
-                                    {config.ownedBy && (
+                                    {config.platform && (
                                         <div className="admin-card-row">
-                                            <span className="admin-card-label">提供者</span>
-                                            <span className="admin-card-value">{config.ownedBy}</span>
+                                            <span className="admin-card-label">平台</span>
+                                            <span className="admin-card-value">{config.platform}</span>
                                         </div>
                                     )}
                                     <div className="admin-card-row">
@@ -335,7 +265,7 @@ export default function LlmConfigPage() {
                 )}
             </div>
 
-            {/* LLM 配置编辑弹窗 */}
+            {/* LLM 配置弹窗 */}
             <LlmConfigModal
                 isOpen={modalOpen}
                 onClose={() => setModalOpen(false)}
@@ -343,6 +273,7 @@ export default function LlmConfigPage() {
                 onSave={handleSave}
                 apiBasePath="/api/admin"
                 showToast={showToast}
+                mode={modalMode}
             />
 
             {/* 测试结果弹窗 */}
@@ -363,18 +294,6 @@ export default function LlmConfigPage() {
                 confirmText="删除"
                 cancelText="取消"
                 isDanger={true}
-            />
-
-            {/* 同步确认弹窗 */}
-            <ConfirmModal
-                isOpen={syncConfirmOpen}
-                onClose={() => setSyncConfirmOpen(false)}
-                onConfirm={handleSyncConfirm}
-                title="同步模型列表"
-                message="从 Proxy 同步模型列表：新模型会添加，已有模型保留现有配置。确定继续？"
-                confirmText="确定同步"
-                cancelText="取消"
-                isDanger={false}
             />
 
             {/* Toast 通知 */}

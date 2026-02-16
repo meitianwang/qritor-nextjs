@@ -46,9 +46,14 @@ function ProfilePageContent() {
     const [creditsData, setCreditsData] = useState<any>(undefined)
     const [subscriptionData, setSubscriptionData] = useState<any>(undefined)
 
-    // Redirect to login if not logged in
+    // Redirect to login if not logged in (must run in effect, not during render)
+    useEffect(() => {
+        if (!user) {
+            router.replace('/login')
+        }
+    }, [user, router])
+
     if (!user) {
-        router.push('/login')
         return null
     }
 

@@ -3,6 +3,7 @@ import { apiSuccess, apiError } from '@/lib/api-response'
 import { getCurrentAdminUser } from '@/lib/middleware/auth-middleware'
 import { prisma } from '@/lib/prisma'
 import { serializeCamel } from '@/lib/serialize'
+import { parseLlmTags, serializeLlmTags } from '@/lib/llm-tags'
 
 export async function GET(request: NextRequest) {
   try {
@@ -12,7 +13,13 @@ export async function GET(request: NextRequest) {
       orderBy: { created_at: 'desc' },
     })
 
-    return apiSuccess(serializeCamel(configs))
+    const serialized = serializeCamel(configs) as Record<string, unknown>[]
+    const normalized = serialized.map((item, index) => ({
+      ...item,
+      tags: parseLlmTags(configs[index]?.tags ?? null),
+    }))
+
+    return apiSuccess(normalized)
   } catch (error) {
     if (error instanceof Response) return error
     return apiError(500, `获取 LLM 配置列表失败: ${String(error)}`)
@@ -37,7 +44,7 @@ export async function POST(request: NextRequest) {
       model_name: string
       owned_by?: string
       display_name?: string
-      tags?: string
+      tags?: unknown
       is_default?: number
       enabled?: number
       credit_rate?: number
@@ -54,7 +61,7 @@ export async function POST(request: NextRequest) {
         model_name,
         owned_by: owned_by ?? '',
         display_name: display_name ?? model_name,
-        tags: tags ?? null,
+        tags: serializeLlmTags(tags),
         is_default: is_default ?? 0,
         enabled: enabled ?? 1,
         credit_rate: credit_rate ?? 1.0,
@@ -65,7 +72,11 @@ export async function POST(request: NextRequest) {
       },
     })
 
-    return apiSuccess(serializeCamel(config))
+    const serialized = serializeCamel(config) as Record<string, unknown>
+    return apiSuccess({
+      ...serialized,
+      tags: parseLlmTags(config.tags),
+    })
   } catch (error) {
     if (error instanceof Response) return error
     return apiError(500, `创建 LLM 配置失败: ${String(error)}`)

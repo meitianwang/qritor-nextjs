@@ -3,6 +3,17 @@
 import { useState, useEffect, ChangeEvent } from 'react'
 import { adminFetch } from '@/lib/admin-utils'
 
+// 平台枚举
+const PLATFORMS = [
+  { key: 'vercel', label: 'Vercel' },
+] as const
+
+type PlatformKey = typeof PLATFORMS[number]['key']
+
+const PLATFORM_LABEL_MAP: Record<string, string> = Object.fromEntries(
+  PLATFORMS.map(p => [p.key, p.label])
+)
+
 interface PresetTag {
     key: string
     label: string
@@ -37,7 +48,7 @@ interface LlmConfig {
     id: number
     modelName: string
     displayName: string
-    ownedBy?: string
+    platform?: string
     tags: string[]
     isDefault: boolean
     enabled: boolean
@@ -46,6 +57,8 @@ interface LlmConfig {
 }
 
 interface LlmFormData {
+    modelName: string
+    platform: PlatformKey | ''
     displayName: string
     tags: string[]
     isDefault: boolean
@@ -61,15 +74,18 @@ interface LlmConfigModalProps {
     onSave: () => void
     apiBasePath?: string
     showToast?: (type: string, message: string) => void
+    mode?: 'create' | 'edit'
 }
 
 /**
- * LLM 配置编辑弹窗 - Proxy 模式
- * 只编辑展示名称、标签、计费等级等，模型列表从 proxy 同步
+ * LLM 配置弹窗 - 支持创建和编辑模式
  */
-function LlmConfigModal({ isOpen, onClose, config, onSave, apiBasePath = '/api', showToast }: LlmConfigModalProps) {
+function LlmConfigModal({ isOpen, onClose, config, onSave, apiBasePath = '/api', showToast, mode = 'edit' }: LlmConfigModalProps) {
+  const isCreate = mode === 'create'
   const [loading, setLoading] = useState(false)
   const [formData, setFormData] = useState<LlmFormData>({
+    modelName: '',
+    platform: '',
     displayName: '',
     tags: [],
     isDefault: false,
@@ -79,58 +95,114 @@ function LlmConfigModal({ isOpen, onClose, config, onSave, apiBasePath = '/api',
   })
 
   useEffect(() => {
-    if (isOpen && config) {
-      setFormData({
-        displayName: config.displayName || '',
-        tags: config.tags || [],
-        isDefault: config.isDefault || false,
-        enabled: config.enabled !== false,
-        creditRate: config.creditRate ?? 1.0,
-        normalizationFactor: config.normalizationFactor ?? 1.0
-      })
+    if (isOpen) {
+      if (isCreate) {
+        setFormData({
+          modelName: '',
+          platform: PLATFORMS[0].key,
+          displayName: '',
+          tags: [],
+          isDefault: false,
+          enabled: true,
+          creditRate: 1.0,
+          normalizationFactor: 1.0
+        })
+      } else if (config) {
+        setFormData({
+          modelName: config.modelName,
+          platform: (config.platform || '') as PlatformKey | '',
+          displayName: config.displayName || '',
+          tags: config.tags || [],
+          isDefault: config.isDefault || false,
+          enabled: config.enabled !== false,
+          creditRate: config.creditRate ?? 1.0,
+          normalizationFactor: config.normalizationFactor ?? 1.0
+        })
+      }
     }
-  }, [isOpen, config])
+  }, [isOpen, config, isCreate])
 
-  const handleInputChange = (e: ChangeEvent<HTMLInputElement>) => {
-    const { name, value, type, checked } = e.target
+  const handleInputChange = (e: ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+    const { name, value } = e.target
+    const isCheckbox = e.target instanceof HTMLInputElement && e.target.type === 'checkbox'
     setFormData(prev => ({
       ...prev,
-      [name]: type === 'checkbox' ? checked : value
+      [name]: isCheckbox ? (e.target as HTMLInputElement).checked : value
     }))
   }
 
   const handleSave = async () => {
-    if (!config) return
+    if (isCreate) {
+      if (!formData.modelName.trim()) {
+        showToast?.('error', '请输入模型名称')
+        return
+      }
 
-    try {
-      setLoading(true)
-      const response = await adminFetch(`${apiBasePath}/llm-configs/${config.id}`, {
-        method: 'PUT',
-        body: formData
-      })
+      try {
+        setLoading(true)
+        const response = await adminFetch(`${apiBasePath}/llm-configs`, {
+          method: 'POST',
+          body: {
+            model_name: formData.modelName.trim(),
+            owned_by: formData.platform || undefined,
+            display_name: formData.displayName.trim() || undefined,
+            tags: formData.tags,
+            is_default: formData.isDefault ? 1 : 0,
+            enabled: formData.enabled ? 1 : 0,
+            credit_rate: formData.creditRate,
+            normalization_factor: formData.normalizationFactor,
+          }
+        })
 
-      const data = await response.json()
-      if (data.code === 200) {
-        if (onSave) {
+        const data = await response.json()
+        if (data.code === 200) {
+          showToast?.('success', '模型配置添加成功')
           onSave()
+          onClose()
+        } else {
+          showToast?.('error', '添加失败: ' + data.message)
         }
-        onClose()
-      } else {
-        if (showToast) {
-          showToast('error', '保存失败: ' + data.message)
+      } catch (error) {
+        console.error('创建LLM配置失败:', error)
+        showToast?.('error', '添加失败，请重试')
+      } finally {
+        setLoading(false)
+      }
+    } else {
+      if (!config) return
+
+      try {
+        setLoading(true)
+        const response = await adminFetch(`${apiBasePath}/llm-configs/${config.id}`, {
+          method: 'PUT',
+          body: {
+            display_name: formData.displayName.trim() || undefined,
+            tags: formData.tags || [],
+            is_default: formData.isDefault ? 1 : 0,
+            enabled: formData.enabled ? 1 : 0,
+            credit_rate: Number(formData.creditRate),
+            normalization_factor: Number(formData.normalizationFactor),
+          }
+        })
+
+        const data = await response.json()
+        if (data.code === 200) {
+          onSave()
+          onClose()
+        } else {
+          showToast?.('error', '保存失败: ' + data.message)
         }
+      } catch (error) {
+        console.error('保存LLM配置失败:', error)
+        showToast?.('error', '保存失败，请重试')
+      } finally {
+        setLoading(false)
       }
-    } catch (error) {
-      console.error('保存LLM配置失败:', error)
-      if (showToast) {
-        showToast('error', '保存失败，请重试')
-      }
-    } finally {
-      setLoading(false)
     }
   }
 
-  if (!isOpen || !config) return null
+  if (!isOpen) return null
+  if (!isCreate && !config) return null
 
   return (
     <div className="admin-modal-overlay">
@@ -141,25 +213,55 @@ function LlmConfigModal({ isOpen, onClose, config, onSave, apiBasePath = '/api',
             <svg style={{ width: '24px', height: '24px', color: '#a855f7' }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M7 19h10a2 2 0 002-2V7a2 2 0 00-2-2H7a2 2 0 00-2 2v10a2 2 0 002 2zM9 9h6v6H9V9z" />
             </svg>
-            编辑模型配置
+            {isCreate ? '添加模型配置' : '编辑模型配置'}
           </h2>
           <button className="admin-modal-close" onClick={onClose}>&times;</button>
         </div>
 
-        {/* 模型信息（只读） */}
-        <div style={{ background: 'rgba(139, 92, 246, 0.1)', borderRadius: '8px', padding: '16px', marginBottom: '24px' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '8px' }}>
-            <span style={{ color: '#a855f7', fontWeight: '600', fontSize: '1.1rem' }}>{config.modelName}</span>
-            {config.ownedBy && (
-              <span style={{ fontSize: '0.75rem', color: 'rgba(255,255,255,0.5)', background: 'rgba(255,255,255,0.1)', padding: '2px 8px', borderRadius: '4px' }}>
-                {config.ownedBy}
-              </span>
-            )}
+        {isCreate ? (
+          /* 创建模式：模型名称可编辑 */
+          <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: '16px', marginBottom: '24px' }}>
+            <div className="admin-form-group" style={{ marginBottom: 0 }}>
+              <label className="admin-form-label">模型名称 <span style={{ color: '#ef4444' }}>*</span></label>
+              <input
+                type="text"
+                name="modelName"
+                value={formData.modelName}
+                onChange={handleInputChange}
+                className="admin-form-input"
+                placeholder="例如: gpt-4o, claude-sonnet-4-5-20250929"
+              />
+            </div>
+            <div className="admin-form-group" style={{ marginBottom: 0 }}>
+              <label className="admin-form-label">平台 <span style={{ color: '#ef4444' }}>*</span></label>
+              <select
+                name="platform"
+                value={formData.platform}
+                onChange={handleInputChange}
+                className="admin-form-input"
+              >
+                {PLATFORMS.map(p => (
+                  <option key={p.key} value={p.key}>{p.label}</option>
+                ))}
+              </select>
+            </div>
           </div>
-          <p style={{ fontSize: '0.8rem', color: 'rgba(255,255,255,0.4)', margin: 0 }}>
-            模型 ID 由 Proxy 同步，不可修改。可编辑展示名称和计费参数。
-          </p>
-        </div>
+        ) : (
+          /* 编辑模式：模型信息只读 */
+          <div style={{ background: 'rgba(139, 92, 246, 0.1)', borderRadius: '8px', padding: '16px', marginBottom: '24px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '8px' }}>
+              <span style={{ color: '#a855f7', fontWeight: '600', fontSize: '1.1rem' }}>{config!.modelName}</span>
+              {config!.platform && (
+                <span style={{ fontSize: '0.75rem', color: 'rgba(255,255,255,0.5)', background: 'rgba(255,255,255,0.1)', padding: '2px 8px', borderRadius: '4px' }}>
+                  {PLATFORM_LABEL_MAP[config!.platform] || config!.platform}
+                </span>
+              )}
+            </div>
+            <p style={{ fontSize: '0.8rem', color: 'rgba(255,255,255,0.4)', margin: 0 }}>
+              模型名称不可修改，可编辑展示名称和计费参数。
+            </p>
+          </div>
+        )}
 
         {/* 表单内容 */}
         <div className="admin-form-group">
@@ -170,7 +272,7 @@ function LlmConfigModal({ isOpen, onClose, config, onSave, apiBasePath = '/api',
             value={formData.displayName}
             onChange={handleInputChange}
             className="admin-form-input"
-            placeholder={`自定义显示名称 (留空使用 ${config.modelName})`}
+            placeholder={isCreate ? '自定义显示名称 (留空使用模型名称)' : `自定义显示名称 (留空使用 ${config!.modelName})`}
           />
         </div>
 
@@ -270,8 +372,8 @@ function LlmConfigModal({ isOpen, onClose, config, onSave, apiBasePath = '/api',
                 name="normalizationFactor"
                 value={formData.normalizationFactor}
                 onChange={handleInputChange}
-                step="0.1"
-                min="0.1"
+                step="0.0001"
+                min="0"
                 className="admin-form-input"
                 placeholder="1.0"
               />
@@ -292,7 +394,7 @@ function LlmConfigModal({ isOpen, onClose, config, onSave, apiBasePath = '/api',
             onClick={handleSave}
             disabled={loading}
           >
-            {loading ? '保存中...' : '保存'}
+            {loading ? (isCreate ? '添加中...' : '保存中...') : (isCreate ? '添加' : '保存')}
           </button>
         </div>
       </div>

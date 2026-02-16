@@ -1,5 +1,6 @@
 import { prisma } from '@/lib/prisma'
 import { apiSuccess, apiError } from '@/lib/api-response'
+import { parseLlmTags } from '@/lib/llm-tags'
 
 export async function GET() {
   try {
@@ -13,14 +14,14 @@ export async function GET() {
         id: Number(c.id),
         modelName: c.model_name,
         displayName: c.display_name || c.model_name,
-        ownedBy: c.owned_by,
+        platform: c.owned_by,
         isDefault: c.is_default === 1,
         creditRate: c.credit_rate ?? 1.0,
         modelTier: c.model_tier || 'base',
-        tags: c.tags ? JSON.parse(c.tags) : [],
+        tags: parseLlmTags(c.tags),
       }))
     )
-  } catch (error) {
+  } catch {
     return apiError(500, '获取LLM配置列表失败')
   }
 }

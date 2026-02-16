@@ -1,5 +1,4 @@
-import { streamText } from 'ai'
-import { createOpenAI } from '@ai-sdk/openai'
+import { streamText, createGateway } from 'ai'
 import { prisma } from '@/lib/prisma'
 import {
   calculateCredits,
@@ -110,7 +109,7 @@ export function extractJson(content: string): string | null {
 // Utility: resolve LLM config
 // ---------------------------------------------------------------------------
 
-async function getConfigById(
+export async function getConfigById(
   configId?: number,
 ): Promise<LlmConfigRow | null> {
   // 1. By explicit id
@@ -138,19 +137,19 @@ async function getConfigById(
   return anyConfig as unknown as LlmConfigRow | null
 }
 
-function resolveProxy(config: LlmConfigRow): {
-  baseUrl: string
-  modelName: string
-} {
-  const baseUrl = (process.env.PROXY_URL || '').replace(/\/+$/, '')
-  return { baseUrl, modelName: config.model_name || '' }
-}
-
 // ---------------------------------------------------------------------------
-// ProxyAIService -- streams text via an OpenAI-compatible proxy
+// Vercel AI Gateway instance
 // ---------------------------------------------------------------------------
 
-class ProxyAIService {
+export const gateway = createGateway({
+  apiKey: process.env.AI_GATEWAY_API_KEY ?? '',
+})
+
+// ---------------------------------------------------------------------------
+// GatewayAIService -- streams text via Vercel AI Gateway
+// ---------------------------------------------------------------------------
+
+class GatewayAIService {
   async *streamTextFromProxy(
     prompt: string,
     systemPrompt?: string,
@@ -162,12 +161,8 @@ class ProxyAIService {
       return
     }
 
-    const { baseUrl, modelName } = resolveProxy(config)
-
-    const provider = createOpenAI({
-      baseURL: baseUrl,
-      apiKey: 'not-needed', // proxy handles auth
-    })
+    // model_name should be in "provider/model" format, e.g. "deepseek/deepseek-chat"
+    const modelName = config.model_name
 
     const messages: Array<{ role: 'system' | 'user'; content: string }> = []
     if (systemPrompt) {
@@ -176,11 +171,10 @@ class ProxyAIService {
     messages.push({ role: 'user', content: prompt })
 
     let outputText = ''
-    const reasoningText = ''
 
     try {
       const result = streamText({
-        model: provider(modelName),
+        model: gateway(modelName),
         messages,
       })
 
@@ -191,7 +185,7 @@ class ProxyAIService {
     } catch (error) {
       yield {
         type: 'chunk',
-        content: `[错误] Proxy 调用异常: ${String(error)}`,
+        content: `[错误] AI Gateway 调用异常: ${String(error)}`,
       }
       return
     }
@@ -201,7 +195,7 @@ class ProxyAIService {
     yield {
       type: 'usage',
       inputTokens: estimateInputTokens(inputText),
-      outputTokens: estimateInputTokens(outputText + reasoningText),
+      outputTokens: estimateInputTokens(outputText),
     }
   }
 }
@@ -211,7 +205,7 @@ class ProxyAIService {
 // ---------------------------------------------------------------------------
 
 class AIGenerateService {
-  private proxyAI = new ProxyAIService()
+  private ai = new GatewayAIService()
 
   async *generateDesktopPrompt(
     prompt: string,
@@ -274,7 +268,7 @@ class AIGenerateService {
     let inputTokens = 0
     let outputTokens = 0
 
-    for await (const item of this.proxyAI.streamTextFromProxy(
+    for await (const item of this.ai.streamTextFromProxy(
       prompt,
       undefined,
       actualConfigId,
@@ -346,5 +340,5 @@ class AIGenerateService {
 // Singleton exports
 // ---------------------------------------------------------------------------
 
-export const proxyAIService = new ProxyAIService()
+export const proxyAIService = new GatewayAIService()
 export const aiGenerateService = new AIGenerateService()

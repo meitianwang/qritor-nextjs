@@ -5,51 +5,44 @@ import { aiGenerateService } from '@/lib/services/ai-service'
 
 export const dynamic = 'force-dynamic'
 
+/** Encode a proper SSE event: `event: <type>\ndata: <json>\n\n` */
+function sseEvent(eventType: string, data: unknown): Uint8Array {
+  const encoder = new TextEncoder()
+  return encoder.encode(`event: ${eventType}\ndata: ${JSON.stringify(data)}\n\n`)
+}
+
 export async function POST(request: NextRequest) {
   try {
     const user = await getCurrentUser(request)
     const body = await request.json()
-    const {
-      prompt,
-      module_title,
-      llm_config_id,
-      model_tier,
-    } = body as {
-      prompt?: string
-      module_title?: string
-      llm_config_id?: number
-      model_tier?: string
-    }
+
+    // Accept both camelCase (desktop) and snake_case field names
+    const prompt = body.prompt as string | undefined
+    const moduleTitle = body.module_title || body.moduleTitle || '未命名模块'
+    const configId = body.llm_config_id ?? body.llmConfigId
+    const modelTier = body.model_tier || body.modelTier
 
     if (!prompt) {
       return apiError(400, '缺少 prompt')
     }
-
-    const encoder = new TextEncoder()
 
     const stream = new ReadableStream({
       async start(controller) {
         try {
           for await (const event of aiGenerateService.generateDesktopPrompt(
             prompt,
-            module_title || '未命名模块',
-            llm_config_id,
-            model_tier,
+            moduleTitle,
+            configId,
+            modelTier,
             Number(user.id),
           )) {
-            controller.enqueue(
-              encoder.encode(`data: ${JSON.stringify(event)}\n\n`),
-            )
+            controller.enqueue(sseEvent(event.event, event.data))
           }
         } catch (error) {
-          controller.enqueue(
-            encoder.encode(
-              `data: ${JSON.stringify({
-                event: 'error',
-                data: { error: String(error), code: 'STREAM_ERROR' },
-              })}\n\n`,
-            ),
-          )
+          controller.enqueue(sseEvent('error', {
+            error: String(error),
+            code: 'STREAM_ERROR',
+          }))
         } finally {
           controller.close()
         }

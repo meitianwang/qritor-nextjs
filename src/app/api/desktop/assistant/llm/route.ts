@@ -1,7 +1,7 @@
-import { NextRequest } from 'next/server'
+import { NextRequest, NextResponse } from 'next/server'
+import { streamText, tool as sdkTool, jsonSchema } from 'ai'
 import { getCurrentUser } from '@/lib/middleware/auth-middleware'
-import { apiError } from '@/lib/api-response'
-import { proxyAIService } from '@/lib/services/ai-service'
+import { gateway, getConfigById } from '@/lib/services/ai-service'
 import {
   calculateCredits,
   estimateInputTokens,
@@ -14,133 +14,115 @@ import {
 
 export const dynamic = 'force-dynamic'
 
+function jsonError(status: number, message: string) {
+  return NextResponse.json(
+    { code: status, data: null, message },
+    { status },
+  )
+}
+
+/**
+ * 桌面端 LLM 代理 — 纯透传 + 积分扣减
+ *
+ * 桌面端发送 AI SDK CoreMessage 格式的 messages，
+ * 服务端直传给 streamText，用 toUIMessageStreamResponse() 返回。
+ * 积分扣减在流结束后异步执行。
+ */
 export async function POST(request: NextRequest) {
   try {
     const user = await getCurrentUser(request)
     const body = await request.json()
-    const {
-      prompt,
-      system_prompt,
-      llm_config_id,
+
+    const configId: number | undefined =
+      body.llm_config_id ?? body.llmConfigId
+    const temperature: number = body.temperature ?? 0.7
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const messages = body.messages as any[]
+    if (!messages?.length) return jsonError(400, '缺少 messages')
+
+    // tools: 桌面端发来 { name: { description, parameters } }
+    // 包一层 sdkTool + jsonSchema（运行时函数，无法序列化传输）
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    let tools: any = undefined
+    if (body.tools && typeof body.tools === 'object') {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      tools = {} as Record<string, any>
+      for (const [name, def] of Object.entries(
+        body.tools as Record<
+          string,
+          { description: string; parameters: Record<string, unknown> }
+        >,
+      )) {
+        tools[name] = sdkTool({
+          description: def.description,
+          inputSchema: jsonSchema(def.parameters),
+        })
+      }
+    }
+
+    const config = await getConfigById(configId)
+    if (!config) return jsonError(400, '没有可用的 LLM 配置')
+
+    console.log(
+      `[LLM] Request: model=${config.model_name}, messages=${messages.length}, tools=${tools ? Object.keys(tools).length : 0}`,
+    )
+
+    // 积分预检
+    const allText = messages
+      .map((m) => (typeof m.content === 'string' ? m.content : ''))
+      .join('\n')
+    const est = estimateInputTokens(allText)
+    const { normalizationFactor, creditRate } =
+      await getConfigParams(configId)
+    if (
+      !(await hasEnoughCredits(
+        user.id,
+        calculateCredits(est, 800, normalizationFactor, creditRate),
+      ))
+    ) {
+      return jsonError(403, '积分不足，请充值后再试')
+    }
+
+    // 透传给 AI Gateway，积分在 onFinish 回调中扣减
+    const systemPrompt: string | undefined = body.systemPrompt || body.system
+    const result = streamText({
+      model: gateway(config.model_name),
+      ...(systemPrompt ? { system: systemPrompt } : {}),
       messages,
-    } = body as {
-      prompt?: string
-      system_prompt?: string
-      llm_config_id?: number
-      messages?: Array<{ role: string; content: string }>
-    }
-
-    // Build the user prompt from messages or the direct prompt field
-    let userPrompt = prompt || ''
-    let systemPrompt = system_prompt || ''
-
-    if (messages && messages.length > 0) {
-      const systemMessages = messages.filter((m) => m.role === 'system')
-      const userMessages = messages.filter((m) => m.role !== 'system')
-      if (systemMessages.length > 0) {
-        systemPrompt = systemMessages.map((m) => m.content).join('\n')
-      }
-      if (userMessages.length > 0) {
-        userPrompt = userMessages.map((m) => `${m.role}: ${m.content}`).join('\n')
-      }
-    }
-
-    if (!userPrompt) {
-      return apiError(400, '缺少 prompt 或 messages')
-    }
-
-    // Pre-check credits
-    const inputText = (systemPrompt || '') + '\n' + userPrompt
-    const estInputTokens = estimateInputTokens(inputText)
-    const { normalizationFactor, creditRate } = await getConfigParams(llm_config_id)
-    const estimatedCredits = calculateCredits(estInputTokens, 800, normalizationFactor, creditRate)
-
-    if (!(await hasEnoughCredits(user.id, estimatedCredits))) {
-      return apiError(403, '积分不足，请充值后再试')
-    }
-
-    const encoder = new TextEncoder()
-    let totalInputTokens = 0
-    let totalOutputTokens = 0
-
-    const stream = new ReadableStream({
-      async start(controller) {
+      tools,
+      temperature,
+      onFinish: async ({ totalUsage }) => {
+        const inputTokens = totalUsage.inputTokens ?? 0
+        const outputTokens = totalUsage.outputTokens ?? 0
+        console.log(`[LLM] Finish: in=${inputTokens}, out=${outputTokens}`)
+        const {
+          normalizationFactor: nf,
+          creditRate: cr,
+          configId: cid,
+        } = await getConfigParams(configId)
+        const credits = calculateCredits(inputTokens, outputTokens, nf, cr)
         try {
-          for await (const event of proxyAIService.streamTextFromProxy(
-            userPrompt,
-            systemPrompt || undefined,
-            llm_config_id,
-          )) {
-            if (event.type === 'chunk') {
-              controller.enqueue(
-                encoder.encode(`data: ${JSON.stringify({ event: 'chunk', data: { content: event.content } })}\n\n`),
-              )
-            } else if (event.type === 'reasoning') {
-              controller.enqueue(
-                encoder.encode(`data: ${JSON.stringify({ event: 'reasoning', data: { content: event.content } })}\n\n`),
-              )
-            } else if (event.type === 'usage') {
-              totalInputTokens = event.inputTokens
-              totalOutputTokens = event.outputTokens
-            }
-          }
-
-          // Deduct credits after streaming
-          const { normalizationFactor: nf, creditRate: cr, configId } =
-            await getConfigParams(llm_config_id)
-          const creditsConsumed = calculateCredits(totalInputTokens, totalOutputTokens, nf, cr)
-
           await consumeCreditsWithTransaction(
             user.id,
-            creditsConsumed,
+            credits,
             'DESKTOP_ASSISTANT_LLM',
-            configId ? BigInt(configId) : undefined,
-            totalInputTokens,
-            totalOutputTokens,
+            cid ? BigInt(cid) : undefined,
+            inputTokens,
+            outputTokens,
             cr,
             nf,
             '桌面端助手对话',
           )
-
-          controller.enqueue(
-            encoder.encode(
-              `data: ${JSON.stringify({
-                event: 'complete',
-                data: {
-                  status: 'done',
-                  usage: {
-                    inputTokens: totalInputTokens,
-                    outputTokens: totalOutputTokens,
-                    creditsConsumed,
-                  },
-                },
-              })}\n\n`,
-            ),
-          )
-        } catch (error) {
-          controller.enqueue(
-            encoder.encode(
-              `data: ${JSON.stringify({
-                event: 'error',
-                data: { error: String(error), code: 'STREAM_ERROR' },
-              })}\n\n`,
-            ),
-          )
-        } finally {
-          controller.close()
+        } catch (e) {
+          console.error('积分扣减失败:', e)
         }
       },
     })
 
-    return new Response(stream, {
-      headers: {
-        'Content-Type': 'text/event-stream',
-        'Cache-Control': 'no-cache',
-        Connection: 'keep-alive',
-      },
-    })
+    return result.toUIMessageStreamResponse()
   } catch (error) {
     if (error instanceof Response) return error
-    return apiError(500, `桌面端助手请求失败: ${String(error)}`)
+    return jsonError(500, `桌面端助手请求失败: ${String(error)}`)
   }
 }

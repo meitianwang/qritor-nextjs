@@ -3,48 +3,41 @@ import { apiSuccess, apiError } from '@/lib/api-response'
 import { getCurrentAdminUser } from '@/lib/middleware/auth-middleware'
 import { prisma } from '@/lib/prisma'
 
-interface ProxyModel {
-  id: string
+interface ModelEntry {
+  model_name: string
+  display_name?: string
+  model_tier?: string
   owned_by?: string
 }
 
+/**
+ * Sync / batch-create LLM configs.
+ *
+ * With AI Gateway there is no remote `/v1/models` list to pull from.
+ * Instead the admin POSTs a `models` array to upsert configs manually.
+ *
+ * Body: { models: ModelEntry[] }
+ */
 export async function POST(request: NextRequest) {
   try {
     await getCurrentAdminUser(request)
 
-    const proxyUrl = process.env.PROXY_URL || ''
-    const proxyApiKey = process.env.PROXY_API_KEY || ''
+    const body = (await request.json()) as { models?: ModelEntry[] }
+    const models = body.models
 
-    if (!proxyUrl) {
-      return apiError(400, '代理未配置，请先设置 PROXY_URL 环境变量')
+    if (!models || !Array.isArray(models) || models.length === 0) {
+      return apiError(
+        400,
+        '请提供 models 数组，格式: [{ model_name: "provider/model", display_name?: "...", model_tier?: "...", owned_by?: "..." }]',
+      )
     }
-
-    // Fetch models from proxy
-    const modelsUrl = `${proxyUrl.replace(/\/+$/, '')}/v1/models`
-    const headers: Record<string, string> = {}
-    if (proxyApiKey) {
-      headers['Authorization'] = `Bearer ${proxyApiKey}`
-    }
-
-    const response = await fetch(modelsUrl, {
-      method: 'GET',
-      headers,
-      signal: AbortSignal.timeout(15000),
-    })
-
-    if (!response.ok) {
-      return apiError(502, `代理返回错误: ${response.status} ${response.statusText}`)
-    }
-
-    const result = (await response.json()) as { data?: ProxyModel[] }
-    const models = result.data || []
 
     let created = 0
     let updated = 0
     let skipped = 0
 
     for (const model of models) {
-      const modelName = model.id
+      const modelName = model.model_name
       if (!modelName) {
         skipped++
         continue
@@ -55,14 +48,22 @@ export async function POST(request: NextRequest) {
       })
 
       if (existing) {
-        // Update owned_by if changed
+        const updates: Record<string, unknown> = {}
+        if (model.display_name && model.display_name !== existing.display_name) {
+          updates.display_name = model.display_name
+        }
+        if (model.model_tier && model.model_tier !== existing.model_tier) {
+          updates.model_tier = model.model_tier
+        }
         if (model.owned_by && model.owned_by !== existing.owned_by) {
+          updates.owned_by = model.owned_by
+        }
+
+        if (Object.keys(updates).length > 0) {
+          updates.updated_at = new Date()
           await prisma.llm_config.update({
             where: { id: existing.id },
-            data: {
-              owned_by: model.owned_by,
-              updated_at: new Date(),
-            },
+            data: updates,
           })
           updated++
         } else {
@@ -72,8 +73,9 @@ export async function POST(request: NextRequest) {
         await prisma.llm_config.create({
           data: {
             model_name: modelName,
+            display_name: model.display_name || modelName,
+            model_tier: model.model_tier || null,
             owned_by: model.owned_by ?? '',
-            display_name: modelName,
             enabled: 0,
             is_default: 0,
             credit_rate: 1.0,
@@ -87,7 +89,7 @@ export async function POST(request: NextRequest) {
     }
 
     return apiSuccess({
-      totalFromProxy: models.length,
+      total: models.length,
       created,
       updated,
       skipped,

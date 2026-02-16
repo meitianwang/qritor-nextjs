@@ -59,10 +59,16 @@ export async function GET(request: NextRequest) {
         OR: [
           { is_preset: 1 },
           { user_id: user.id },
+          { status: 'published' },
         ],
       }
     } else {
-      where = { is_preset: 1 }
+      where = {
+        OR: [
+          { is_preset: 1 },
+          { status: 'published' },
+        ],
+      }
     }
 
     const methods = await prisma.novel_creation_method.findMany({
