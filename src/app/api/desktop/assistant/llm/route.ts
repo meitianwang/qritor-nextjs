@@ -127,7 +127,19 @@ export async function POST(request: NextRequest) {
       },
     })
 
-    return result.toUIMessageStreamResponse()
+    return result.toUIMessageStreamResponse({
+      messageMetadata: ({ part }) => {
+        if (part.type === 'finish') {
+          return {
+            usage: {
+              inputTokens: part.totalUsage.inputTokens ?? 0,
+              outputTokens: part.totalUsage.outputTokens ?? 0,
+            },
+          }
+        }
+        return undefined
+      },
+    })
   } catch (error) {
     if (error instanceof Response) return error
     return jsonError(500, `桌面端助手请求失败: ${String(error)}`)
