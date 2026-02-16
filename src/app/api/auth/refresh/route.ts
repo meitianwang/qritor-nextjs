@@ -6,7 +6,7 @@ import { authService } from '@/lib/services/auth-service'
 
 export async function POST(request: NextRequest) {
   try {
-    let body: { refresh_token?: string; client?: string } = {}
+    let body: { refreshToken?: string; client?: string } = {}
     try {
       body = await request.json()
     } catch {
@@ -14,7 +14,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Body takes priority (for desktop), otherwise read from cookie
-    const refreshToken = body.refresh_token || request.cookies.get('refresh_token')?.value
+    const refreshToken = body.refreshToken || request.cookies.get('refresh_token')?.value
     const client = body.client
 
     if (!refreshToken) {

@@ -59,7 +59,7 @@ function LoginPageContent() {
             const { accessToken, refreshToken, expiresAt, ...user } = data
             const callbackUrl = buildCallbackUrl(desktopCallback, {
                 access_token: accessToken as string,
-                refresh_token: (refreshToken as string) || '',
+                refreshToken: (refreshToken as string) || '',
                 expires_at: expiresAt as string,
                 user: encodeURIComponent(JSON.stringify(user))
             })
@@ -109,7 +109,7 @@ function LoginPageContent() {
                     const { accessToken, refreshToken, expiresAt, expiresIn, ...user } = data.data
                     const callbackUrl = buildCallbackUrl(desktopCallback, {
                         access_token: accessToken,
-                        refresh_token: refreshToken || '',
+                        refreshToken: refreshToken || '',
                         expires_at: expiresAt || (expiresIn ? new Date(Date.now() + expiresIn * 1000).toISOString() : ''),
                         user: encodeURIComponent(JSON.stringify(user))
                     })
