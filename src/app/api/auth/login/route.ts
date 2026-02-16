@@ -84,7 +84,7 @@ export async function POST(request: NextRequest) {
       sameSite: (process.env.COOKIE_SAMESITE as 'lax' | 'strict' | 'none') || 'lax',
       domain: process.env.COOKIE_DOMAIN || undefined,
       maxAge: REFRESH_TOKEN_EXPIRE_DAYS * 86400,
-      path: '/api/auth',
+      path: '/',
     })
 
     return response

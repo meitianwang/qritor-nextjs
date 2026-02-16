@@ -77,7 +77,7 @@ export async function POST(request: NextRequest) {
       sameSite: (process.env.COOKIE_SAMESITE as 'lax' | 'strict' | 'none') || 'lax',
       domain: process.env.COOKIE_DOMAIN || undefined,
       maxAge: 0,
-      path: '/api/auth',
+      path: '/',
     })
 
     return response

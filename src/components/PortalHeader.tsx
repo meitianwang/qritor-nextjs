@@ -122,7 +122,7 @@ function PortalHeader() {
                         <Link href="/referral" className="btn-earn-credits" title={t('common.getMoreCredits')}>
                             <GiftIcon size={16} />
                         </Link>
-                        {isLoggedIn() && user ? (
+                        {!isRestoring && isLoggedIn() && user ? (
                             <>
                                 <div className="user-menu" ref={dropdownRef}>
                                     <button
