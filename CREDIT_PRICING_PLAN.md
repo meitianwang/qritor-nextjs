@@ -35,17 +35,17 @@
 
 ## 二、模型价格表（来源：Vercel AI Gateway 实际截图）
 
-| 模型 | 输入 ($/1M) | 输出 ($/1M) | 等级 |
-|------|------------|------------|------|
-| xai/grok-4.1-fast-reasoning | $0.20 | $0.50 | 入门 |
-| zai/glm-4.7-flash | $0.20 | $0.40 | 入门 |
-| deepseek/deepseek-v3.2-thinking | $0.28 | $0.42 | 入门 |
-| minimax/minimax-m2.5 | $0.30 | $1.20 | 入门 |
-| moonshotai/kimi-k2.5 | $0.50 | $2.80 | 中级 |
-| google/gemini-3-flash | $0.50 | $3.00 | 中级 |
-| zai/glm-5 | $1.00 | $3.20 | 中级 |
-| anthropic/claude-sonnet-4.5 | $3.00 | $15.00 | 旗舰 |
-| anthropic/claude-opus-4.6 | $5.00 | $25.00 | 旗舰 |
+| 模型 | 输入 ($/1M) | 输出 ($/1M) |
+|------|------------|------------|
+| xai/grok-4.1-fast-reasoning | $0.20 | $0.50 |
+| zai/glm-4.7-flash | $0.20 | $0.40 |
+| deepseek/deepseek-v3.2-thinking | $0.28 | $0.42 |
+| minimax/minimax-m2.5 | $0.30 | $1.20 |
+| moonshotai/kimi-k2.5 | $0.50 | $2.80 |
+| google/gemini-3-flash | $0.50 | $3.00 |
+| zai/glm-5 | $1.00 | $3.20 |
+| anthropic/claude-sonnet-4.5 | $3.00 | $15.00 |
+| anthropic/claude-opus-4.6 | $5.00 | $25.00 |
 
 ---
 
@@ -113,44 +113,51 @@
 
 ---
 
-## 五、模型选择器积分展示
+## 五、模型选择器展示（参考 Cursor）
 
-桌面端模型选择器需要给用户直观展示不同模型的积分消耗。
+模型名称右侧显示小数倍率，以默认模型为 1.0x 基准。
 
 ### 展示方案
 
-模型名称右侧显示"每次续写大约消耗多少积分"，用颜色区分价格等级：
-
 ```
-┌─────────────────────────────────────────────┐
-│  Grok 4.1 Fast Reasoning    ~2 积分/次  🟢  │
-│  GLM-4.7 Flash              ~2 积分/次  🟢  │
-│  DeepSeek V3.2 Thinking     ~2 积分/次  🟢  │
-│  MiniMax M2.5               ~2 积分/次  🟢  │
-│  Kimi K2.5                  ~4 积分/次  🟢  │
-│  Gemini 3 Flash             ~4 积分/次  🟢  │
-│  GLM-5                      ~6 积分/次  🟡  │
-│  Claude Sonnet 4.5         ~21 积分/次  🔴  │
-│  Claude Opus 4.6           ~35 积分/次  🔴  │
-└─────────────────────────────────────────────┘
+┌──────────────────────────────────────┐
+│  Grok 4.1 Fast Reasoning      0.3x  │
+│  GLM-4.7 Flash                0.3x  │
+│  DeepSeek V3.2 Thinking       0.3x  │
+│  MiniMax M2.5                 0.3x  │
+│  Kimi K2.5                    0.7x  │
+│  Gemini 3 Flash               0.7x  │
+│  GLM-5                        1.0x  │ ← 默认模型 = 基准
+│  Claude Sonnet 4.5            3.5x  │
+│  Claude Opus 4.6              5.8x  │
+└──────────────────────────────────────┘
 ```
 
-**颜色规则**：
-- 🟢 绿色（1~5 积分）：经济型
-- 🟡 黄色（6~10 积分）：标准型
-- 🟠 橙色（11~20 积分）：高级型
-- 🔴 红色（21+ 积分）：旗舰型
+### 倍率计算
+
+以默认模型（GLM-5）的续写积分消耗为 1.0x 基准：
+
+```
+基准积分 = ceil((20000 × 1.00 + 3000 × 3.20) / 1,000,000 × 200) = 6
+模型积分 = ceil((20000 × inputPricePerM + 3000 × outputPricePerM) / 1,000,000 × 200)
+倍率 = round(模型积分 / 基准积分, 1)
+```
+
+| 模型 | 积分/次 | 倍率 |
+|------|--------|------|
+| Grok 4.1 Fast | 2 | 0.3x |
+| GLM-4.7 Flash | 2 | 0.3x |
+| DeepSeek V3.2 | 2 | 0.3x |
+| MiniMax M2.5 | 2 | 0.3x |
+| Kimi K2.5 | 4 | 0.7x |
+| Gemini 3 Flash | 4 | 0.7x |
+| **GLM-5** | **6** | **1.0x** |
+| Claude Sonnet 4.5 | 21 | 3.5x |
+| Claude Opus 4.6 | 35 | 5.8x |
 
 ### 数据来源
 
-`llm_config` 表的 `estimated_credits_per_use` 字段（INT），管理员在后台设置。
-
-参考计算方式（按续写场景 20K input + 3K output）：
-```
-estimated_credits_per_use = ceil(
-  (inputPricePerM × 20000 + outputPricePerM × 3000) / 1,000,000 × 200
-)
-```
+`llm_config` 表的 `pricing_multiplier` DECIMAL(3,1) 字段，管理员在后台设置。
 
 ---
 
@@ -204,7 +211,6 @@ estimated_credits_per_use = ceil(
 **llm_config 表**：
 - 新增 `input_price_per_m` DECIMAL(10,6) — 输入价格（$/1M tokens）
 - 新增 `output_price_per_m` DECIMAL(10,6) — 输出价格（$/1M tokens）
-- 新增 `estimated_credits_per_use` INT — 每次续写预估积分消耗（前端展示用）
 - 移除 `normalization_factor` — 不再使用
 - 移除 `credit_rate` — 不再使用
 
