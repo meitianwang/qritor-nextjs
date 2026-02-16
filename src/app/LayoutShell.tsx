@@ -6,7 +6,7 @@ import PortalFooter from '@/components/PortalFooter'
 import ScrollToTop from '@/components/ScrollToTop'
 
 // Pages where header/footer should be hidden (auth pages, docs, etc.)
-const noLayoutPaths = ['/login', '/register', '/forgot-password', '/desktop-login-success']
+const noLayoutPaths = ['/login', '/register', '/forgot-password', '/desktop-login-success', '/admin']
 const docsPrefix = '/docs'
 
 interface LayoutShellProps {

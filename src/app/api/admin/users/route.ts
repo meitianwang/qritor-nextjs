@@ -2,7 +2,7 @@ import { NextRequest } from 'next/server'
 import { apiSuccess, apiError } from '@/lib/api-response'
 import { getCurrentAdminUser } from '@/lib/middleware/auth-middleware'
 import { prisma } from '@/lib/prisma'
-import { serialize } from '@/lib/serialize'
+import { serializeUser } from '@/lib/serialize'
 import { Prisma } from '@/generated/prisma'
 
 export async function GET(request: NextRequest) {
@@ -10,15 +10,15 @@ export async function GET(request: NextRequest) {
     await getCurrentAdminUser(request)
 
     const url = new URL(request.url)
-    const page = Math.max(1, parseInt(url.searchParams.get('page') || '1'))
+    const page = parseInt(url.searchParams.get('page') || '0')
     const size = Math.min(100, Math.max(1, parseInt(url.searchParams.get('size') || '20')))
-    const search = url.searchParams.get('search') || ''
+    const keyword = url.searchParams.get('keyword') || url.searchParams.get('search') || ''
 
-    const where: Prisma.usersWhereInput = search
+    const where: Prisma.usersWhereInput = keyword
       ? {
           OR: [
-            { email: { contains: search } },
-            { nickname: { contains: search } },
+            { email: { contains: keyword } },
+            { nickname: { contains: keyword } },
           ],
         }
       : {}
@@ -36,17 +36,14 @@ export async function GET(request: NextRequest) {
           last_login_at: true,
         },
         orderBy: { created_at: 'desc' },
-        skip: (page - 1) * size,
+        skip: page * size,
         take: size,
       }),
       prisma.users.count({ where }),
     ])
 
     return apiSuccess({
-      items: serialize(users),
-      total,
-      page,
-      size,
+      content: users.map(serializeUser),
       totalPages: Math.ceil(total / size),
     })
   } catch (error) {

@@ -2,7 +2,7 @@ import { NextRequest } from 'next/server'
 import { apiSuccess, apiError } from '@/lib/api-response'
 import { getCurrentAdminUser } from '@/lib/middleware/auth-middleware'
 import { prisma } from '@/lib/prisma'
-import { serialize } from '@/lib/serialize'
+import { serializeCamel } from '@/lib/serialize'
 
 export async function GET(request: NextRequest) {
   try {
@@ -12,7 +12,7 @@ export async function GET(request: NextRequest) {
       orderBy: { created_at: 'desc' },
     })
 
-    return apiSuccess(serialize(configs))
+    return apiSuccess(serializeCamel(configs))
   } catch (error) {
     if (error instanceof Response) return error
     return apiError(500, `获取 LLM 配置列表失败: ${String(error)}`)
@@ -65,7 +65,7 @@ export async function POST(request: NextRequest) {
       },
     })
 
-    return apiSuccess(serialize(config))
+    return apiSuccess(serializeCamel(config))
   } catch (error) {
     if (error instanceof Response) return error
     return apiError(500, `创建 LLM 配置失败: ${String(error)}`)

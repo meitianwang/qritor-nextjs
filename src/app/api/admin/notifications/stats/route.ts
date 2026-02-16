@@ -15,7 +15,7 @@ export async function GET(request: NextRequest) {
 
     return apiSuccess({
       totalUsers,
-      notifiableUsers: notifiableUsers.length,
+      enabledCount: notifiableUsers.length,
       disabledUsers: totalUsers - notifiableUsers.length,
     })
   } catch (error) {

@@ -2,7 +2,7 @@ import { NextRequest } from 'next/server'
 import { apiSuccess, apiError } from '@/lib/api-response'
 import { getCurrentAdminUser } from '@/lib/middleware/auth-middleware'
 import { prisma } from '@/lib/prisma'
-import { serialize } from '@/lib/serialize'
+import { serializeCamel } from '@/lib/serialize'
 
 function maskApiKey(key: string | null): string | null {
   if (!key) return null
@@ -18,12 +18,12 @@ export async function GET(request: NextRequest) {
       orderBy: { created_at: 'desc' },
     })
 
-    const maskedConfigs = configs.map((c) => ({
-      ...serialize(c),
-      api_key: maskApiKey(c.api_key),
+    const result = configs.map((c) => ({
+      ...serializeCamel(c),
+      apiKey: maskApiKey(c.api_key),
     }))
 
-    return apiSuccess(maskedConfigs)
+    return apiSuccess(result)
   } catch (error) {
     if (error instanceof Response) return error
     return apiError(500, `获取视频生成配置列表失败: ${String(error)}`)
@@ -36,64 +36,50 @@ export async function POST(request: NextRequest) {
     const body = await request.json()
     const {
       provider,
-      model_name,
-      api_base,
-      api_key,
-      is_default,
+      modelName, model_name,
+      apiBase, api_base,
+      apiKey, api_key,
+      isDefault, is_default,
       enabled,
-      credit_rate,
-      default_width,
-      default_height,
-      max_width,
-      max_height,
-      default_duration,
-      max_duration,
-      supports_audio,
-    } = body as {
-      provider: string
-      model_name: string
-      api_base?: string
-      api_key?: string
-      is_default?: number
-      enabled?: number
-      credit_rate?: number
-      default_width?: number
-      default_height?: number
-      max_width?: number
-      max_height?: number
-      default_duration?: number
-      max_duration?: number
-      supports_audio?: number
-    }
+      creditRate, credit_rate,
+      defaultWidth, default_width,
+      defaultHeight, default_height,
+      maxWidth, max_width,
+      maxHeight, max_height,
+      defaultDuration, default_duration,
+      maxDuration, max_duration,
+      supportsAudio, supports_audio,
+    } = body as Record<string, unknown>
 
-    if (!provider || !model_name) {
-      return apiError(400, '缺少必要字段: provider, model_name')
+    const mName = (modelName || model_name) as string
+    if (!provider || !mName) {
+      return apiError(400, '缺少必要字段: provider, modelName')
     }
 
     const config = await prisma.video_gen_config.create({
       data: {
-        provider,
-        model_name,
-        api_base: api_base ?? null,
-        api_key: api_key ?? '',
-        is_default: is_default ?? 0,
-        enabled: enabled ?? 1,
-        credit_rate: credit_rate ?? 1.0,
-        default_width: default_width ?? 1280,
-        default_height: default_height ?? 720,
-        max_width: max_width ?? 1920,
-        max_height: max_height ?? 1080,
-        default_duration: default_duration ?? 5,
-        max_duration: max_duration ?? 30,
-        supports_audio: supports_audio ?? 0,
+        provider: provider as string,
+        model_name: mName,
+        api_base: (apiBase || api_base || null) as string | null,
+        api_key: (apiKey || api_key || '') as string,
+        is_default: ((isDefault ?? is_default ?? 0) ? 1 : 0) as number,
+        enabled: ((enabled ?? 1) ? 1 : 0) as number,
+        credit_rate: (creditRate || credit_rate || 1.0) as number,
+        default_width: (defaultWidth || default_width || 1280) as number,
+        default_height: (defaultHeight || default_height || 720) as number,
+        max_width: (maxWidth || max_width || 1920) as number,
+        max_height: (maxHeight || max_height || 1080) as number,
+        default_duration: (defaultDuration || default_duration || 5) as number,
+        max_duration: (maxDuration || max_duration || 30) as number,
+        supports_audio: ((supportsAudio ?? supports_audio ?? 0) ? 1 : 0) as number,
         created_at: new Date(),
         updated_at: new Date(),
       },
     })
 
     return apiSuccess({
-      ...serialize(config),
-      api_key: maskApiKey(config.api_key),
+      ...serializeCamel(config),
+      apiKey: maskApiKey(config.api_key),
     })
   } catch (error) {
     if (error instanceof Response) return error

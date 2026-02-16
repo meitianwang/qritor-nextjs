@@ -2,7 +2,7 @@ import { NextRequest } from 'next/server'
 import { apiSuccess, apiError, apiNotFound } from '@/lib/api-response'
 import { getCurrentAdminUser } from '@/lib/middleware/auth-middleware'
 import { prisma } from '@/lib/prisma'
-import { serialize } from '@/lib/serialize'
+import { serializeCamel } from '@/lib/serialize'
 
 function maskApiKey(key: string | null): string | null {
   if (!key) return null
@@ -27,8 +27,8 @@ export async function GET(
     }
 
     return apiSuccess({
-      ...serialize(config),
-      api_key: maskApiKey(config.api_key),
+      ...serializeCamel(config),
+      apiKey: maskApiKey(config.api_key),
     })
   } catch (error) {
     if (error instanceof Response) return error
@@ -100,8 +100,8 @@ export async function PUT(
     })
 
     return apiSuccess({
-      ...serialize(updated),
-      api_key: maskApiKey(updated.api_key),
+      ...serializeCamel(updated),
+      apiKey: maskApiKey(updated.api_key),
     })
   } catch (error) {
     if (error instanceof Response) return error

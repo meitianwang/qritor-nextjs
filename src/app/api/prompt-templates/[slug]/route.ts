@@ -2,7 +2,7 @@ import { NextRequest } from 'next/server'
 import { apiSuccess, apiError, apiNotFound } from '@/lib/api-response'
 import { getCurrentAdminUser } from '@/lib/middleware/auth-middleware'
 import { prisma } from '@/lib/prisma'
-import { serialize } from '@/lib/serialize'
+import { serializeCamel } from '@/lib/serialize'
 
 export async function GET(
   request: NextRequest,
@@ -19,7 +19,7 @@ export async function GET(
       return apiNotFound('提示词模板不存在')
     }
 
-    return apiSuccess(serialize(template))
+    return apiSuccess(serializeCamel(template))
   } catch (error) {
     return apiError(500, `获取提示词模板失败: ${String(error)}`)
   }
@@ -65,7 +65,7 @@ export async function PUT(
       data: updateData,
     })
 
-    return apiSuccess(serialize(updated))
+    return apiSuccess(serializeCamel(updated))
   } catch (error) {
     if (error instanceof Response) return error
     return apiError(500, `更新提示词模板失败: ${String(error)}`)

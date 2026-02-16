@@ -43,6 +43,16 @@ export function middleware(request: NextRequest) {
     return response
   }
 
+  // Admin route protection - redirect to admin login
+  if (pathname.startsWith('/admin') && !pathname.startsWith('/admin/login')) {
+    const refreshToken = request.cookies.get('refresh_token')?.value
+    if (!refreshToken) {
+      const loginUrl = new URL('/admin/login', request.url)
+      loginUrl.searchParams.set('redirect', pathname)
+      return NextResponse.redirect(loginUrl)
+    }
+  }
+
   // Protected page routes - check refresh_token cookie
   if (protectedPaths.some((p) => pathname.startsWith(p))) {
     const refreshToken = request.cookies.get('refresh_token')?.value

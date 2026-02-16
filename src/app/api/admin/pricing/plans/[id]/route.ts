@@ -2,7 +2,7 @@ import { NextRequest } from 'next/server'
 import { apiSuccess, apiError, apiNotFound } from '@/lib/api-response'
 import { getCurrentAdminUser } from '@/lib/middleware/auth-middleware'
 import { prisma } from '@/lib/prisma'
-import { serialize } from '@/lib/serialize'
+import { serializeCamel } from '@/lib/serialize'
 
 export async function GET(
   request: NextRequest,
@@ -20,7 +20,7 @@ export async function GET(
       return apiNotFound('套餐不存在')
     }
 
-    return apiSuccess(serialize(plan))
+    return apiSuccess(serializeCamel(plan))
   } catch (error) {
     if (error instanceof Response) return error
     return apiError(500, `获取套餐详情失败: ${String(error)}`)
@@ -43,39 +43,28 @@ export async function PUT(
       return apiNotFound('套餐不存在')
     }
 
-    const {
-      display_name,
-      price,
-      monthly_credits,
-      max_projects,
-      descriptions,
-      features_i18n,
-      is_active,
-    } = body as {
-      display_name?: string
-      price?: number
-      monthly_credits?: number
-      max_projects?: number
-      descriptions?: unknown
-      features_i18n?: unknown
-      is_active?: boolean
-    }
+    const b = body as Record<string, unknown>
 
     const updateData: Record<string, unknown> = {}
-    if (display_name !== undefined) updateData.display_name = display_name
-    if (price !== undefined) updateData.price = price
-    if (monthly_credits !== undefined) updateData.monthly_credits = BigInt(monthly_credits)
-    if (max_projects !== undefined) updateData.max_projects = BigInt(max_projects)
-    if (descriptions !== undefined) updateData.descriptions = descriptions
-    if (features_i18n !== undefined) updateData.features_i18n = features_i18n
-    if (is_active !== undefined) updateData.is_active = is_active
+    const dName = b.displayName ?? b.display_name
+    if (dName !== undefined) updateData.display_name = dName
+    if (b.price !== undefined) updateData.price = b.price
+    const mCredits = b.monthlyCredits ?? b.monthly_credits
+    if (mCredits !== undefined) updateData.monthly_credits = BigInt(mCredits as number)
+    const mProjects = b.maxProjects ?? b.max_projects
+    if (mProjects !== undefined) updateData.max_projects = BigInt(mProjects as number)
+    if (b.descriptions !== undefined) updateData.descriptions = b.descriptions
+    const fI18n = b.featuresI18n ?? b.features_i18n
+    if (fI18n !== undefined) updateData.features_i18n = fI18n
+    const active = b.isActive ?? b.is_active
+    if (active !== undefined) updateData.is_active = active
 
     const updated = await prisma.subscription_plans.update({
       where: { id: BigInt(id) },
       data: updateData,
     })
 
-    return apiSuccess(serialize(updated))
+    return apiSuccess(serializeCamel(updated))
   } catch (error) {
     if (error instanceof Response) return error
     return apiError(500, `更新套餐失败: ${String(error)}`)

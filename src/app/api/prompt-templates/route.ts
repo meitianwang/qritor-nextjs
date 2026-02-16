@@ -2,18 +2,18 @@ import { NextRequest } from 'next/server'
 import { apiSuccess, apiError } from '@/lib/api-response'
 import { getCurrentAdminUser } from '@/lib/middleware/auth-middleware'
 import { prisma } from '@/lib/prisma'
-import { serialize } from '@/lib/serialize'
+import { serializeCamel } from '@/lib/serialize'
 
 export async function GET(request: NextRequest) {
   try {
     const url = new URL(request.url)
     const category = url.searchParams.get('category')
-    const is_active = url.searchParams.get('is_active')
+    const activeOnly = url.searchParams.get('activeOnly')
 
     const where: Record<string, unknown> = {}
     if (category) where.category = category
-    if (is_active !== null && is_active !== '') {
-      where.is_active = parseInt(is_active)
+    if (activeOnly === 'true') {
+      where.is_active = 1
     }
 
     const templates = await prisma.prompt_template.findMany({
@@ -21,7 +21,16 @@ export async function GET(request: NextRequest) {
       orderBy: { updated_at: 'desc' },
     })
 
-    return apiSuccess(serialize(templates))
+    const result = templates.map(t => ({
+      slug: t.slug,
+      name: t.name,
+      category: t.category,
+      version: t.version,
+      isActive: t.is_active === 1,
+      updatedAt: t.updated_at?.toISOString() || null,
+    }))
+
+    return apiSuccess(result)
   } catch (error) {
     return apiError(500, `获取提示词模板列表失败: ${String(error)}`)
   }
@@ -66,7 +75,7 @@ export async function POST(request: NextRequest) {
       },
     })
 
-    return apiSuccess(serialize(template))
+    return apiSuccess(serializeCamel(template))
   } catch (error) {
     if (error instanceof Response) return error
     return apiError(500, `创建提示词模板失败: ${String(error)}`)

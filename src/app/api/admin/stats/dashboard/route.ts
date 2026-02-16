@@ -28,7 +28,7 @@ export async function GET(request: NextRequest) {
 
     return apiSuccess({
       totalUsers,
-      todayUsers,
+      todayNewUsers: todayUsers,
       totalOrders,
       activeSubscriptions,
     })

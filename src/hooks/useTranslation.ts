@@ -30,7 +30,7 @@ function getNestedValue(obj: Record<string, unknown>, path: string): unknown {
 }
 
 interface TranslationHook {
-    t: (key: string, params?: Record<string, string | number>) => string
+    t: (key: string, paramsOrFallback?: string | Record<string, string | number>) => string
     language: string
     isLoading: boolean
 }
@@ -132,16 +132,19 @@ export function useTranslation(namespace: string = 'portal'): TranslationHook {
      * @param params - replacement parameters
      * @returns translated text
      */
-    const t = useCallback((key: string, params: Record<string, string | number> = {}): string => {
+    const t = useCallback((key: string, paramsOrFallback: string | Record<string, string | number> = {}): string => {
+        const fallback = typeof paramsOrFallback === 'string' ? paramsOrFallback : undefined
+        const params = typeof paramsOrFallback === 'object' ? paramsOrFallback : {}
+
         const value = getNestedValue(translations, key)
 
         if (value === undefined) {
-            // Translation not found, return key itself
-            return key
+            // Translation not found, return fallback or key itself
+            return fallback || key
         }
 
         if (typeof value !== 'string') {
-            return key
+            return fallback || key
         }
 
         // Replace parameters {{param}}

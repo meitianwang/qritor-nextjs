@@ -64,7 +64,7 @@ function PortalHeader() {
                     {/* Navigation links */}
                     <div className={`navbar-menu ${showMobileMenu ? 'show' : ''}`}>
                         <Link href="/pricing" className="navbar-link" onClick={() => setShowMobileMenu(false)}>{t('header.pricing')}</Link>
-                        <a href="/docs/" className="navbar-link" target="_blank" rel="noopener noreferrer" onClick={() => setShowMobileMenu(false)}>{t('header.docs')}</a>
+                        <Link href="/docs" className="navbar-link" onClick={() => setShowMobileMenu(false)}>{t('header.docs')}</Link>
                         <Link href="/changelog" className="navbar-link" onClick={() => setShowMobileMenu(false)}>{t('header.changelog')}</Link>
 
                         {/* Community dropdown */}
