@@ -1,7 +1,6 @@
 'use client'
 
 import React from 'react'
-import { useTranslation } from '@/hooks/useTranslation'
 
 interface ParameterOption {
     value: string
@@ -79,8 +78,6 @@ const NodePropertiesPanel: React.FC<NodePropertiesPanelProps> = ({
     isCollapsed,
     onToggleCollapse
 }) => {
-    const { t } = useTranslation('studio')
-
     // 折叠状态时不渲染任何内容（展开按钮由父组件处理）
     if (isCollapsed) {
         return null
@@ -94,7 +91,7 @@ const NodePropertiesPanel: React.FC<NodePropertiesPanelProps> = ({
                 <button
                     onClick={onToggleCollapse}
                     className="absolute top-3 right-3 p-2 text-white/30 hover:text-white/60 hover:bg-white/[0.04] rounded-lg transition-all"
-                    title={t('methodDetail.collapseSidebar', '收起侧边栏')}
+                    title={'收起侧边栏'}
                 >
                     <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         {/* 面板图标 */}
@@ -105,10 +102,10 @@ const NodePropertiesPanel: React.FC<NodePropertiesPanelProps> = ({
 
                 {/* 工作流名称 */}
                 <h3 className="text-base font-medium text-white/90 truncate pr-10 mb-1">
-                    {activeWorkflow?.name || t('methodDetail.noWorkflow', '无工作流')}
+                    {activeWorkflow?.name || '无工作流'}
                 </h3>
                 <p className="text-xs text-white/40 line-clamp-2 leading-relaxed mb-4">
-                    {activeWorkflow?.description || t('methodDetail.noDescription', '暂无描述')}
+                    {activeWorkflow?.description || '暂无描述'}
                 </p>
 
                 {/* 发布按钮 - 只在未发布且可编辑时显示 */}
@@ -156,8 +153,8 @@ const NodePropertiesPanel: React.FC<NodePropertiesPanelProps> = ({
                                 </svg>
                             </div>
                             <div>
-                                <h4 className="text-sm font-medium text-white">{t('methodDetail.nodeProperties', '节点属性')}</h4>
-                                <p className="text-xs text-white/40">{t('methodDetail.configureNode', '配置节点参数')}</p>
+                                <h4 className="text-sm font-medium text-white">{'节点属性'}</h4>
+                                <p className="text-xs text-white/40">{'配置节点参数'}</p>
                             </div>
                         </div>
                     </div>
@@ -171,7 +168,7 @@ const NodePropertiesPanel: React.FC<NodePropertiesPanelProps> = ({
                                     <svg className="w-3 h-3 text-teal-400/60" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
                                     </svg>
-                                    {t('methodDetail.nodeType', '节点类型')}
+                                    {'节点类型'}
                                 </label>
                                 <div
                                     className="px-3 py-2 rounded-lg text-xs font-mono text-teal-300/80"
@@ -190,7 +187,7 @@ const NodePropertiesPanel: React.FC<NodePropertiesPanelProps> = ({
                                     <svg className="w-3 h-3 text-teal-400/60" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
                                     </svg>
-                                    {t('methodDetail.nodeName', '节点名称')}
+                                    {'节点名称'}
                                 </label>
                                 <input
                                     type="text"
@@ -209,7 +206,7 @@ const NodePropertiesPanel: React.FC<NodePropertiesPanelProps> = ({
                                         }))
                                     }}
                                     className="w-full px-3 py-2 text-sm bg-white/[0.03] border border-white/[0.08] rounded-lg text-white placeholder-white/30 focus:outline-none focus:border-teal-500/50 focus:ring-1 focus:ring-teal-500/20 transition-all"
-                                    placeholder={t('methodDetail.inputNodeName', '输入节点名称')}
+                                    placeholder={'输入节点名称'}
                                 />
                             </div>
 
@@ -220,7 +217,7 @@ const NodePropertiesPanel: React.FC<NodePropertiesPanelProps> = ({
                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                                     </svg>
-                                    <h4 className="text-xs font-medium text-white/80">{t('methodDetail.configParams', '配置参数')}</h4>
+                                    <h4 className="text-xs font-medium text-white/80">{'配置参数'}</h4>
                                 </div>
 
                                 <div className="space-y-3">
@@ -236,7 +233,7 @@ const NodePropertiesPanel: React.FC<NodePropertiesPanelProps> = ({
                                                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4" />
                                                         </svg>
                                                     </div>
-                                                    <p className="text-xs text-white/40">{t('methodDetail.noConfigParams', '无配置参数')}</p>
+                                                    <p className="text-xs text-white/40">{'无配置参数'}</p>
                                                 </div>
                                             )
                                         }
@@ -271,7 +268,7 @@ const NodePropertiesPanel: React.FC<NodePropertiesPanelProps> = ({
                                                                 }}
                                                                 className="w-full px-3 py-2 text-sm bg-white/[0.03] border border-white/[0.08] rounded-lg text-white focus:outline-none focus:border-teal-500/50 focus:ring-1 focus:ring-teal-500/20 transition-all appearance-none cursor-pointer"
                                                             >
-                                                                <option value="" className="bg-[#1a1a1a]">{t('methodDetail.pleaseSelect', '请选择')}</option>
+                                                                <option value="" className="bg-[#1a1a1a]">{'请选择'}</option>
                                                                 {param.options.map((opt: any) => (
                                                                     <option key={opt.value} value={opt.value} className="bg-[#1a1a1a]">
                                                                         {opt.label}
@@ -298,7 +295,7 @@ const NodePropertiesPanel: React.FC<NodePropertiesPanelProps> = ({
                                                                 </div>
                                                             </div>
                                                             <span className="text-xs text-white/50">
-                                                                {value === true || value === 'true' ? t('common.enabled', '已启用') : t('common.disabled', '已禁用')}
+                                                                {value === true || value === 'true' ? '已启用' : '已禁用'}
                                                             </span>
                                                         </label>
                                                     ) : param.type === 'object' || param.type === 'array' ? (
@@ -341,7 +338,7 @@ const NodePropertiesPanel: React.FC<NodePropertiesPanelProps> = ({
                             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                             </svg>
-                            {t('methodDetail.deleteNode', '删除节点')}
+                            {'删除节点'}
                         </button>
                     </div>
                 </>
@@ -356,7 +353,7 @@ const NodePropertiesPanel: React.FC<NodePropertiesPanelProps> = ({
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M15 15l-2 5L9 9l11 4-5 2zm0 0l5 5M7.188 2.239l.777 2.897M5.136 7.965l-2.898-.777M13.95 4.05l-2.122 2.122m-5.657 5.656l-2.12 2.122" />
                             </svg>
                         </div>
-                        <p className="text-xs text-white/40">{t('methodDetail.selectNodeTip', '选择节点查看属性')}</p>
+                        <p className="text-xs text-white/40">{'选择节点查看属性'}</p>
                     </div>
                 </div>
             )}

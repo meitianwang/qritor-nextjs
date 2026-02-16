@@ -8,7 +8,6 @@ import JsonSchemaEditor from '@/components/admin/JsonSchemaEditor'
 import AiContextEditor from '@/components/admin/AiContextEditor'
 import MarkdownPreviewModal from '@/components/admin/MarkdownPreviewModal'
 import { authFetch } from '@/lib/auth-utils'
-import { useTranslation } from '@/hooks/useTranslation'
 
 interface Category {
     id: string
@@ -131,7 +130,6 @@ const Sidebar: React.FC<SidebarProps> = ({
     onToggleCollapse,
     onUpdateVisibleCategories
 }) => {
-    const { t } = useTranslation('studio')
     const [isWorkflowsOpen, setIsWorkflowsOpen] = useState(false)
     const [isModuleTypesOpen, setIsModuleTypesOpen] = useState(false)
     const [isKnowledgeOpen, setIsKnowledgeOpen] = useState(false)
@@ -210,14 +208,14 @@ const Sidebar: React.FC<SidebarProps> = ({
             } else {
                 setPreviewModal(prev => ({
                     ...prev,
-                    content: t('methodDetail.loadFailed') + ': ' + result.message,
+                    content: '加载失败' + ': ' + result.message,
                     loading: false
                 }))
             }
         } catch (error) {
             setPreviewModal(prev => ({
                 ...prev,
-                content: t('methodDetail.loadFailed') + ': ' + (error as Error).message,
+                content: '加载失败' + ': ' + (error as Error).message,
                 loading: false
             }))
         }
@@ -317,7 +315,7 @@ const Sidebar: React.FC<SidebarProps> = ({
                 <button
                     onClick={onToggleCollapse}
                     className="absolute top-3 right-3 p-2 text-white/30 hover:text-white/60 hover:bg-white/[0.04] rounded-lg transition-all"
-                    title={t('methodDetail.collapseSidebar', '收起侧边栏')}
+                    title="收起侧边栏"
                 >
                     <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         {/* 面板图标 */}
@@ -328,12 +326,12 @@ const Sidebar: React.FC<SidebarProps> = ({
 
                 {/* 标题 */}
                 <h1 className="text-base font-medium text-white/90 truncate pr-10 mb-2" title={method?.name}>
-                    {method ? method.name : t('methodDetail.loading')}
+                    {method ? method.name : '加载中...'}
                 </h1>
 
                 {/* 描述 */}
                 <p className="text-xs text-white/40 line-clamp-2 leading-relaxed">
-                    {method?.description || t('methodDetail.noDescription')}
+                    {method?.description || '暂无描述'}
                 </p>
 
                 {plotConfig && (
@@ -405,7 +403,7 @@ const Sidebar: React.FC<SidebarProps> = ({
                         <svg className="w-4 h-4 text-white/60" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
                         </svg>
-                        <h3 className="text-sm font-semibold text-white/90">{t('methodDetail.nodeTypes')}</h3>
+                        <h3 className="text-sm font-semibold text-white/90">节点类型</h3>
                     </div>
                     <div className="space-y-2">
                         {nodeActions.map((action) => (
@@ -437,7 +435,7 @@ const Sidebar: React.FC<SidebarProps> = ({
                             </div>
                         ))}
                         {nodeActions.length === 0 && (
-                            <div className="text-xs text-white/30 text-center py-4">{t('methodDetail.noNodeTypes')}</div>
+                            <div className="text-xs text-white/30 text-center py-4">暂无节点类型</div>
                         )}
                     </div>
                 </div>
@@ -447,14 +445,14 @@ const Sidebar: React.FC<SidebarProps> = ({
                     <SectionHeader
                         isOpen={isWorkflowsOpen}
                         onToggle={() => setIsWorkflowsOpen(!isWorkflowsOpen)}
-                        title={t('methodDetail.workflow')}
+                        title="工作流"
                         icon={
                             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
                             </svg>
                         }
                         onAdd={onCreateWorkflow}
-                        addTitle={t('methodDetail.newWorkflow')}
+                        addTitle="新建工作流"
                     />
                     {isWorkflowsOpen && (
                         <div className="space-y-2">
@@ -468,7 +466,7 @@ const Sidebar: React.FC<SidebarProps> = ({
                                             <ActionButton
                                                 onClick={onDeleteWorkflow}
                                                 color="red"
-                                                title={t('methodDetail.delete')}
+                                                title="删除"
                                             >
                                                 <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
@@ -483,7 +481,7 @@ const Sidebar: React.FC<SidebarProps> = ({
                                 </ListItem>
                             ))}
                             {workflows?.length === 0 && (
-                                <div className="text-xs text-white/30 text-center py-4">{t('methodDetail.noWorkflows')}</div>
+                                <div className="text-xs text-white/30 text-center py-4">暂无工作流</div>
                             )}
                         </div>
                     )}
@@ -494,14 +492,14 @@ const Sidebar: React.FC<SidebarProps> = ({
                     <SectionHeader
                         isOpen={isModuleTypesOpen}
                         onToggle={() => setIsModuleTypesOpen(!isModuleTypesOpen)}
-                        title={t('methodDetail.moduleTypes')}
+                        title="模块类型"
                         icon={
                             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
                             </svg>
                         }
                         onAdd={() => { onOpenModal?.(); moduleTypeModalRef.current?.open({ novelCreationMethodId: method?.id }); }}
-                        addTitle={t('methodDetail.newModuleType')}
+                        addTitle="新建模块类型"
                     />
                     {isModuleTypesOpen && (
                         <div className="space-y-1">
@@ -512,29 +510,29 @@ const Sidebar: React.FC<SidebarProps> = ({
                                             <div className="flex items-center gap-2 min-w-0">
                                                 <span className="font-medium text-white/80 truncate">{mt.name}</span>
                                                 {mt.singleton && (
-                                                    <span className="text-[10px] px-1.5 py-0.5 bg-cyan-500/15 text-cyan-400 rounded border border-cyan-500/20">{t('methodDetail.singleton')}</span>
+                                                    <span className="text-[10px] px-1.5 py-0.5 bg-cyan-500/15 text-cyan-400 rounded border border-cyan-500/20">单例</span>
                                                 )}
                                             </div>
                                             <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0">
-                                                <ActionButton onClick={() => { onOpenModal?.(); jsonSchemaEditorRef.current?.open(mt) }} color="blue" title={t('methodDetail.editJsonDef')}>
+                                                <ActionButton onClick={() => { onOpenModal?.(); jsonSchemaEditorRef.current?.open(mt) }} color="blue" title="编辑 JSON 定义">
                                                     <span className="text-[10px] font-mono font-bold">&lt;/&gt;</span>
                                                 </ActionButton>
                                                 {mt.enableAi && (
-                                                    <ActionButton onClick={() => { onOpenModal?.(); aiContextEditorRef.current?.open(mt) }} color="orange" title={t('methodDetail.aiConfig')}>
+                                                    <ActionButton onClick={() => { onOpenModal?.(); aiContextEditorRef.current?.open(mt) }} color="orange" title="AI 配置">
                                                         <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
                                                         </svg>
                                                     </ActionButton>
                                                 )}
-                                                <ActionButton onClick={() => { onOpenModal?.(); moduleTypeModalRef.current?.open(mt) }} color="gray" title={t('methodDetail.editBasicInfo')}>
+                                                <ActionButton onClick={() => { onOpenModal?.(); moduleTypeModalRef.current?.open(mt) }} color="gray" title="编辑基本信息">
                                                     <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
                                                     </svg>
                                                 </ActionButton>
                                                 {deletingItem?.type === 'moduleType' && deletingItem?.id === mt.id ? (
-                                                    <span className="text-xs text-white/40 px-1 animate-pulse">{t('methodDetail.deleting')}</span>
+                                                    <span className="text-xs text-white/40 px-1 animate-pulse">删除中...</span>
                                                 ) : (
-                                                    <ActionButton onClick={() => handleDelete('moduleType', mt.id)} color="red" title={t('methodDetail.delete')}>
+                                                    <ActionButton onClick={() => handleDelete('moduleType', mt.id)} color="red" title="删除">
                                                         <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                                                         </svg>
@@ -545,7 +543,7 @@ const Sidebar: React.FC<SidebarProps> = ({
                                     </div>
                                 </div>
                             ))}
-                            {moduleTypes.length === 0 && <div className="text-xs text-white/30 text-center py-4">{t('methodDetail.noModuleTypes')}</div>}
+                            {moduleTypes.length === 0 && <div className="text-xs text-white/30 text-center py-4">暂无模块类型</div>}
                         </div>
                     )}
                 </div>
@@ -555,14 +553,14 @@ const Sidebar: React.FC<SidebarProps> = ({
                     <SectionHeader
                         isOpen={isKnowledgeOpen}
                         onToggle={() => setIsKnowledgeOpen(!isKnowledgeOpen)}
-                        title={t('methodDetail.knowledgeBase')}
+                        title="知识库"
                         icon={
                             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
                             </svg>
                         }
                         onAdd={() => { onOpenModal?.(); knowledgeModalRef.current?.open({ novelCreationMethodId: method?.id }); }}
-                        addTitle={t('methodDetail.newKnowledge')}
+                        addTitle="新建知识"
                     />
                     {isKnowledgeOpen && (
                         <div className="space-y-2">
@@ -571,21 +569,21 @@ const Sidebar: React.FC<SidebarProps> = ({
                                     <div className="flex items-center justify-between">
                                         <span className="font-medium text-white/80 truncate">{k.name}</span>
                                         <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
-                                            <ActionButton onClick={() => handleViewKnowledge(k)} color="gray" title={t('methodDetail.viewContent')}>
+                                            <ActionButton onClick={() => handleViewKnowledge(k)} color="gray" title="查看内容">
                                                 <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
                                                 </svg>
                                             </ActionButton>
-                                            <ActionButton onClick={() => { onOpenModal?.(); knowledgeModalRef.current?.open(k) }} color="blue" title={t('common.edit')}>
+                                            <ActionButton onClick={() => { onOpenModal?.(); knowledgeModalRef.current?.open(k) }} color="blue" title="编辑">
                                                 <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
                                                 </svg>
                                             </ActionButton>
                                             {deletingItem?.type === 'knowledge' && deletingItem?.id === k.id ? (
-                                                <span className="text-xs text-white/40 px-1 animate-pulse">{t('methodDetail.deleting')}</span>
+                                                <span className="text-xs text-white/40 px-1 animate-pulse">删除中...</span>
                                             ) : (
-                                                <ActionButton onClick={() => handleDelete('knowledge', k.id)} color="red" title={t('common.delete')}>
+                                                <ActionButton onClick={() => handleDelete('knowledge', k.id)} color="red" title="删除">
                                                     <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                                                     </svg>
@@ -595,7 +593,7 @@ const Sidebar: React.FC<SidebarProps> = ({
                                     </div>
                                 </ListItem>
                             ))}
-                            {knowledges.length === 0 && <div className="text-xs text-white/30 text-center py-4">{t('methodDetail.noKnowledges')}</div>}
+                            {knowledges.length === 0 && <div className="text-xs text-white/30 text-center py-4">暂无知识</div>}
                         </div>
                     )}
                 </div>
@@ -605,14 +603,14 @@ const Sidebar: React.FC<SidebarProps> = ({
                     <SectionHeader
                         isOpen={isPromptsOpen}
                         onToggle={() => setIsPromptsOpen(!isPromptsOpen)}
-                        title={t('methodDetail.prompts')}
+                        title="提示词"
                         icon={
                             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />
                             </svg>
                         }
                         onAdd={() => { onOpenModal?.(); promptModalRef.current?.open({ novelCreationMethodId: method?.id }); }}
-                        addTitle={t('methodDetail.newPrompt')}
+                        addTitle="新建提示词"
                     />
                     {isPromptsOpen && (
                         <div className="space-y-2">
@@ -621,21 +619,21 @@ const Sidebar: React.FC<SidebarProps> = ({
                                     <div className="flex items-center justify-between">
                                         <span className="font-medium text-white/80 truncate">{p.name}</span>
                                         <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
-                                            <ActionButton onClick={() => handleViewPrompt(p)} color="gray" title={t('methodDetail.viewContent')}>
+                                            <ActionButton onClick={() => handleViewPrompt(p)} color="gray" title="查看内容">
                                                 <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
                                                 </svg>
                                             </ActionButton>
-                                            <ActionButton onClick={() => { onOpenModal?.(); promptModalRef.current?.open(p) }} color="blue" title={t('common.edit')}>
+                                            <ActionButton onClick={() => { onOpenModal?.(); promptModalRef.current?.open(p) }} color="blue" title="编辑">
                                                 <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
                                                 </svg>
                                             </ActionButton>
                                             {deletingItem?.type === 'prompt' && deletingItem?.id === p.id ? (
-                                                <span className="text-xs text-white/40 px-1 animate-pulse">{t('methodDetail.deleting')}</span>
+                                                <span className="text-xs text-white/40 px-1 animate-pulse">删除中...</span>
                                             ) : (
-                                                <ActionButton onClick={() => handleDelete('prompt', p.id)} color="red" title={t('common.delete')}>
+                                                <ActionButton onClick={() => handleDelete('prompt', p.id)} color="red" title="删除">
                                                     <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                                                     </svg>
@@ -645,7 +643,7 @@ const Sidebar: React.FC<SidebarProps> = ({
                                     </div>
                                 </ListItem>
                             ))}
-                            {prompts.length === 0 && <div className="text-xs text-white/30 text-center py-4">{t('methodDetail.noPrompts')}</div>}
+                            {prompts.length === 0 && <div className="text-xs text-white/30 text-center py-4">暂无提示词</div>}
                         </div>
                     )}
                 </div>

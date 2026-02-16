@@ -16,7 +16,6 @@ import ReactFlow, {
 } from 'reactflow'
 import 'reactflow/dist/style.css'
 import CustomNode from './CustomNode'
-import { useTranslation } from '@/hooks/useTranslation'
 
 const nodeTypes = {
     custom: CustomNode
@@ -88,7 +87,6 @@ const WorkflowCanvas: React.FC<WorkflowCanvasProps> = ({
     publishing
 }) => {
     const reactFlowWrapper = useRef<HTMLDivElement>(null)
-    const { t } = useTranslation('studio')
     const [connectStart, setConnectStart] = useState<ConnectStartInfo | null>(null)
     const [menuPosition, setMenuPosition] = useState<MenuPosition | null>(null)
     const [tempEdge, setTempEdge] = useState<TempEdge | null>(null)
@@ -246,7 +244,7 @@ const WorkflowCanvas: React.FC<WorkflowCanvasProps> = ({
                             }}
                         />
                     </div>
-                    <p className="text-white/60 text-sm">{t('methodDetail.loading')}</p>
+                    <p className="text-white/60 text-sm">{'加载中...'}</p>
                 </div>
             </div>
         )
@@ -263,7 +261,7 @@ const WorkflowCanvas: React.FC<WorkflowCanvasProps> = ({
                     <svg className="w-4 h-4 text-teal-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4" />
                     </svg>
-                    {t('methodDetail.saveWorkflow')}
+                    {'保存工作流'}
                 </button>
             </div>
 
@@ -365,7 +363,7 @@ const WorkflowCanvas: React.FC<WorkflowCanvasProps> = ({
                                 <svg className="w-4 h-4 text-teal-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
                                 </svg>
-                                {t('methodDetail.selectNode')}
+                                {'选择节点'}
                             </p>
                         </div>
 
@@ -397,7 +395,7 @@ const WorkflowCanvas: React.FC<WorkflowCanvasProps> = ({
 
                             {nodeActions.length === 0 && (
                                 <div className="px-4 py-6 text-xs text-white/40 text-center">
-                                    {t('methodDetail.noNodeTypes')}
+                                    {'暂无节点类型'}
                                 </div>
                             )}
                         </div>

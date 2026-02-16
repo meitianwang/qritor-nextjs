@@ -15,7 +15,6 @@ import Sidebar from './Sidebar'
 import WorkflowCanvas from './WorkflowCanvas'
 import NodePropertiesPanel from './NodePropertiesPanel'
 import { authFetch } from '@/lib/auth-utils'
-import { useTranslation } from '@/hooks/useTranslation'
 import { useToast } from '@/hooks/useToast'
 import ToastNotification from '@/components/ToastNotification'
 
@@ -88,7 +87,6 @@ interface DeletingItem {
 function NovelCreationMethodDetailPageContent() {
     const params = useParams()
     const id = params.id as string
-    const { t } = useTranslation('studio')
     const { notification, showToast } = useToast()
     const [method, setMethod] = useState<Method | null>(null)
     const [activeWorkflow, setActiveWorkflow] = useState<Workflow | null>(null)
@@ -223,7 +221,7 @@ function NovelCreationMethodDetailPageContent() {
             const response = await authFetch('/api/workflows', {
                 method: 'POST',
                 body: {
-                    name: t('methodDetail.defaultWorkflow', '默认工作流'),
+                    name: '默认工作流',
                     novelCreationMethodId: parseInt(id),
                     nodesJson: '[]',
                     edgesJson: '[]'
@@ -364,14 +362,14 @@ function NovelCreationMethodDetailPageContent() {
 
             const result = await response.json()
             if (result.code === 200) {
-                showToast('success', t('methodDetail.saveSuccess'))
+                showToast('success', '保存成功')
                 // Don't refresh everything, just update active workflow data if needed
             } else {
-                showToast('error', result.message || t('methodDetail.saveFailed'))
+                showToast('error', result.message || '保存失败')
             }
         } catch (error) {
             console.error('Failed to save workflow', error)
-            showToast('error', t('methodDetail.saveFailed'))
+            showToast('error', '保存失败')
         }
     }
 
@@ -396,7 +394,7 @@ function NovelCreationMethodDetailPageContent() {
     }
 
     const handleDelete = async (type: string, itemId: number) => {
-        if (!window.confirm(t('methodDetail.confirmDelete'))) return
+        if (!window.confirm('确定要删除吗？')) return
 
         setDeletingItem({ type, id: itemId })
 
@@ -419,20 +417,20 @@ function NovelCreationMethodDetailPageContent() {
 
             if (response.ok || (result && result.code === 200)) {
                 await fetchResources()
-                showToast('success', t('methodDetail.deleteSuccess'))
+                showToast('success', '删除成功')
             } else {
                 // 构建错误信息
-                let errorMessage = t('methodDetail.deleteFailed')
+                let errorMessage = '删除失败'
                 if (result && result.message) {
                     errorMessage = result.message
                 } else if (!response.ok) {
-                    errorMessage = `${t('methodDetail.deleteFailed')} (HTTP ${response.status})`
+                    errorMessage = `删除失败 (HTTP ${response.status})`
                 }
                 showToast('error', errorMessage)
             }
         } catch (error) {
             console.error('Delete failed', error)
-            showToast('error', t('methodDetail.deleteFailed') + ': ' + (error as Error).message)
+            showToast('error', '删除失败' + ': ' + (error as Error).message)
         } finally {
             setDeletingItem(null)
         }
@@ -440,7 +438,7 @@ function NovelCreationMethodDetailPageContent() {
 
     const handleCreateWorkflow = async () => {
         if (!newWorkflowTargetModuleTypeId) {
-            showToast('warning', t('methodDetail.pleaseSelectModuleType'))
+            showToast('warning', '请选择模块类型')
             return
         }
 
@@ -452,7 +450,7 @@ function NovelCreationMethodDetailPageContent() {
             const wfResponse = await authFetch('/api/workflows', {
                 method: 'POST',
                 body: {
-                    name: `${targetModuleType.name} - ${newWorkflowType === 'save' ? t('methodDetail.saveProcess') : t('methodDetail.createProcess')}`,
+                    name: `${targetModuleType.name} - ${newWorkflowType === 'save' ? '保存流程' : '创建流程'}`,
                     novelCreationMethodId: parseInt(id),
                     nodesJson: '[]',
                     edgesJson: '[]'
@@ -460,7 +458,7 @@ function NovelCreationMethodDetailPageContent() {
             })
             const wfResult = await wfResponse.json()
             if (wfResult.code !== 200) {
-                throw new Error(wfResult.message || t('methodDetail.createFailed'))
+                throw new Error(wfResult.message || '创建失败')
             }
             const newWorkflow = wfResult.data
 
@@ -477,14 +475,14 @@ function NovelCreationMethodDetailPageContent() {
                 body: updateBody
             })
             if (!mtResponse.ok) {
-                throw new Error(t('methodDetail.updateFailed'))
+                throw new Error('更新失败')
             }
 
             await fetchResources()
             setActiveWorkflow(newWorkflow)
             setShowNewWorkflowModal(false)
             setNewWorkflowTargetModuleTypeId('')
-            showToast('success', t('methodDetail.createSuccess'))
+            showToast('success', '创建成功')
 
         } catch (error) {
             console.error('Failed to create workflow', error)
@@ -494,7 +492,7 @@ function NovelCreationMethodDetailPageContent() {
 
     const handleDeleteWorkflow = async () => {
         if (!activeWorkflow) return
-        if (!window.confirm(t('methodDetail.confirmDeleteWorkflow', { name: activeWorkflow.name }))) return
+        if (!window.confirm(`确定要删除工作流「${activeWorkflow.name}」吗？`)) return
 
         try {
             // 1. Delete Workflow (Backend handles cascade delete if needed, but here we just delete workflow)
@@ -525,7 +523,7 @@ function NovelCreationMethodDetailPageContent() {
 
             if (response.ok) {
                 await fetchResources()
-                showToast('success', t('methodDetail.deleteSuccess'))
+                showToast('success', '删除成功')
                 // Switch to init workflow
                 // We rely on fetchResources to update workflows, but we need to set activeWorkflow manually if it was deleted
                 // fetchResources sets workflows, but we need to pick a new active one.
@@ -554,11 +552,11 @@ function NovelCreationMethodDetailPageContent() {
                 // Let's just set it to null for now.
                 setActiveWorkflow(null)
             } else {
-                showToast('error', t('methodDetail.deleteFailed'))
+                showToast('error', '删除失败')
             }
         } catch (error) {
             console.error('Delete failed', error)
-            showToast('error', t('methodDetail.deleteFailed'))
+            showToast('error', '删除失败')
         }
     }
 
@@ -572,14 +570,14 @@ function NovelCreationMethodDetailPageContent() {
             })
             const result = await response.json()
             if (result.code === 200) {
-                showToast('success', t('novelCreationMethods.publishSuccess', '发布成功'))
+                showToast('success', '发布成功')
                 fetchMethodDetails()  // 刷新方法详情
             } else {
-                showToast('error', result.message || t('novelCreationMethods.publishFailed', '发布失败'))
+                showToast('error', result.message || '发布失败')
             }
         } catch (error) {
             console.error('Publish failed', error)
-            showToast('error', t('novelCreationMethods.publishFailed', '发布失败'))
+            showToast('error', '发布失败')
         } finally {
             setPublishing(false)
         }
@@ -595,7 +593,7 @@ function NovelCreationMethodDetailPageContent() {
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
                 </svg>
-                {t('common.back', '返回')}
+                {'返回'}
             </Link>
 
             {/* 主内容区 */}
@@ -632,7 +630,7 @@ function NovelCreationMethodDetailPageContent() {
                             <button
                                 onClick={() => setSidebarCollapsed(false)}
                                 className="absolute top-3 left-3 z-20 p-2 text-white/40 hover:text-white hover:bg-white/[0.08] rounded-lg transition-all border border-white/[0.08]"
-                                title={t('methodDetail.expandSidebar', '展开侧边栏')}
+                                title={'展开侧边栏'}
                             >
                                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     {/* 面板图标：左侧有竖线的方框 */}
@@ -665,7 +663,7 @@ function NovelCreationMethodDetailPageContent() {
                         <button
                             onClick={() => setRightSidebarCollapsed(false)}
                             className="absolute top-3 right-3 z-20 p-2 text-white/40 hover:text-white hover:bg-white/[0.08] rounded-lg transition-all border border-white/[0.08]"
-                            title={t('methodDetail.expandSidebar', '展开侧边栏')}
+                            title={'展开侧边栏'}
                         >
                             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 {/* 面板图标：右侧有竖线的方框 */}
@@ -726,13 +724,13 @@ function NovelCreationMethodDetailPageContent() {
                                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
                                         </svg>
                                     </div>
-                                    <h3 className="text-lg font-semibold text-white">{t('methodDetail.newWorkflowTitle')}</h3>
+                                    <h3 className="text-lg font-semibold text-white">{'新建工作流'}</h3>
                                 </div>
 
                                 {/* 工作流类型 */}
                                 <div className="mb-5">
                                     <label className="block text-sm font-medium text-white/70 mb-3">
-                                        {t('methodDetail.workflowType')}
+                                        {'工作流类型'}
                                     </label>
                                     <div className="flex gap-3">
                                         <label
@@ -754,7 +752,7 @@ function NovelCreationMethodDetailPageContent() {
                                                 {newWorkflowType === 'save' && <div className="w-2 h-2 rounded-full bg-teal-400" />}
                                             </div>
                                             <span className={`text-sm ${newWorkflowType === 'save' ? 'text-white' : 'text-white/60'}`}>
-                                                {t('methodDetail.saveProcess')}
+                                                {'保存流程'}
                                             </span>
                                         </label>
                                         <label
@@ -776,7 +774,7 @@ function NovelCreationMethodDetailPageContent() {
                                                 {newWorkflowType === 'create' && <div className="w-2 h-2 rounded-full bg-teal-400" />}
                                             </div>
                                             <span className={`text-sm ${newWorkflowType === 'create' ? 'text-white' : 'text-white/60'}`}>
-                                                {t('methodDetail.createProcess')}
+                                                {'创建流程'}
                                             </span>
                                         </label>
                                     </div>
@@ -785,7 +783,7 @@ function NovelCreationMethodDetailPageContent() {
                                 {/* 绑定模块类型 */}
                                 <div className="mb-6">
                                     <label className="block text-sm font-medium text-white/70 mb-2">
-                                        {t('methodDetail.bindModuleType')}
+                                        {'绑定模块类型'}
                                     </label>
                                     <div className="relative">
                                         <select
@@ -793,7 +791,7 @@ function NovelCreationMethodDetailPageContent() {
                                             value={newWorkflowTargetModuleTypeId}
                                             onChange={(e) => setNewWorkflowTargetModuleTypeId(e.target.value)}
                                         >
-                                            <option value="" className="bg-[#1a1a1a]">{t('methodDetail.pleaseSelect')}</option>
+                                            <option value="" className="bg-[#1a1a1a]">{'请选择'}</option>
                                             {moduleTypes
                                                 .filter(mt => {
                                                     if (newWorkflowType === 'save') {
@@ -816,8 +814,8 @@ function NovelCreationMethodDetailPageContent() {
                                     </div>
                                     <p className="mt-2 text-xs text-white/40">
                                         {newWorkflowType === 'save'
-                                            ? t('methodDetail.saveProcessHelp')
-                                            : t('methodDetail.createProcessHelp')}
+                                            ? '保存流程：模块保存时触发的处理逻辑'
+                                            : '创建流程：模块创建时触发的处理逻辑'}
                                     </p>
                                 </div>
 
@@ -827,7 +825,7 @@ function NovelCreationMethodDetailPageContent() {
                                         onClick={() => setShowNewWorkflowModal(false)}
                                         className="px-5 py-2.5 text-sm font-medium text-white/60 hover:text-white hover:bg-white/[0.05] rounded-xl transition-all"
                                     >
-                                        {t('common.cancel')}
+                                        {'取消'}
                                     </button>
                                     <button
                                         onClick={handleCreateWorkflow}
@@ -837,7 +835,7 @@ function NovelCreationMethodDetailPageContent() {
                                             boxShadow: '0 4px 15px rgba(13, 148, 136, 0.3)'
                                         }}
                                     >
-                                        {t('methodDetail.create')}
+                                        {'创建'}
                                     </button>
                                 </div>
                             </div>
