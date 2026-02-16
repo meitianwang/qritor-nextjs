@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { streamText, tool as sdkTool, jsonSchema } from 'ai'
+import { streamText, jsonSchema } from 'ai'
 import { getCurrentUser } from '@/lib/middleware/auth-middleware'
 import { gateway, getConfigById } from '@/lib/services/ai-service'
 import {
@@ -41,8 +41,8 @@ export async function POST(request: NextRequest) {
     const messages = body.messages as any[]
     if (!messages?.length) return jsonError(400, '缺少 messages')
 
-    // tools: 桌面端发来 { name: { description, parameters } }
-    // 包一层 sdkTool + jsonSchema（运行时函数，无法序列化传输）
+    // tools: 桌面端发来 { name: { description, inputSchema } }
+    // 仅需 jsonSchema() 恢复为 AI SDK schema（跨 HTTP 无法直接传递 symbol）
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     let tools: any = undefined
     if (body.tools && typeof body.tools === 'object') {
@@ -51,13 +51,20 @@ export async function POST(request: NextRequest) {
       for (const [name, def] of Object.entries(
         body.tools as Record<
           string,
-          { description: string; parameters: Record<string, unknown> }
+          {
+            description?: string
+            inputSchema?: Record<string, unknown>
+          }
         >,
       )) {
-        tools[name] = sdkTool({
-          description: def.description,
-          inputSchema: jsonSchema(def.parameters),
-        })
+        if (!def.inputSchema) {
+          return jsonError(400, `工具 ${name} 缺少 inputSchema`)
+        }
+
+        tools[name] = {
+          ...(def.description ? { description: def.description } : {}),
+          inputSchema: jsonSchema(def.inputSchema),
+        }
       }
     }
 
