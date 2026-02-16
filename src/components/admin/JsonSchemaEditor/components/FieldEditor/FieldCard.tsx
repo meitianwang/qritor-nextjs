@@ -226,17 +226,6 @@ const FieldCard: React.FC<FieldCardProps> = ({
                     <label className="flex items-center cursor-pointer">
                         <input
                             type="checkbox"
-                            checked={field.isDynamic}
-                            onChange={(e) => onUpdateField(field.id, 'isDynamic', e.target.checked)}
-                            className="w-4 h-4 text-primary border-border rounded focus:ring-2 focus:ring-primary"
-                        />
-                        <span className="ml-2 text-sm text-text-secondary whitespace-nowrap" title={t('jsonSchemaEditor.isDynamicHelp', '标记为动态属性后，该字段的变化会被自动追踪并记录到状态历史中')}>
-                            {t('jsonSchemaEditor.isDynamic', '动态属性')}
-                        </span>
-                    </label>
-                    <label className="flex items-center cursor-pointer">
-                        <input
-                            type="checkbox"
                             checked={field.defaultCollapsed}
                             onChange={(e) => onUpdateField(field.id, 'defaultCollapsed', e.target.checked)}
                             className="w-4 h-4 text-primary border-border rounded focus:ring-2 focus:ring-primary"

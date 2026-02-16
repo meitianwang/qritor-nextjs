@@ -157,11 +157,6 @@ export function generateFieldSchema(field: SchemaField, allModuleTypes: ModuleTy
         property['x-defaultCollapsed'] = true
     }
 
-    // 添加 isDynamic 标记（用于动态状态追踪）
-    if (field.isDynamic) {
-        property.isDynamic = true
-    }
-
     return property
 }
 

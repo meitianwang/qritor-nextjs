@@ -25,7 +25,6 @@ export interface SchemaField {
     required: boolean
     isArray: boolean
     useForAI: boolean
-    isDynamic: boolean
     properties: SchemaField[]
     expanded: boolean
     enum: string[]
@@ -68,7 +67,6 @@ export const createDefaultField = (): SchemaField => ({
     required: false,
     isArray: false,
     useForAI: true,
-    isDynamic: false,
     properties: [],
     expanded: false,
     enum: [],
@@ -90,7 +88,6 @@ export const createSmartWriterField = (presetField: PresetField, existingId: str
     locked: presetField.locked,
     isArray: false,
     useForAI: true,
-    isDynamic: false,
     properties: [],
     expanded: false,
     enum: [],

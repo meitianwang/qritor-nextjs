@@ -23,7 +23,6 @@ export function parseField(key: string, value: Record<string, unknown>, parentRe
         required: parentRequired.includes(key),
         isArray: isArray,
         useForAI: (value.useForAI as boolean) || false,
-        isDynamic: (value.isDynamic as boolean) || false,
         properties: [],
         expanded: false,
         enum: (value.enum as string[]) || [],

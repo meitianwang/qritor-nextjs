@@ -42,8 +42,8 @@ interface TransactionRecord {
   outputTokens: number | null
   totalTokens: number | null
   creditsConsumed: number
-  creditRate: number | null
-  normalizationFactor: number | null
+  inputPricePerM: number | null
+  outputPricePerM: number | null
   description: string | null
   createdAt: string | null
 }
@@ -313,8 +313,8 @@ export async function consumeCreditsWithTransaction(
   llmConfigId?: bigint,
   inputTokens?: number,
   outputTokens?: number,
-  creditRate?: number,
-  normalizationFactor?: number,
+  inputPricePerM?: number,
+  outputPricePerM?: number,
   description?: string,
 ): Promise<boolean> {
   const success = await consumeCredits(userId, amount)
@@ -329,8 +329,8 @@ export async function consumeCreditsWithTransaction(
         input_tokens: inputTokens ?? 0,
         output_tokens: outputTokens ?? 0,
         total_tokens: (inputTokens ?? 0) + (outputTokens ?? 0),
-        credit_rate: creditRate ?? 1.0,
-        normalization_factor: normalizationFactor ?? 1.0,
+        input_price_per_m: inputPricePerM ?? null,
+        output_price_per_m: outputPricePerM ?? null,
         credits_consumed: amount,
         description: description ?? '',
         created_at: new Date(),
