@@ -1,7 +1,45 @@
+/* 声明 CSS 层级顺序：base（reset）< theme（Tailwind 主题）< utilities（Tailwind 工具类）
+ * 无层级的 CSS（如 admin.css、portal.css）优先级最高。
+ * 这确保 Tailwind utilities 能覆盖 reset.css 中的元素级样式。 */
+@layer base, theme, utilities;
+
 /* Tailwind v4 - 只导入 theme 和 utilities，跳过 preflight（CSS reset）
  * Portal 有自己的 reset.css，Tailwind 的 preflight 会干扰 portal 样式 */
 @import "tailwindcss/theme" layer(theme);
 @import "tailwindcss/utilities" layer(utilities);
+
+/* Admin 组件使用的语义化颜色（从 admin-web 的 Tailwind 配置迁移） */
+@theme {
+  --color-text-primary: #ffffff;
+  --color-text-secondary: rgba(255, 255, 255, 0.7);
+  --color-text-tertiary: rgba(255, 255, 255, 0.5);
+  --color-text-quaternary: rgba(255, 255, 255, 0.3);
+  --color-background: #0a0a0a;
+  --color-bg-secondary: #111111;
+  --color-bg-tertiary: #1a1a1a;
+  --color-border: rgba(255, 255, 255, 0.1);
+  --color-primary: #0D9488;
+  --color-primary-hover: #0F766E;
+
+  /* 覆盖 Tailwind v4 默认的 OKLCH 颜色为 sRGB hex，
+   * 确保与原 Tailwind v3 admin-web 视觉效果一致。
+   * OKLCH 色彩空间会导致渐变和半透明色更饱和/鲜艳。 */
+  --color-teal-300: #5eead4;
+  --color-teal-400: #2dd4bf;
+  --color-teal-500: #14b8a6;
+  --color-teal-600: #0d9488;
+  --color-cyan-400: #22d3ee;
+  --color-cyan-500: #06b6d4;
+  --color-cyan-600: #0891b2;
+  --color-cyan-700: #0e7490;
+  --color-emerald-400: #34d399;
+  --color-emerald-500: #10b981;
+  --color-emerald-600: #059669;
+  --color-amber-400: #fbbf24;
+  --color-amber-500: #f59e0b;
+  --color-red-400: #f87171;
+  --color-red-500: #ef4444;
+}
 
 /* 自定义滚动条 */
 @layer base {

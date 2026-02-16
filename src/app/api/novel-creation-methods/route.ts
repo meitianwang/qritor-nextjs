@@ -3,7 +3,6 @@ import { prisma } from '@/lib/prisma'
 import { getCurrentUser, getCurrentUserOptional } from '@/lib/middleware/auth-middleware'
 import { apiSuccess, apiError, apiNotFound, apiValidationError } from '@/lib/api-response'
 import { users_role } from '@/generated/prisma'
-import { serialize } from '@/lib/serialize'
 
 function serializeMethod(
   method: {

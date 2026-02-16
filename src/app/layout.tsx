@@ -9,6 +9,8 @@ import "@/styles/docs.css"
 import "@/styles/changelog.css"
 import "@/styles/referral.css"
 import "@/styles/desktop-login-success.css"
+import "@/styles/admin.css"
+import "@/styles/admin-login.css"
 import LayoutShell from "./LayoutShell"
 
 export const metadata: Metadata = {

@@ -37,35 +37,16 @@ export default function NovelCreationMethodEditModal({
         description: '',
         novelType: '',
         language: '',
-        templateMethodId: '',
         isPreset: false
     })
     const [loading, setLoading] = useState(false)
-    const [presetMethods, setPresetMethods] = useState<NovelCreationMethod[]>([])
-    const [novelTypes, setNovelTypes] = useState<EnumOption[]>([])
     const [languages, setLanguages] = useState<EnumOption[]>([])
 
     useEffect(() => {
         if (isOpen) {
-            fetchNovelTypes()
             fetchLanguages()
-            if (!method) {
-                fetchPresetMethods()
-            }
         }
     }, [isOpen, method])
-
-    const fetchNovelTypes = async () => {
-        try {
-            const response = await authFetch('/api/novel-creation-methods/types')
-            const data = await response.json()
-            if (data.code === 200) {
-                setNovelTypes(data.data || [])
-            }
-        } catch (error) {
-            console.error('获取小说类型失败:', error)
-        }
-    }
 
     const fetchLanguages = async () => {
         try {
@@ -79,19 +60,6 @@ export default function NovelCreationMethodEditModal({
         }
     }
 
-    const fetchPresetMethods = async () => {
-        try {
-            const response = await authFetch('/api/novel-creation-methods')
-            const result = await response.json()
-            if (result.code === 200 && result.data) {
-                const presets = result.data.filter((m: NovelCreationMethod) => m.isPreset === true)
-                setPresetMethods(presets)
-            }
-        } catch (error) {
-            console.error('获取预置创作方法失败:', error)
-        }
-    }
-
     useEffect(() => {
         if (isOpen) {
             if (method) {
@@ -100,8 +68,7 @@ export default function NovelCreationMethodEditModal({
                     description: method.description || '',
                     novelType: method.novelType || '',
                     language: method.language || '',
-                    isPreset: method.isPreset || false,
-                    templateMethodId: ''
+                    isPreset: method.isPreset || false
                 })
             } else {
                 setFormData({
@@ -109,8 +76,7 @@ export default function NovelCreationMethodEditModal({
                     description: '',
                     novelType: '',
                     language: '',
-                    isPreset: false,
-                    templateMethodId: ''
+                    isPreset: false
                 })
             }
         }
@@ -137,18 +103,7 @@ export default function NovelCreationMethodEditModal({
                     headers: { 'Content-Type': 'application/json' }
                 })
             } else {
-                let url = '/api/novel-creation-methods'
-                const params = new URLSearchParams()
-
-                if (formData.templateMethodId) {
-                    params.append('templateMethodId', formData.templateMethodId)
-                }
-
-                if (params.toString()) {
-                    url += `?${params.toString()}`
-                }
-
-                response = await authFetch(url, {
+                response = await authFetch('/api/novel-creation-methods', {
                     method: 'POST',
                     body: JSON.stringify(methodData),
                     headers: { 'Content-Type': 'application/json' }
@@ -220,20 +175,14 @@ export default function NovelCreationMethodEditModal({
 
                     <div className="admin-form-group">
                         <label className="admin-form-label">小说类型</label>
-                        <select
+                        <input
+                            type="text"
                             value={formData.novelType}
                             onChange={(e) => setFormData({ ...formData, novelType: e.target.value })}
                             className="admin-form-input"
+                            placeholder="例如: 灵异、悬疑、修仙"
                             disabled={loading}
-                            style={{ cursor: 'pointer' }}
-                        >
-                            <option value="">请选择小说类型</option>
-                            {novelTypes.map(type => (
-                                <option key={type.value} value={type.value}>
-                                    {type.name}
-                                </option>
-                            ))}
-                        </select>
+                        />
                     </div>
 
                     <div className="admin-form-group">
@@ -253,29 +202,6 @@ export default function NovelCreationMethodEditModal({
                             ))}
                         </select>
                     </div>
-
-                    {!method && (
-                        <div className="admin-form-group">
-                            <label className="admin-form-label">从预置方法导入</label>
-                            <select
-                                value={formData.templateMethodId}
-                                onChange={(e) => setFormData({ ...formData, templateMethodId: e.target.value })}
-                                className="admin-form-input"
-                                disabled={loading}
-                                style={{ cursor: 'pointer' }}
-                            >
-                                <option value="">不导入（创建空白方法）</option>
-                                {presetMethods.map(preset => (
-                                    <option key={preset.id} value={preset.id}>
-                                        {preset.name}
-                                    </option>
-                                ))}
-                            </select>
-                            <p style={{ marginTop: '8px', fontSize: '12px', color: '#888' }}>
-                                选择一个预置创作方法作为模板，将复制其工作流、提示词、知识库和模块类型
-                            </p>
-                        </div>
-                    )}
 
                     <div style={{ display: 'flex', gap: '12px', justifyContent: 'flex-end', marginTop: '24px' }}>
                         <button

@@ -4,7 +4,24 @@ import { getCurrentUser, getCurrentUserOptional } from '@/lib/middleware/auth-mi
 import { apiSuccess, apiError, apiNotFound, apiForbidden } from '@/lib/api-response'
 import { users_role } from '@/generated/prisma'
 
-function serializeMethod(method: any, creatorName: string | null, canEdit: boolean) {
+function serializeMethod(
+  method: {
+    id: bigint
+    name: string
+    description: string | null
+    workflow_id: bigint | null
+    novel_type: string | null
+    language: string | null
+    is_preset: number
+    user_id: bigint | null
+    status: string
+    visible_categories: string | null
+    created_at: Date
+    updated_at: Date | null
+  },
+  creatorName: string | null,
+  canEdit: boolean
+) {
   let parsedCategories: string[] | null = null
   if (method.visible_categories) {
     try {
@@ -94,7 +111,7 @@ export async function PUT(
       return apiForbidden('无权修改此创作方法')
     }
 
-    const updateData: Record<string, any> = {
+    const updateData: Record<string, unknown> = {
       updated_at: new Date(),
     }
 

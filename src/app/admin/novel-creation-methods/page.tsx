@@ -172,7 +172,7 @@ export default function NovelCreationMethodListPage() {
     }
 
     return (
-        <div className="text-white">
+        <div className="text-text-primary">
             <div className="max-w-6xl mx-auto px-8 py-8">
 
                 <div className="mb-8">
@@ -181,7 +181,7 @@ export default function NovelCreationMethodListPage() {
                             探索小说创作方法
                         </span>
                     </h1>
-                    <p className="text-gray-400 text-lg flex items-center gap-2">
+                    <p className="text-text-secondary text-lg flex items-center gap-2">
                         <BadgeCheckIcon className="w-5 h-5 text-emerald-400" />
                         管理和开发小说创作方法，自定义创作流程
                     </p>
@@ -192,30 +192,30 @@ export default function NovelCreationMethodListPage() {
                         <p className="text-5xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-teal-400 to-cyan-500">
                             {stats.totalMethods}
                         </p>
-                        <p className="text-sm text-gray-400 mt-1">项方法</p>
+                        <p className="text-sm text-text-secondary mt-1">项方法</p>
                     </div>
                     <div className="w-px h-12 bg-white/10" />
                     <div className="flex items-center gap-8">
                         <div className="flex items-center gap-2">
                             <div className="w-3 h-3 rounded-full bg-emerald-500" />
-                            <span className="text-gray-400 text-sm">{stats.presetMethods} 预设</span>
+                            <span className="text-text-secondary text-sm">{stats.presetMethods} 预设</span>
                         </div>
                         <div className="flex items-center gap-2">
                             <div className="w-3 h-3 rounded-full bg-cyan-500" />
-                            <span className="text-gray-400 text-sm">{stats.customMethods} 自定义</span>
+                            <span className="text-text-secondary text-sm">{stats.customMethods} 自定义</span>
                         </div>
                     </div>
                 </div>
 
                 <div className="flex flex-col sm:flex-row gap-4 mb-6">
                     <div className="flex-1 relative">
-                        <SearchIcon className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-500" />
+                        <SearchIcon className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-text-tertiary" />
                         <input
                             type="text"
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
                             placeholder="搜索小说创作方法..."
-                            className="w-full pl-12 pr-4 py-3 bg-white/[0.03] border border-white/[0.08] rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-teal-500/50 focus:bg-white/[0.05] transition-all"
+                            className="w-full pl-12 pr-4 py-3 bg-white/[0.03] border border-white/[0.08] rounded-xl text-text-primary placeholder:text-text-tertiary focus:outline-none focus:border-primary/50 focus:bg-white/[0.05] transition-all"
                         />
                     </div>
 
@@ -238,7 +238,7 @@ export default function NovelCreationMethodListPage() {
                             onClick={() => setActiveTab(tab.id)}
                             className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${activeTab === tab.id
                                 ? 'bg-emerald-500/15 text-emerald-400'
-                                : 'text-gray-400 hover:text-white hover:bg-white/[0.04]'
+                                : 'text-text-secondary hover:text-text-primary hover:bg-white/[0.04]'
                                 }`}
                         >
                             {tab.label}
@@ -257,10 +257,10 @@ export default function NovelCreationMethodListPage() {
                         <div className="inline-flex items-center justify-center w-24 h-24 bg-gradient-to-br from-emerald-500/20 to-cyan-500/20 rounded-3xl mb-6">
                             <BeakerIcon className="w-12 h-12 text-emerald-400" strokeWidth={1.5} />
                         </div>
-                        <h3 className="text-xl font-medium text-white mb-2">
+                        <h3 className="text-xl font-medium text-text-primary mb-2">
                             暂无小说创作方法
                         </h3>
-                        <p className="text-gray-400 mb-6">
+                        <p className="text-text-secondary mb-6">
                             创建一个新的小说创作方法开始吧
                         </p>
                         <button
@@ -292,7 +292,7 @@ export default function NovelCreationMethodListPage() {
                                         </div>
                                         <div className="flex-1 min-w-0">
                                             <div className="flex items-center gap-2 mb-1 flex-wrap">
-                                                <h3 className="text-lg font-semibold text-white truncate group-hover:text-white transition-colors">
+                                                <h3 className="text-lg font-semibold text-text-primary truncate group-hover:text-white transition-colors">
                                                     {method.name}
                                                 </h3>
                                                 {method.isPreset ? (
@@ -308,20 +308,20 @@ export default function NovelCreationMethodListPage() {
                                                     </span>
                                                 )}
                                             </div>
-                                            <p className="text-sm text-gray-500 line-clamp-2">
+                                            <p className="text-sm text-text-tertiary line-clamp-2">
                                                 {method.description || '暂无描述'}
                                             </p>
                                         </div>
                                     </div>
 
                                     <div className="flex items-center justify-between pt-3 border-t border-white/[0.06]">
-                                        <div className="flex items-center gap-3 text-xs text-gray-500">
+                                        <div className="flex items-center gap-3 text-xs text-text-tertiary">
                                             <span className="flex items-center gap-1">
                                                 <LightningBoltIcon className="w-4 h-4" />
                                                 点击开发
                                             </span>
                                             {method.creatorName && (
-                                                <span className="text-gray-600">
+                                                <span className="text-text-quaternary">
                                                     创建者: {method.creatorName}
                                                 </span>
                                             )}
@@ -335,7 +335,7 @@ export default function NovelCreationMethodListPage() {
                                                         setEditingMethod(method)
                                                         setIsEditModalOpen(true)
                                                     }}
-                                                    className="p-1.5 text-gray-500 hover:text-white hover:bg-white/10 rounded-lg transition-colors"
+                                                    className="p-1.5 text-text-tertiary hover:text-white hover:bg-white/10 rounded-lg transition-colors"
                                                     title="编辑基本信息"
                                                 >
                                                     <PencilIcon className="w-4 h-4" />
@@ -345,7 +345,7 @@ export default function NovelCreationMethodListPage() {
                                                         e.stopPropagation()
                                                         openDeleteConfirm(method.id, method.name)
                                                     }}
-                                                    className="p-1.5 text-gray-500 hover:text-red-400 hover:bg-red-500/10 rounded-lg transition-colors"
+                                                    className="p-1.5 text-text-tertiary hover:text-red-400 hover:bg-red-500/10 rounded-lg transition-colors"
                                                     title="删除"
                                                 >
                                                     <TrashIcon className="w-4 h-4" />
@@ -361,9 +361,9 @@ export default function NovelCreationMethodListPage() {
 
                 {!loading && methods.length > 0 && filteredMethods.length === 0 && (
                     <div className="text-center py-16">
-                        <SearchIcon className="w-16 h-16 text-gray-500 mx-auto mb-4" strokeWidth={1.5} />
-                        <h3 className="text-lg font-medium text-white mb-2">未找到匹配的方法</h3>
-                        <p className="text-gray-400">请尝试其他关键词</p>
+                        <SearchIcon className="w-16 h-16 text-text-tertiary mx-auto mb-4" strokeWidth={1.5} />
+                        <h3 className="text-lg font-medium text-text-primary mb-2">未找到匹配的方法</h3>
+                        <p className="text-text-secondary">请尝试其他关键词</p>
                     </div>
                 )}
             </div>

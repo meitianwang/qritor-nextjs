@@ -6,7 +6,7 @@ import { usePathname, useRouter } from 'next/navigation'
 import { useAuth } from '@/hooks/useAuth'
 import { getAccessToken, tryRestoreToken, apiFetch } from '@/lib/auth-utils'
 import UserAvatar from '@/components/UserAvatar'
-import '@/styles/admin.css'
+// admin.css is imported in root layout for reliable loading
 
 interface UserInfo {
     nickname?: string
@@ -25,6 +25,8 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     const dropdownRef = useRef<HTMLDivElement>(null)
 
     const isLoginPage = pathname === '/admin/login'
+    // Detail page uses full-screen layout (no sidebar), same as original admin-web
+    const isFullScreenPage = /^\/admin\/novel-creation-methods\/\d+/.test(pathname)
 
     useEffect(() => {
         // Skip auth check on login page to avoid redirect loop
@@ -93,8 +95,8 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
     const isActive = (path: string) => pathname === path || pathname.startsWith(path + '/')
 
-    // Login page: render children directly without sidebar
-    if (isLoginPage) {
+    // Login page and full-screen pages: render children directly without sidebar
+    if (isLoginPage || isFullScreenPage) {
         return <>{children}</>
     }
 
@@ -107,8 +109,8 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     }
 
     return (
-        <div className="admin-layout">
-            <aside className="admin-sidebar">
+        <div className="admin-layout" style={{ minHeight: '100vh', background: '#0a0a0f' }}>
+            <aside className="admin-sidebar" style={{ position: 'fixed', left: 0, top: 0, width: '250px', height: '100vh', overflowY: 'auto', background: 'linear-gradient(180deg, #111118 0%, #0d0d12 100%)', borderRight: '1px solid rgba(13, 148, 136, 0.1)', padding: '24px 0', zIndex: 50 }}>
                 <div className="admin-sidebar-header">
                     <Link href="/" className="admin-sidebar-logo">
                         <span>运营后台</span>
@@ -221,7 +223,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                 </nav>
             </aside>
 
-            <main className="admin-main">
+            <main className="admin-main" style={{ marginLeft: '250px', minHeight: '100vh', padding: '24px' }}>
                 <div className="admin-header">
                     <div></div>
                     <div className="admin-user-info">
