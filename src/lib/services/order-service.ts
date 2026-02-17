@@ -238,6 +238,7 @@ export async function payOrder(
     data: {
       status: STATUS_AWAITING_PAYMENT,
       payment_method: PAYMENT_STRIPE,
+      stripe_session_id: stripeResult.sessionId,
       updated_at: new Date(),
     },
   })
