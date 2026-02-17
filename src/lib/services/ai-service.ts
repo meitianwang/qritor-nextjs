@@ -198,15 +198,16 @@ class GatewayAIService {
         } else if (part.type === 'error') {
           yield {
             type: 'chunk',
-            content: `[错误] AI Gateway 流式异常: ${String(part.error)}`,
+            content: '[错误] 生成过程中出现异常，请稍后重试',
           }
           return
         }
       }
     } catch (error) {
+      console.error('AI service error:', error)
       yield {
         type: 'chunk',
-        content: `[错误] AI Gateway 调用异常: ${String(error)}`,
+        content: '[错误] 内容生成失败，请稍后重试',
       }
       return
     }

@@ -220,24 +220,6 @@ class StripeService {
   }
 
   // -------------------------------------------------------------------------
-  // Checkout session verification
-  // -------------------------------------------------------------------------
-
-  async retrieveCheckoutSession(
-    sessionId: string,
-  ): Promise<{ paymentStatus: string; paymentIntentId?: string }> {
-    const stripe = this._getStripeClient()
-    const session = await stripe.checkout.sessions.retrieve(sessionId)
-    return {
-      paymentStatus: session.payment_status,
-      paymentIntentId:
-        typeof session.payment_intent === 'string'
-          ? session.payment_intent
-          : session.payment_intent?.id,
-    }
-  }
-
-  // -------------------------------------------------------------------------
   // Direct charge with saved method
   // -------------------------------------------------------------------------
 
