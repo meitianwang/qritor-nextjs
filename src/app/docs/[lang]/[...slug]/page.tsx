@@ -50,8 +50,7 @@ export default function DocsContentPage() {
     if (!content) {
         const notFoundText: Record<string, { title: string; desc: string; back: string }> = {
             zh: { title: '页面未找到', desc: '抱歉、您访问的文档页面不存在。', back: '返回文档首页' },
-            en: { title: 'Page Not Found', desc: 'Sorry, the documentation page you requested does not exist.', back: 'Back to Docs Home' },
-            de: { title: 'Seite nicht gefunden', desc: 'Entschuldigung, die angeforderte Dokumentationsseite existiert nicht.', back: 'Zurück zur Docs-Startseite' }
+            en: { title: 'Page Not Found', desc: 'Sorry, the documentation page you requested does not exist.', back: 'Back to Docs Home' }
         }
         const text = notFoundText[lang] || notFoundText.zh
         return (

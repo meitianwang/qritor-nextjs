@@ -41,7 +41,7 @@ export default function AdminLoginPage() {
         setLoading(true)
         setError('')
         try {
-            const response = await apiFetch('/api/auth/login', { method: 'POST', body: { email, password } })
+            const response = await apiFetch('/api/auth/login', { method: 'POST', body: { email, password, requireAdmin: true } })
             const data = await response.json()
             if (data.code === 200 && data.data) handleLoginSuccess(data.data)
             else setError(data.message || '登录失败')

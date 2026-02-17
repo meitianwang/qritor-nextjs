@@ -3,6 +3,7 @@ import { prisma } from '@/lib/prisma'
 import { apiSuccess, apiError } from '@/lib/api-response'
 import { createAccessToken, getAccessTokenExpireMinutes, getRefreshTokenExpireDays } from '@/lib/auth'
 import { authService, verifyPassword } from '@/lib/services/auth-service'
+import { createDesktopAuthTicket } from '@/lib/services/desktop-auth-ticket-service'
 
 export async function POST(request: NextRequest) {
   try {
@@ -11,7 +12,9 @@ export async function POST(request: NextRequest) {
       email?: string
       password?: string
       client?: string
+      requireAdmin?: boolean
     }
+    const requireAdmin = Boolean((body as { requireAdmin?: unknown }).requireAdmin)
 
     if (!email || !password) {
       return apiError(400, '请提供邮箱和密码')
@@ -29,6 +32,10 @@ export async function POST(request: NextRequest) {
     const passwordValid = await verifyPassword(password, user.password)
     if (!passwordValid) {
       return apiError(401, '邮箱或密码错误')
+    }
+
+    if (requireAdmin && user.role !== 'ADMIN') {
+      return apiError(403, '仅管理员可登录后台')
     }
 
     // Update last login time
@@ -57,17 +64,27 @@ export async function POST(request: NextRequest) {
 
     // For desktop client, include refresh token in response body
     if (client === 'desktop') {
+      const userInfo = {
+        id: Number(user.id),
+        nickname: user.nickname,
+        email: user.email,
+        avatar: user.avatar,
+        role: user.role,
+      }
+      const desktopAuthTicket = createDesktopAuthTicket({
+        accessToken,
+        refreshToken: refreshTokenResult.rawToken,
+        expiresAt,
+        expiresIn: REFRESH_TOKEN_EXPIRE_DAYS * 86400,
+        user: userInfo,
+      })
+
       return apiSuccess({
         ...userData,
         refreshToken: refreshTokenResult.rawToken,
         expiresIn: REFRESH_TOKEN_EXPIRE_DAYS * 86400,
-        user: {
-          id: Number(user.id),
-          nickname: user.nickname,
-          email: user.email,
-          avatar: user.avatar,
-          role: user.role,
-        },
+        user: userInfo,
+        desktopAuthTicket,
       })
     }
 

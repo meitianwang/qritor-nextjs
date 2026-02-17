@@ -18,7 +18,6 @@ export default function LandingPage() {
 
     // SEO
     useDocumentMeta({
-        title: t('seo.landing.title'),
         description: t('seo.landing.description'),
         structuredData: {
             "@context": "https://schema.org",

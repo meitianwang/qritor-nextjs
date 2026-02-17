@@ -239,6 +239,21 @@ class RefreshTokenService {
 
     return result.count
   }
+
+  /**
+   * Revoke all tokens in the family of the provided raw refresh token.
+   * Used by explicit logout flows (web and desktop).
+   */
+  async revokeByRawToken(rawToken: string): Promise<void> {
+    const tokenHash = hashToken(rawToken)
+    const existing = await prisma.refresh_tokens.findUnique({
+      where: { token_hash: tokenHash },
+      select: { family_id: true },
+    })
+
+    if (!existing) return
+    await this.revokeFamily(existing.family_id)
+  }
 }
 
 // ---------------------------------------------------------------------------

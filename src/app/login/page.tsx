@@ -60,13 +60,17 @@ function LoginPageContent() {
         syncLanguageFromServer()
 
         if (isDesktop && desktopCallback) {
-            const { accessToken, refreshToken, expiresAt, ...user } = data
-            const callbackUrl = buildCallbackUrl(desktopCallback, {
-                access_token: accessToken as string,
-                refreshToken: (refreshToken as string) || '',
-                expires_at: expiresAt as string,
-                user: encodeURIComponent(JSON.stringify(user))
-            })
+            const { accessToken, refreshToken, expiresAt, desktopAuthTicket, ...user } = data
+            const callbackUrl = desktopAuthTicket
+                ? buildCallbackUrl(desktopCallback, {
+                    ticket: desktopAuthTicket as string
+                })
+                : buildCallbackUrl(desktopCallback, {
+                    access_token: accessToken as string,
+                    refreshToken: (refreshToken as string) || '',
+                    expires_at: expiresAt as string,
+                    user: encodeURIComponent(JSON.stringify(user))
+                })
             sessionStorage.setItem('desktopCallbackUrl', callbackUrl)
             router.push(`/desktop-login-success?user=${encodeURIComponent(JSON.stringify(user))}`)
         } else {
@@ -96,8 +100,8 @@ function LoginPageContent() {
                 method: 'POST',
                 body: {
                     code,
-                    redirectUri,
-                    referralCode,
+                    redirect_uri: redirectUri,
+                    referral_code: referralCode,
                     ...(isDesktopLogin ? { client: 'desktop' } : {})
                 }
             })
@@ -110,13 +114,17 @@ function LoginPageContent() {
 
                 if (desktopCallback) {
                     sessionStorage.removeItem('desktopCallback')
-                    const { accessToken, refreshToken, expiresAt, expiresIn, ...user } = data.data
-                    const callbackUrl = buildCallbackUrl(desktopCallback, {
-                        access_token: accessToken,
-                        refreshToken: refreshToken || '',
-                        expires_at: expiresAt || (expiresIn ? new Date(Date.now() + expiresIn * 1000).toISOString() : ''),
-                        user: encodeURIComponent(JSON.stringify(user))
-                    })
+                    const { accessToken, refreshToken, expiresAt, expiresIn, desktopAuthTicket, ...user } = data.data
+                    const callbackUrl = desktopAuthTicket
+                        ? buildCallbackUrl(desktopCallback, {
+                            ticket: desktopAuthTicket
+                        })
+                        : buildCallbackUrl(desktopCallback, {
+                            access_token: accessToken,
+                            refreshToken: refreshToken || '',
+                            expires_at: expiresAt || (expiresIn ? new Date(Date.now() + expiresIn * 1000).toISOString() : ''),
+                            user: encodeURIComponent(JSON.stringify(user))
+                        })
                     sessionStorage.setItem('desktopCallbackUrl', callbackUrl)
                     login(data.data)
                     syncLanguageFromServer()

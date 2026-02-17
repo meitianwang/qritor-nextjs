@@ -92,7 +92,7 @@ function DocsHeader({ currentLang }: DocsHeaderProps) {
                         </svg>
                     </Link>
                     {/* User avatar / login button */}
-                    {isLoggedIn() && user ? (
+                    {!isRestoring && isLoggedIn() && user ? (
                         <div className="user-menu" ref={dropdownRef}>
                             <button
                                 className="user-avatar-trigger"

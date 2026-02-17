@@ -4,7 +4,7 @@ import { useState, useEffect, useRef } from 'react'
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
 import { useAuth } from '@/hooks/useAuth'
-import { getAccessToken, tryRestoreToken, apiFetch } from '@/lib/auth-utils'
+import { getAccessToken, tryRestoreToken, authFetch } from '@/lib/auth-utils'
 import UserAvatar from '@/components/UserAvatar'
 // admin.css is imported in root layout for reliable loading
 
@@ -42,39 +42,27 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             if (!getAccessToken()) {
                 const success = await tryRestoreToken()
                 if (!success) {
-                    router.push(`/admin/login?redirect=${encodeURIComponent(pathname)}`)
+                    router.replace(`/admin/login?redirect=${encodeURIComponent(pathname)}`)
                     setIsRestoring(false)
                     return
                 }
             }
 
-            let storedUser = localStorage.getItem('user')
-            if (!storedUser) {
-                try {
-                    const response = await apiFetch('/api/auth/me', {
-                        headers: { 'Authorization': `Bearer ${getAccessToken()}` }
-                    })
-                    const data = await response.json()
-                    if (data.code === 200 && data.data) {
-                        localStorage.setItem('user', JSON.stringify(data.data))
-                        storedUser = JSON.stringify(data.data)
-                    }
-                } catch (e) {
-                    console.error('获取用户信息失败:', e)
-                }
-            }
+            try {
+                const response = await authFetch('/api/auth/me')
+                const data = await response.json()
 
-            if (storedUser) {
-                const userData = JSON.parse(storedUser)
-                if (userData.role !== 'ADMIN') {
+                if (data.code === 200 && data.data?.role === 'ADMIN') {
+                    localStorage.setItem('user', JSON.stringify(data.data))
+                    setUser(data.data)
+                } else {
                     localStorage.removeItem('user')
-                    router.push('/admin/login')
-                    setIsRestoring(false)
-                    return
+                    router.replace(`/admin/login?redirect=${encodeURIComponent(pathname)}`)
                 }
-                setUser(userData)
-            } else {
-                router.push(`/admin/login?redirect=${encodeURIComponent(pathname)}`)
+            } catch (e) {
+                console.error('获取管理员信息失败:', e)
+                localStorage.removeItem('user')
+                router.replace(`/admin/login?redirect=${encodeURIComponent(pathname)}`)
             }
             setIsRestoring(false)
         }

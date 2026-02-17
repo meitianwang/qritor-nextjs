@@ -5,6 +5,7 @@ import { createAccessToken, getAccessTokenExpireMinutes, getRefreshTokenExpireDa
 import { authService, hashPassword } from '@/lib/services/auth-service'
 import { initUserDefaultSubscription } from '@/lib/services/subscription-service'
 import { processReferral } from '@/lib/services/referral-service'
+import { createDesktopAuthTicket } from '@/lib/services/desktop-auth-ticket-service'
 
 interface GoogleTokenResponse {
   access_token: string
@@ -24,14 +25,25 @@ interface GoogleUserInfo {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
-    const { code, redirect_uri, referral_code, client } = body as {
+    const {
+      code,
+      redirect_uri,
+      redirectUri,
+      referral_code,
+      referralCode,
+      client
+    } = body as {
       code?: string
       redirect_uri?: string
+      redirectUri?: string
       referral_code?: string
+      referralCode?: string
       client?: string
     }
+    const normalizedRedirectUri = redirect_uri || redirectUri
+    const normalizedReferralCode = referral_code || referralCode
 
-    if (!code || !redirect_uri) {
+    if (!code || !normalizedRedirectUri) {
       return apiError(400, '请提供 code 和 redirect_uri')
     }
 
@@ -49,7 +61,7 @@ export async function POST(request: NextRequest) {
         code,
         client_id: clientId,
         client_secret: clientSecret,
-        redirect_uri,
+        redirect_uri: normalizedRedirectUri,
         grant_type: 'authorization_code',
       }),
     })
@@ -110,9 +122,9 @@ export async function POST(request: NextRequest) {
       await initUserDefaultSubscription(user.id)
 
       // Process referral for new users
-      if (referral_code) {
+      if (normalizedReferralCode) {
         try {
-          await processReferral(user.id, referral_code)
+          await processReferral(user.id, normalizedReferralCode)
         } catch (e) {
           console.error(`处理邀请码失败: ${String(e)}`)
         }
@@ -145,10 +157,28 @@ export async function POST(request: NextRequest) {
 
     // For desktop client, include refresh token in response body
     if (client === 'desktop') {
+      const userInfo = {
+        id: Number(user.id),
+        nickname: user.nickname,
+        email: user.email,
+        avatar: user.avatar,
+        role: user.role,
+      }
+      const desktopAuthTicket = createDesktopAuthTicket({
+        accessToken,
+        refreshToken: refreshTokenResult.rawToken,
+        expiresAt,
+        expiresIn: REFRESH_TOKEN_EXPIRE_DAYS * 86400,
+        user: userInfo,
+      })
+
       return apiSuccess({
         ...userData,
         refreshToken: refreshTokenResult.rawToken,
         isNewUser,
+        expiresIn: REFRESH_TOKEN_EXPIRE_DAYS * 86400,
+        user: userInfo,
+        desktopAuthTicket,
       })
     }
 

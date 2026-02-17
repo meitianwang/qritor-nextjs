@@ -109,7 +109,7 @@ function RegisterPageContent() {
 
             const response = await apiFetch('/api/auth/google/callback', {
                 method: 'POST',
-                body: { code, redirectUri, referralCode }
+                body: { code, redirect_uri: redirectUri, referral_code: referralCode }
             })
 
             const data = await response.json()

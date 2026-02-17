@@ -21,7 +21,7 @@ import {
 function ProfilePageContent() {
     const router = useRouter()
     const searchParams = useSearchParams()
-    const { getUser, logout, updateUser } = useAuth()
+    const { getUser, logout, updateUser, restoreToken } = useAuth()
     const { t } = useTranslation('portal')
     const { notification, showToast } = useToast()
 
@@ -42,27 +42,40 @@ function ProfilePageContent() {
     const [profileLoading, setProfileLoading] = useState(true)
 
     // Credits and subscription data
-    const [creditsData, setCreditsData] = useState<any>(undefined)
-    const [subscriptionData, setSubscriptionData] = useState<any>(undefined)
+    const [creditsData, setCreditsData] = useState<Record<string, unknown> | undefined>(undefined)
+    const [subscriptionData, setSubscriptionData] = useState<Record<string, unknown> | undefined>(undefined)
 
     // Track mount state to avoid hydration mismatch (user info is in localStorage, unavailable on server)
     const [mounted, setMounted] = useState(false)
+    const [authChecked, setAuthChecked] = useState(false)
     useEffect(() => {
         setMounted(true)
     }, [])
 
-    const user = mounted ? getUser() : null
+    const user = mounted && authChecked ? getUser() : null
 
-    // Redirect to login if not logged in (must run in effect, not during render)
     useEffect(() => {
-        if (mounted && !getUser()) {
-            router.replace('/login')
+        if (!mounted) return
+
+        let cancelled = false
+        const verifyAuth = async () => {
+            const ok = await restoreToken()
+            if (cancelled) return
+            setAuthChecked(true)
+            if (!ok) {
+                router.replace('/login?redirect=' + encodeURIComponent('/profile'))
+            }
         }
-    }, [mounted, router, getUser])
+
+        verifyAuth()
+        return () => {
+            cancelled = true
+        }
+    }, [mounted, restoreToken, router])
 
     // Fetch user profile from backend
     useEffect(() => {
-        if (!mounted || !getUser()) return
+        if (!mounted || !authChecked || !getUser()) return
 
         const fetchUserProfile = async () => {
             try {
@@ -79,11 +92,11 @@ function ProfilePageContent() {
         }
 
         fetchUserProfile()
-    }, [mounted, getUser])
+    }, [mounted, authChecked, getUser])
 
     // Fetch credits and subscription data
     useEffect(() => {
-        if (!mounted || !getUser()) return
+        if (!mounted || !authChecked || !getUser()) return
 
         const fetchCreditsAndSubscription = async () => {
             try {
@@ -104,9 +117,9 @@ function ProfilePageContent() {
         }
 
         fetchCreditsAndSubscription()
-    }, [mounted, getUser])
+    }, [mounted, authChecked, getUser])
 
-    if (!mounted || !user) {
+    if (!mounted || !authChecked || !user) {
         return null
     }
 

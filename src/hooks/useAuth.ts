@@ -65,7 +65,21 @@ export function useAuth(): AuthHook {
      */
     const isLoggedIn = useCallback((): boolean => {
         const user = getUserInfo()
-        return !!user
+        if (!user) {
+            return false
+        }
+
+        const expiresAt = localStorage.getItem('token_expires_at')
+        if (!expiresAt) {
+            return true
+        }
+
+        const expiresAtMs = new Date(expiresAt).getTime()
+        if (Number.isNaN(expiresAtMs)) {
+            return true
+        }
+
+        return expiresAtMs > Date.now()
     }, [])
 
     /**
@@ -148,9 +162,7 @@ export function useAuth(): AuthHook {
      */
     const restoreToken = useCallback(async (): Promise<boolean> => {
         const success = await tryRestoreToken()
-        if (success) {
-            setForceUpdate(n => n + 1)
-        }
+        setForceUpdate(n => n + 1)
         return success
     }, [])
 

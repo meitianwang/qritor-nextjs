@@ -98,6 +98,7 @@ function toPlanInfo(plan: subscription_plans, lang: string = 'zh'): PlanInfo {
 export async function getAllPlans(lang: string = 'zh'): Promise<PlanInfo[]> {
   const plans = await prisma.subscription_plans.findMany({
     where: { is_active: true },
+    orderBy: { price: 'asc' },
   })
   return plans.map((p) => toPlanInfo(p, lang))
 }

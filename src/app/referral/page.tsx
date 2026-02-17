@@ -27,13 +27,15 @@ interface ReferralConfig {
  * Users can get referral links/codes and invite friends to earn credits
  */
 export default function ReferralPage() {
-    const { isLoggedIn } = useAuth()
+    const { isLoggedIn, restoreToken } = useAuth()
     const [referralInfo, setReferralInfo] = useState<ReferralInfo | null>(null)
     const [referralConfig, setReferralConfig] = useState<ReferralConfig | null>(null)
     const [loading, setLoading] = useState(true)
+    const [authReady, setAuthReady] = useState(false)
     const [copySuccess, setCopySuccess] = useState(false)
     const [copyCodeSuccess, setCopyCodeSuccess] = useState(false)
     const { t } = useTranslation('portal')
+    const loggedIn = authReady && isLoggedIn()
 
     // Fetch referral config (public endpoint, no login required)
     useEffect(() => {
@@ -51,9 +53,28 @@ export default function ReferralPage() {
         fetchReferralConfig()
     }, [])
 
+    // Restore auth state first to avoid stale local user state.
+    useEffect(() => {
+        let cancelled = false
+        const restore = async () => {
+            await restoreToken()
+            if (!cancelled) {
+                setAuthReady(true)
+            }
+        }
+        restore()
+        return () => {
+            cancelled = true
+        }
+    }, [restoreToken])
+
     // Fetch referral info (requires login)
     useEffect(() => {
-        if (!isLoggedIn()) {
+        if (!authReady) {
+            return
+        }
+
+        if (!loggedIn) {
             setLoading(false)
             return
         }
@@ -73,7 +94,7 @@ export default function ReferralPage() {
         }
 
         fetchReferralInfo()
-    }, [isLoggedIn])
+    }, [authReady, loggedIn])
 
     // Copy referral link
     const copyReferralLink = async () => {
@@ -160,7 +181,7 @@ export default function ReferralPage() {
 
                             {/* Referral link bar */}
                             <div className="referral-link-bar">
-                                {isLoggedIn() ? (
+                                {loggedIn ? (
                                     <>
                                         <div className="referral-link-label">{t('referral.yourLink')}</div>
                                         <div className="referral-link-wrapper">
@@ -203,7 +224,7 @@ export default function ReferralPage() {
                     </div>
 
                     {/* Stats data */}
-                    {isLoggedIn() && (
+                    {loggedIn && (
                         <div className="referral-stats-grid">
                             <div className="referral-stat-card">
                                 <div className="referral-stat-icon invited">

@@ -4,11 +4,18 @@ import { authService } from '@/lib/services/auth-service'
 
 export async function POST(request: NextRequest) {
   try {
-    const refreshToken = request.cookies.get('refresh_token')?.value
+    let body: { refreshToken?: string } = {}
+    try {
+      body = await request.json()
+    } catch {
+      // Body may be empty for web clients
+    }
+
+    const refreshToken = body.refreshToken || request.cookies.get('refresh_token')?.value
 
     // Revoke refresh token if present
     if (refreshToken) {
-      await authService.refreshToken.validateAndRotate(refreshToken)
+      await authService.refreshToken.revokeByRawToken(refreshToken)
     }
 
     // Delete cookie

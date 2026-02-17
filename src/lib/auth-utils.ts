@@ -109,12 +109,26 @@ export function clearUserInfo(): void {
     localStorage.removeItem('user')
 }
 
-function clearAuthAndRedirect(): void {
+function buildAdminLoginUrl(currentPath: string): string {
+    const adminUrl = (getAppUrl('admin') || window.location.origin).replace(/\/$/, '')
+    const loginPath = adminUrl.endsWith('/admin') ? '/login' : '/admin/login'
+    return `${adminUrl}${loginPath}?redirect=${encodeURIComponent(currentPath)}`
+}
+
+function clearAuthAndRedirect(options: { preferAdminLogin?: boolean } = {}): void {
     clearAccessToken()
     clearUserInfo()
 
-    const portalUrl = getAppUrl('portal')
     const currentUrl = window.location.href
+    const currentPath = `${window.location.pathname}${window.location.search}`
+    const shouldUseAdminLogin = options.preferAdminLogin || window.location.pathname.startsWith('/admin')
+
+    if (shouldUseAdminLogin) {
+        window.location.href = buildAdminLoginUrl(currentPath)
+        return
+    }
+
+    const portalUrl = (getAppUrl('portal') || window.location.origin).replace(/\/$/, '')
     window.location.href = `${portalUrl}/login?redirect=${encodeURIComponent(currentUrl)}`
 }
 
@@ -153,12 +167,37 @@ async function refreshToken(): Promise<string | null> {
 }
 
 export async function tryRestoreToken(): Promise<boolean> {
-    if (accessToken) {
+    // If an in-memory token exists and is still fresh, keep using it.
+    // If it's close to expiry (or already expired), refresh immediately.
+    if (accessToken && !shouldRefreshToken()) {
         return true
     }
 
     const newToken = await refreshToken()
     return !!newToken
+}
+
+type AuthFailureType = 'none' | 'unauthorized'
+
+async function getAuthFailureType(
+    response: Response
+): Promise<AuthFailureType> {
+    if (response.status === 401) {
+        return 'unauthorized'
+    }
+
+    const contentType = response.headers.get('content-type') || ''
+    if (!contentType.includes('application/json')) {
+        return 'none'
+    }
+
+    try {
+        const payload = (await response.clone().json()) as { code?: unknown }
+        if (payload.code === 401) return 'unauthorized'
+        return 'none'
+    } catch {
+        return 'none'
+    }
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -180,6 +219,9 @@ export async function authFetch(url: string, options: Omit<RequestInit, 'body'> 
     }
 
     const fullUrl = url.startsWith('/') ? `${API_BASE_URL}${url}` : url
+    const inAdminContext =
+        fullUrl.includes('/api/admin/') ||
+        (typeof window !== 'undefined' && window.location.pathname.startsWith('/admin'))
 
     const response = await fetch(fullUrl, {
         ...restOptions,
@@ -188,7 +230,8 @@ export async function authFetch(url: string, options: Omit<RequestInit, 'body'> 
         credentials: 'include'
     })
 
-    if (response.status !== 401) {
+    const authFailureType = await getAuthFailureType(response)
+    if (authFailureType === 'none') {
         return response
     }
 
@@ -200,17 +243,25 @@ export async function authFetch(url: string, options: Omit<RequestInit, 'body'> 
                     return
                 }
                 if (!newToken) {
-                    clearAuthAndRedirect()
+                    clearAuthAndRedirect({ preferAdminLogin: inAdminContext })
                     reject(new Error('Token refresh failed'))
                     return
                 }
                 headers['Authorization'] = `Bearer ${newToken}`
-                resolve(fetch(fullUrl, {
-                    ...restOptions,
-                    headers,
-                    body,
-                    credentials: 'include'
-                }))
+                resolve(
+                    fetch(fullUrl, {
+                        ...restOptions,
+                        headers,
+                        body,
+                        credentials: 'include'
+                    }).then(async (retriedResponse) => {
+                        if ((await getAuthFailureType(retriedResponse)) !== 'none') {
+                            clearAuthAndRedirect({ preferAdminLogin: inAdminContext })
+                            throw new Error('Token refresh failed, please login again')
+                        }
+                        return retriedResponse
+                    })
+                )
             })
         })
     }
@@ -224,21 +275,25 @@ export async function authFetch(url: string, options: Omit<RequestInit, 'body'> 
         if (newToken) {
             onRefreshSuccess(newToken)
             headers['Authorization'] = `Bearer ${newToken}`
-            return fetch(fullUrl, {
+            const retriedResponse = await fetch(fullUrl, {
                 ...restOptions,
                 headers,
                 body,
                 credentials: 'include'
             })
+            if ((await getAuthFailureType(retriedResponse)) !== 'none') {
+                throw new Error('Token refresh failed, please login again')
+            }
+            return retriedResponse
         } else {
             onRefreshFailure(new Error('Token refresh failed'))
-            clearAuthAndRedirect()
+            clearAuthAndRedirect({ preferAdminLogin: inAdminContext })
             throw new Error('Token refresh failed, please login again')
         }
     } catch (error) {
         isRefreshing = false
         onRefreshFailure(error as Error)
-        clearAuthAndRedirect()
+        clearAuthAndRedirect({ preferAdminLogin: inAdminContext })
         throw error
     }
 }

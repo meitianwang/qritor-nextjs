@@ -288,23 +288,16 @@ export default function PricingPage() {
                                                 planName === 'FREE' ? '/download' : `/checkout?plan=${planName.toLowerCase()}`,
                                                 index
                                             )}
-                                            <p className="pricing-desc">
-                                                {plan.description || (planName === 'FREE' ? t('pricing.plans.free.desc') :
-                                                    planName === 'PRO' ? t('pricing.plans.pro.desc') :
-                                                        planName === 'ULTRA' ? t('pricing.plans.ultra.desc') : '')}
-                                            </p>
+                                            {plan.description && (
+                                                <p className="pricing-desc">{plan.description}</p>
+                                            )}
                                             <ul className="pricing-features">
                                                 {plan.features?.map((feature, idx) => (
                                                     <li key={idx} className="pricing-feature">
                                                         <CheckIcon />
                                                         {feature}
                                                     </li>
-                                                )) || (
-                                                        <>
-                                                            <li className="pricing-feature"><CheckIcon />{t('pricing.monthlyCredits', { credits: plan.monthlyCredits || 0 })}</li>
-                                                            <li className="pricing-feature"><CheckIcon />{plan.maxProjects === -1 ? t('pricing.unlimitedProjects') : t('pricing.maxProjects', { count: plan.maxProjects || 1 })}</li>
-                                                        </>
-                                                    )}
+                                                ))}
                                             </ul>
                                         </div>
                                     )

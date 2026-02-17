@@ -4,7 +4,7 @@ import { useAuth } from '@/hooks/useAuth'
 import { useTranslation } from '@/hooks/useTranslation'
 import { useState, useEffect, type ReactNode } from 'react'
 import { usePathname, useSearchParams, useRouter } from 'next/navigation'
-import { getAccessToken, tryRestoreToken } from '@/lib/auth-utils'
+import { tryRestoreToken } from '@/lib/auth-utils'
 
 /**
  * Protected route component
@@ -29,14 +29,6 @@ function ProtectedRoute({ children }: ProtectedRouteProps) {
 
     useEffect(() => {
         const checkAuth = async () => {
-            // If token already in memory, pass through
-            if (getAccessToken()) {
-                setIsAuthenticated(true)
-                setIsRestoring(false)
-                return
-            }
-
-            // Try to restore with Refresh Token
             const success = await tryRestoreToken()
             setIsAuthenticated(success)
             setIsRestoring(false)
