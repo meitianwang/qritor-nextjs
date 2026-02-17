@@ -73,8 +73,8 @@ interface LlmConfigRow {
   model_tier: string | null
   is_default: number | null
   enabled: number | null
-  normalization_factor: number | null
-  credit_rate: number | null
+  input_price_per_m: number | null
+  output_price_per_m: number | null
 }
 
 // ---------------------------------------------------------------------------
@@ -238,13 +238,13 @@ class AIGenerateService {
     if (userId) {
       try {
         const estInputTokens = estimateInputTokens(prompt)
-        const { normalizationFactor, creditRate } =
+        const { inputPricePerM, outputPricePerM } =
           await getConfigParams(actualConfigId)
         const estimatedCredits = calculateCredits(
           estInputTokens,
           800,
-          normalizationFactor,
-          creditRate,
+          inputPricePerM,
+          outputPricePerM,
         )
 
         const { hasEnoughCredits } = await import('./credit-service')
@@ -294,13 +294,13 @@ class AIGenerateService {
     let creditsConsumed = 0
     if (userId) {
       try {
-        const { normalizationFactor, creditRate, configId: finalConfigId } =
+        const { inputPricePerM, outputPricePerM, configId: finalConfigId } =
           await getConfigParams(actualConfigId)
         creditsConsumed = calculateCredits(
           inputTokens,
           outputTokens,
-          normalizationFactor,
-          creditRate,
+          inputPricePerM,
+          outputPricePerM,
         )
 
         const { consumeCreditsWithTransaction } = await import(
@@ -313,8 +313,8 @@ class AIGenerateService {
           finalConfigId ? BigInt(finalConfigId) : undefined,
           inputTokens,
           outputTokens,
-          creditRate,
-          normalizationFactor,
+          inputPricePerM,
+          outputPricePerM,
           `桌面端AI生成: ${moduleTitle}`,
         )
       } catch (error) {

@@ -2,7 +2,7 @@ import { NextRequest } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { getCurrentUser, getCurrentUserOptional } from '@/lib/middleware/auth-middleware'
 import { apiSuccess, apiError, apiNotFound, apiForbidden } from '@/lib/api-response'
-import { users_role } from '@/generated/prisma'
+import { users_role } from '@/generated/prisma/client'
 
 function serializeMethod(
   method: {

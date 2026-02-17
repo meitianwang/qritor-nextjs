@@ -37,9 +37,10 @@ export async function POST(request: NextRequest) {
       tags,
       is_default,
       enabled,
-      credit_rate,
+      input_price_per_m,
+      output_price_per_m,
+      pricing_multiplier,
       model_tier,
-      normalization_factor,
       context_window,
     } = body as {
       model_name: string
@@ -48,9 +49,10 @@ export async function POST(request: NextRequest) {
       tags?: unknown
       is_default?: unknown
       enabled?: unknown
-      credit_rate?: unknown
+      input_price_per_m?: unknown
+      output_price_per_m?: unknown
+      pricing_multiplier?: unknown
       model_tier?: string
-      normalization_factor?: unknown
       context_window?: unknown
     }
 
@@ -90,8 +92,9 @@ export async function POST(request: NextRequest) {
     const normalizedOwnedBy = String(owned_by ?? '').trim()
     const normalizedIsDefault = toTinyInt(is_default, 0)
     const normalizedEnabled = toTinyInt(enabled, 1)
-    const normalizedCreditRate = toNumber(credit_rate, 1.0)
-    const normalizedNormalizationFactor = toNumber(normalization_factor, 1.0)
+    const normalizedInputPricePerM = toNumber(input_price_per_m, 0.20)
+    const normalizedOutputPricePerM = toNumber(output_price_per_m, 0.40)
+    const normalizedPricingMultiplier = toNumber(pricing_multiplier, 1.0)
     const normalizedModelTier =
       typeof model_tier === 'string' && model_tier.trim() ? model_tier.trim() : null
     const normalizedContextWindow = toPositiveInt(context_window)
@@ -104,9 +107,10 @@ export async function POST(request: NextRequest) {
         tags: serializeLlmTags(tags),
         is_default: normalizedIsDefault,
         enabled: normalizedEnabled,
-        credit_rate: normalizedCreditRate,
+        input_price_per_m: normalizedInputPricePerM,
+        output_price_per_m: normalizedOutputPricePerM,
+        pricing_multiplier: normalizedPricingMultiplier,
         model_tier: normalizedModelTier,
-        normalization_factor: normalizedNormalizationFactor,
         context_window: normalizedContextWindow,
         created_at: new Date(),
         updated_at: new Date(),

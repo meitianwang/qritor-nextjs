@@ -86,10 +86,9 @@ export async function PUT(
     const modelTier = pickString(body.model_tier, body.modelTier)
     const isDefault = toTinyInt(body.is_default ?? body.isDefault)
     const enabled = toTinyInt(body.enabled)
-    const creditRate = toNumber(body.credit_rate ?? body.creditRate)
-    const normalizationFactor = toNumber(
-      body.normalization_factor ?? body.normalizationFactor,
-    )
+    const inputPricePerM = toNumber(body.input_price_per_m ?? body.inputPricePerM)
+    const outputPricePerM = toNumber(body.output_price_per_m ?? body.outputPricePerM)
+    const pricingMultiplier = toNumber(body.pricing_multiplier ?? body.pricingMultiplier)
     const contextWindow = toPositiveInt(body.context_window ?? body.contextWindow)
 
     const updateData: Record<string, unknown> = { updated_at: new Date() }
@@ -99,11 +98,10 @@ export async function PUT(
 
     if (isDefault !== undefined) updateData.is_default = isDefault
     if (enabled !== undefined) updateData.enabled = enabled
-    if (creditRate !== undefined) updateData.credit_rate = creditRate
+    if (inputPricePerM !== undefined) updateData.input_price_per_m = inputPricePerM
+    if (outputPricePerM !== undefined) updateData.output_price_per_m = outputPricePerM
+    if (pricingMultiplier !== undefined) updateData.pricing_multiplier = pricingMultiplier
     if (modelTier !== undefined) updateData.model_tier = modelTier
-    if (normalizationFactor !== undefined) {
-      updateData.normalization_factor = normalizationFactor
-    }
     if (contextWindow !== undefined) updateData.context_window = contextWindow
 
     const updated = await prisma.llm_config.update({

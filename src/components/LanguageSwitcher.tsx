@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect, useRef } from 'react'
-import { getLanguage, setLanguage, SUPPORTED_LANGUAGES, getCurrentLanguageInfo } from '@/i18n/index'
+import { getLanguage, setLanguage, SUPPORTED_LANGUAGES, DEFAULT_LANGUAGE } from '@/i18n/index'
 import { clearTranslationCache } from '@/i18n/translations'
 
 interface LanguageSwitcherProps {
@@ -15,10 +15,17 @@ interface LanguageSwitcherProps {
  */
 function LanguageSwitcher({ variant = 'dropdown', onLanguageChange, className = '' }: LanguageSwitcherProps) {
     const [isOpen, setIsOpen] = useState(false)
-    const [currentLang, setCurrentLang] = useState(getLanguage())
+    const [currentLang, setCurrentLang] = useState(DEFAULT_LANGUAGE)
+    const [mounted, setMounted] = useState(false)
     const dropdownRef = useRef<HTMLDivElement>(null)
 
-    const currentLanguage = getCurrentLanguageInfo()
+    const currentLanguage = SUPPORTED_LANGUAGES[currentLang] || SUPPORTED_LANGUAGES[DEFAULT_LANGUAGE]
+
+    // Hydrate language after mount to avoid SSR mismatch
+    useEffect(() => {
+        setCurrentLang(getLanguage())
+        setMounted(true)
+    }, [])
 
     // Close dropdown on outside click
     useEffect(() => {

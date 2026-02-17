@@ -2,7 +2,7 @@ import { NextRequest } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { getCurrentUserOptional } from '@/lib/middleware/auth-middleware'
 import { apiSuccess, apiError, apiNotFound } from '@/lib/api-response'
-import { users_role } from '@/generated/prisma'
+import { users_role } from '@/generated/prisma/client'
 
 const IMAGE_GEN_PROVIDERS: Record<string, string> = {
   antigravity: 'Antigravity (Gemini代理)',

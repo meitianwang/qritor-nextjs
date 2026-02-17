@@ -27,7 +27,7 @@ export function useDocumentMeta({
 }: DocumentMetaOptions): void {
     useEffect(() => {
         // Update <title>
-        const fullTitle = title ? `${title} | Qritor` : 'Qritor - AI Creation Platform'
+        const fullTitle = title ? `${title} | Qritor` : 'Qritor'
         document.title = fullTitle
 
         // Update/create meta tags

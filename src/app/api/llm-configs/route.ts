@@ -73,7 +73,7 @@ export async function GET() {
   try {
     const configs = await prisma.llm_config.findMany({
       where: { enabled: 1 },
-      orderBy: { credit_rate: 'asc' },
+      orderBy: { input_price_per_m: 'asc' },
     })
 
     const configIds = configs.map((c) => Number(c.id))
@@ -90,7 +90,9 @@ export async function GET() {
           displayName: c.display_name || c.model_name,
           platform: c.owned_by,
           isDefault: c.is_default === 1,
-          creditRate: c.credit_rate ?? 1.0,
+          inputPricePerM: c.input_price_per_m ?? 0.20,
+          outputPricePerM: c.output_price_per_m ?? 0.40,
+          pricingMultiplier: c.pricing_multiplier ?? 1.0,
           modelTier: c.model_tier || 'base',
           tags: parseLlmTags(c.tags),
           contextWindow,

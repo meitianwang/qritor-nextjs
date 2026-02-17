@@ -24,7 +24,9 @@ export async function GET(
       platform: c.owned_by,
       isDefault: c.is_default === 1,
       enabled: c.enabled === 1,
-      creditRate: c.credit_rate ?? 1.0,
+      inputPricePerM: c.input_price_per_m ?? 0.20,
+      outputPricePerM: c.output_price_per_m ?? 0.40,
+      pricingMultiplier: c.pricing_multiplier ?? 1.0,
       modelTier: c.model_tier || 'base',
       tags: parseLlmTags(c.tags),
     })

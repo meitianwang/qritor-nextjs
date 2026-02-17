@@ -1,5 +1,5 @@
 import { prisma } from '@/lib/prisma'
-import type { subscription_plans } from '@/generated/prisma'
+import type { subscription_plans } from '@/generated/prisma/client'
 
 // ---------------------------------------------------------------------------
 // Constants

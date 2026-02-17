@@ -7,20 +7,11 @@ import { prisma } from '@/lib/prisma'
 /**
  * Calculate the number of credits consumed for a given token usage.
  *
- * Pricing model: 1 USD = 1000 credits
- *
  * Formula:
- *   credits = (inputTokens × inputPricePerM + outputTokens × outputPricePerM) / 1000
+ *   credits = ceil( (inputTokens × inputPricePerM + outputTokens × outputPricePerM)
+ *                   / 1,000,000 × 200 )
  *
- * Where:
- *   - inputPricePerM: Price per million input tokens in USD
- *   - outputPricePerM: Price per million output tokens in USD
- *
- * @param inputTokens - Number of input (prompt) tokens.
- * @param outputTokens - Number of output (completion) tokens.
- * @param inputPricePerM - Price per million input tokens in USD (e.g., 0.10 for GLM-5).
- * @param outputPricePerM - Price per million output tokens in USD (e.g., 0.40 for GLM-5).
- * @returns The credit cost (minimum 1, rounded up).
+ * 200 = 100 (credits per USD) × 2 (markup for 50% profit margin)
  */
 export function calculateCredits(
   inputTokens: number,
@@ -28,14 +19,12 @@ export function calculateCredits(
   inputPricePerM: number,
   outputPricePerM: number,
 ): number {
-  // Calculate cost in USD
   const costInUSD =
     (inputTokens * inputPricePerM + outputTokens * outputPricePerM) / 1_000_000
 
-  // Convert to credits (1 USD = 1000 credits)
-  const credits = costInUSD * 1000
+  // 100 credits/USD × 2 markup = 200
+  const credits = costInUSD * 200
 
-  // Round up and ensure minimum of 1 credit
   return Math.max(1, Math.ceil(credits))
 }
 
@@ -80,16 +69,14 @@ interface ConfigParams {
  * If `configId` is supplied the specific row is fetched; otherwise the default
  * enabled configuration is used.
  *
- * Falls back to GLM-5 pricing when no matching config is found:
- *   - inputPricePerM: $0.10/1M tokens
- *   - outputPricePerM: $0.40/1M tokens
+ * Falls back to GLM-4.7 Flash pricing when no matching config is found.
  */
 export async function getConfigParams(
   configId?: number,
 ): Promise<ConfigParams> {
   const fallback: ConfigParams = {
-    inputPricePerM: 0.1, // GLM-5 input price as fallback
-    outputPricePerM: 0.4, // GLM-5 output price as fallback
+    inputPricePerM: 0.20,
+    outputPricePerM: 0.40,
     configId: null,
   }
 

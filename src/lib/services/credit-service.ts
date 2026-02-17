@@ -361,8 +361,8 @@ export async function getTransactions(
     outputTokens: t.output_tokens,
     totalTokens: t.total_tokens,
     creditsConsumed: t.credits_consumed,
-    creditRate: t.credit_rate,
-    normalizationFactor: t.normalization_factor,
+    inputPricePerM: t.input_price_per_m,
+    outputPricePerM: t.output_price_per_m,
     description: t.description,
     createdAt: toISOStringOrNull(t.created_at),
   }))

@@ -14,7 +14,7 @@ import "@/styles/admin-login.css"
 import LayoutShell from "./LayoutShell"
 
 export const metadata: Metadata = {
-    title: "Qritor - AI Writing Platform",
+    title: "Qritor",
     description: "Qritor is an AI-powered writing platform for creative writers. Write novels, scripts, and more with AI assistance.",
     icons: {
         icon: "/favicon.ico",

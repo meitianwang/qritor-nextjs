@@ -13,7 +13,7 @@ interface LlmConfig {
     modelName: string
     displayName: string
     platform?: string
-    creditRate: number
+    pricingMultiplier: number
     enabled: boolean
     isDefault: boolean
     tags: string[]
@@ -223,7 +223,7 @@ export default function LlmConfigPage() {
                                     )}
                                     <div className="admin-card-row">
                                         <span className="admin-card-label">积分倍率</span>
-                                        <span className="admin-card-value">{config.creditRate ?? 1.0}x</span>
+                                        <span className="admin-card-value">{config.pricingMultiplier}x</span>
                                     </div>
                                     {config.contextWindow && (
                                         <div className="admin-card-row">

@@ -20,27 +20,23 @@ interface PresetTag {
 }
 
 // 预设标签列表 (key -> 中文显示名)
-// 分类：模型能力、价格、资源、写作特点
+// 分类：价格、模型能力、写作特点
 const PRESET_TAGS: PresetTag[] = [
+  // 价格
+  { key: 'budget', label: '极致省钱' },
+  { key: 'cheap', label: '价格美丽' },
+  { key: 'affordable', label: '价格适中' },
+  { key: 'premium', label: '价格较高' },
+  { key: 'expensive', label: '旗舰价位' },
   // 模型能力
   { key: 'long_context', label: '长上下文' },
   { key: 'fast', label: '速度快' },
-  { key: 'multimodal', label: '多模态' },
-  { key: 'reasoning', label: '推理能力' },
-  { key: 'tool_use', label: '工具调用' },
-  // 价格
-  { key: 'expensive', label: '较贵' },
-  { key: 'affordable', label: '价格适中' },
-  { key: 'cheap', label: '价格美丽' },
-  // 资源
   { key: 'limited', label: '资源有限' },
-  { key: 'internal', label: '内部部署' },
   // 写作特点
   { key: 'creative', label: '创意写作' },
   { key: 'style_stable', label: '文风稳定' },
   { key: 'narrative', label: '长篇叙事' },
   { key: 'character', label: '角色塑造' },
-  { key: 'dialogue', label: '对话生成' },
   { key: 'chinese', label: '中文优化' },
 ]
 
@@ -52,8 +48,9 @@ interface LlmConfig {
     tags: string[]
     isDefault: boolean
     enabled: boolean
-    creditRate: number
-    normalizationFactor: number
+    inputPricePerM: number
+    outputPricePerM: number
+    pricingMultiplier: number
     contextWindow?: number
 }
 
@@ -64,8 +61,9 @@ interface LlmFormData {
     tags: string[]
     isDefault: boolean
     enabled: boolean
-    creditRate: number
-    normalizationFactor: number
+    inputPricePerM: number
+    outputPricePerM: number
+    pricingMultiplier: number
     contextWindow: number | ''
 }
 
@@ -92,8 +90,9 @@ function LlmConfigModal({ isOpen, onClose, config, onSave, apiBasePath = '/api',
     tags: [],
     isDefault: false,
     enabled: true,
-    creditRate: 1.0,
-    normalizationFactor: 1.0,
+    inputPricePerM: 0.20,
+    outputPricePerM: 0.40,
+    pricingMultiplier: 1.0,
     contextWindow: ''
   })
 
@@ -107,8 +106,9 @@ function LlmConfigModal({ isOpen, onClose, config, onSave, apiBasePath = '/api',
           tags: [],
           isDefault: false,
           enabled: true,
-          creditRate: 1.0,
-          normalizationFactor: 1.0,
+          inputPricePerM: 0.20,
+          outputPricePerM: 0.40,
+          pricingMultiplier: 1.0,
           contextWindow: ''
         })
       } else if (config) {
@@ -119,8 +119,9 @@ function LlmConfigModal({ isOpen, onClose, config, onSave, apiBasePath = '/api',
           tags: config.tags || [],
           isDefault: config.isDefault || false,
           enabled: config.enabled !== false,
-          creditRate: config.creditRate ?? 1.0,
-          normalizationFactor: config.normalizationFactor ?? 1.0,
+          inputPricePerM: config.inputPricePerM ?? 0.20,
+          outputPricePerM: config.outputPricePerM ?? 0.40,
+          pricingMultiplier: config.pricingMultiplier ?? 1.0,
           contextWindow: config.contextWindow || ''
         })
       }
@@ -165,8 +166,9 @@ function LlmConfigModal({ isOpen, onClose, config, onSave, apiBasePath = '/api',
             tags: formData.tags,
             is_default: formData.isDefault ? 1 : 0,
             enabled: formData.enabled ? 1 : 0,
-            credit_rate: formData.creditRate,
-            normalization_factor: formData.normalizationFactor,
+            input_price_per_m: formData.inputPricePerM,
+            output_price_per_m: formData.outputPricePerM,
+            pricing_multiplier: formData.pricingMultiplier,
             context_window: formData.contextWindow || undefined,
           }
         })
@@ -197,8 +199,9 @@ function LlmConfigModal({ isOpen, onClose, config, onSave, apiBasePath = '/api',
             tags: formData.tags || [],
             is_default: formData.isDefault ? 1 : 0,
             enabled: formData.enabled ? 1 : 0,
-            credit_rate: Number(formData.creditRate),
-            normalization_factor: Number(formData.normalizationFactor),
+            input_price_per_m: Number(formData.inputPricePerM),
+            output_price_per_m: Number(formData.outputPricePerM),
+            pricing_multiplier: Number(formData.pricingMultiplier),
             context_window: formData.contextWindow || undefined,
           }
         })
@@ -395,28 +398,41 @@ function LlmConfigModal({ isOpen, onClose, config, onSave, apiBasePath = '/api',
             </svg>
             积分配置
           </h3>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '16px' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '16px' }}>
             <div className="admin-form-group" style={{ marginBottom: 0 }}>
-              <label className="admin-form-label">积分倍率</label>
+              <label className="admin-form-label">输入价格 ($/1M)</label>
               <input
                 type="number"
-                name="creditRate"
-                value={formData.creditRate}
+                name="inputPricePerM"
+                value={formData.inputPricePerM}
                 onChange={handleInputChange}
-                step="0.1"
-                min="0.1"
+                step="0.01"
+                min="0"
                 className="admin-form-input"
-                placeholder="1.0"
+                placeholder="0.20"
               />
             </div>
             <div className="admin-form-group" style={{ marginBottom: 0 }}>
-              <label className="admin-form-label">归一化系数</label>
+              <label className="admin-form-label">输出价格 ($/1M)</label>
               <input
                 type="number"
-                name="normalizationFactor"
-                value={formData.normalizationFactor}
+                name="outputPricePerM"
+                value={formData.outputPricePerM}
                 onChange={handleInputChange}
-                step="0.0001"
+                step="0.01"
+                min="0"
+                className="admin-form-input"
+                placeholder="0.40"
+              />
+            </div>
+            <div className="admin-form-group" style={{ marginBottom: 0 }}>
+              <label className="admin-form-label">展示倍率</label>
+              <input
+                type="number"
+                name="pricingMultiplier"
+                value={formData.pricingMultiplier}
+                onChange={handleInputChange}
+                step="0.1"
                 min="0"
                 className="admin-form-input"
                 placeholder="1.0"
@@ -424,7 +440,7 @@ function LlmConfigModal({ isOpen, onClose, config, onSave, apiBasePath = '/api',
             </div>
           </div>
           <p style={{ fontSize: '0.75rem', color: 'rgba(255,255,255,0.4)', marginTop: '12px' }}>
-            积分消耗公式：(输入Token + 输出Token) x 归一化系数 x 倍率
+            积分 = ceil(inputTokens × 输入价格 + outputTokens × 输出价格) / 1M × 200。展示倍率用于模型选择器显示（如 0.3x、1.0x）。
           </p>
         </div>
 

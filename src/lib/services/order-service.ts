@@ -1,6 +1,6 @@
 import crypto from 'crypto'
 import { prisma } from '@/lib/prisma'
-import type { orders, subscription_plans } from '@/generated/prisma'
+import type { orders, subscription_plans } from '@/generated/prisma/client'
 import { subscribe } from './subscription-service'
 
 // ---------------------------------------------------------------------------

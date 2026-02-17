@@ -44,19 +44,19 @@ model boost_packs {
 }
 
 model credit_transactions {
-  id                   BigInt   @id @default(autoincrement())
-  user_id              BigInt
-  transaction_type     String   @db.VarChar(20)
-  source_type          String   @db.VarChar(50)
-  llm_config_id        BigInt?
-  input_tokens         Int?
-  output_tokens        Int?
-  total_tokens         Int?
-  credit_rate          Float?   @db.Float
-  normalization_factor Float?   @db.Float
-  credits_consumed     Int
-  description          String?  @db.Text
-  created_at           DateTime @db.DateTime(0)
+  id                BigInt   @id @default(autoincrement())
+  user_id           BigInt
+  transaction_type  String   @db.VarChar(20)
+  source_type       String   @db.VarChar(50)
+  llm_config_id     BigInt?
+  input_tokens      Int?
+  output_tokens     Int?
+  total_tokens      Int?
+  input_price_per_m Float?   @db.Float
+  output_price_per_m Float?  @db.Float
+  credits_consumed  Int
+  description       String?  @db.Text
+  created_at        DateTime @db.DateTime(0)
 
   @@index([id], map: "ix_credit_transactions_id")
   @@index([user_id], map: "ix_credit_transactions_user_id")
@@ -76,19 +76,20 @@ model knowledge {
 }
 
 model llm_config {
-  id                   BigInt    @id @default(autoincrement())
-  model_name           String    @unique(map: "model_name") @db.VarChar(200)
-  owned_by             String?   @db.VarChar(100)
-  display_name         String?   @db.VarChar(200)
-  tags                 String?   @db.Text
-  is_default           Int?      @db.SmallInt
-  enabled              Int?      @db.SmallInt
-  credit_rate          Float?    @db.Float
-  model_tier           String?   @db.VarChar(20)
-  normalization_factor Float?    @db.Float
-  context_window       Int?      @db.Int
-  created_at           DateTime  @db.DateTime(0)
-  updated_at           DateTime? @db.DateTime(0)
+  id                  BigInt    @id @default(autoincrement())
+  model_name          String    @unique(map: "model_name") @db.VarChar(200)
+  owned_by            String?   @db.VarChar(100)
+  display_name        String?   @db.VarChar(200)
+  tags                String?   @db.Text
+  is_default          Int?      @db.SmallInt
+  enabled             Int?      @db.SmallInt
+  input_price_per_m   Float?    @db.Float
+  output_price_per_m  Float?    @db.Float
+  pricing_multiplier  Float?    @db.Float
+  model_tier          String?   @db.VarChar(20)
+  context_window      Int?      @db.Int
+  created_at          DateTime  @db.DateTime(0)
+  updated_at          DateTime? @db.DateTime(0)
 
   @@index([id], map: "ix_llm_config_id")
 }

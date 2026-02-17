@@ -3,7 +3,7 @@ import { apiSuccess, apiError } from '@/lib/api-response'
 import { getCurrentAdminUser } from '@/lib/middleware/auth-middleware'
 import { prisma } from '@/lib/prisma'
 import { serializeUser } from '@/lib/serialize'
-import { Prisma } from '@/generated/prisma'
+import { Prisma } from '@/generated/prisma/client'
 
 export async function GET(request: NextRequest) {
   try {

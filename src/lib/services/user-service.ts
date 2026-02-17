@@ -1,5 +1,5 @@
 import { prisma } from '@/lib/prisma'
-import type { users } from '@/generated/prisma'
+import type { users } from '@/generated/prisma/client'
 import { hashPassword } from './auth-service'
 
 // ---------------------------------------------------------------------------

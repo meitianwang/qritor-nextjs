@@ -26,7 +26,7 @@ function normalizeTags(value: unknown): string[] {
   }
 
   if (typeof current === 'string' && current.length > 0) {
-    return [current]
+    return current.split(',').map((t) => t.trim()).filter((t) => t.length > 0)
   }
 
   return []

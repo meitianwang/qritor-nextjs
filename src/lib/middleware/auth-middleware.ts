@@ -2,7 +2,7 @@ import { NextRequest } from 'next/server'
 import { decodeToken } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { apiUnauthorized, apiForbidden } from '@/lib/api-response'
-import { users, users_role } from '@/generated/prisma'
+import { users, users_role } from '@/generated/prisma/client'
 
 export async function getCurrentUser(request: NextRequest): Promise<users> {
   const authHeader = request.headers.get('authorization')

@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
-import { PrismaClient } from '@/generated/prisma'
+import { PrismaClient } from '@/generated/prisma/client'
 import { apiError } from '@/lib/api-response'
 import { getCurrentUser } from '@/lib/middleware/auth-middleware'
 import { authService } from '@/lib/services/auth-service'

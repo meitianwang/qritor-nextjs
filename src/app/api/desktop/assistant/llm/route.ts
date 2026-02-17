@@ -80,12 +80,12 @@ export async function POST(request: NextRequest) {
       .map((m) => (typeof m.content === 'string' ? m.content : ''))
       .join('\n')
     const est = estimateInputTokens(allText)
-    const { normalizationFactor, creditRate } =
+    const { inputPricePerM, outputPricePerM } =
       await getConfigParams(configId)
     if (
       !(await hasEnoughCredits(
         user.id,
-        calculateCredits(est, 800, normalizationFactor, creditRate),
+        calculateCredits(est, 800, inputPricePerM, outputPricePerM),
       ))
     ) {
       return jsonError(403, '积分不足，请充值后再试')
@@ -104,11 +104,11 @@ export async function POST(request: NextRequest) {
         const outputTokens = totalUsage.outputTokens ?? 0
         console.log(`[LLM] Finish: in=${inputTokens}, out=${outputTokens}`)
         const {
-          normalizationFactor: nf,
-          creditRate: cr,
+          inputPricePerM: ip,
+          outputPricePerM: op,
           configId: cid,
         } = await getConfigParams(configId)
-        const credits = calculateCredits(inputTokens, outputTokens, nf, cr)
+        const credits = calculateCredits(inputTokens, outputTokens, ip, op)
         try {
           await consumeCreditsWithTransaction(
             user.id,
@@ -117,8 +117,8 @@ export async function POST(request: NextRequest) {
             cid ? BigInt(cid) : undefined,
             inputTokens,
             outputTokens,
-            cr,
-            nf,
+            ip,
+            op,
             '桌面端助手对话',
           )
         } catch (e) {
