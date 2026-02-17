@@ -60,15 +60,10 @@ function ProfilePageContent() {
         }
     }, [mounted, router, getUser])
 
-    if (!mounted || !user) {
-        return null
-    }
-
-    // Display user info (prefer backend data)
-    const displayUser = userProfile || user
-
     // Fetch user profile from backend
     useEffect(() => {
+        if (!mounted || !getUser()) return
+
         const fetchUserProfile = async () => {
             try {
                 const response = await authFetch('/api/auth/me')
@@ -84,10 +79,12 @@ function ProfilePageContent() {
         }
 
         fetchUserProfile()
-    }, [])
+    }, [mounted, getUser])
 
     // Fetch credits and subscription data
     useEffect(() => {
+        if (!mounted || !getUser()) return
+
         const fetchCreditsAndSubscription = async () => {
             try {
                 const creditsRes = await authFetch('/api/credits')
@@ -107,7 +104,14 @@ function ProfilePageContent() {
         }
 
         fetchCreditsAndSubscription()
-    }, [])
+    }, [mounted, getUser])
+
+    if (!mounted || !user) {
+        return null
+    }
+
+    // Display user info (prefer backend data)
+    const displayUser = userProfile || user
 
     // Sidebar menu config
     const menuItems = [
