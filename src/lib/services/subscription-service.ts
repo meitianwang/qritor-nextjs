@@ -229,7 +229,7 @@ export async function subscribe(
       expire_at: expireAt,
       credits: plan.monthly_credits,
       credits_used: BigInt(0),
-      auto_renew: true,
+      auto_renew: false,
       created_at: now,
       updated_at: now,
     },

@@ -8,16 +8,19 @@ export async function GET(
   { params }: { params: Promise<{ order_no: string }> },
 ) {
   try {
-    await getCurrentUser(request)
+    const user = await getCurrentUser(request)
     const { order_no } = await params
 
-    const order = await getOrderByOrderNo(order_no)
+    const order = await getOrderByOrderNo(order_no, user.id)
     return apiSuccess(order)
   } catch (e) {
     if (e instanceof Response || (e && typeof e === 'object' && 'status' in e)) {
       return e as Response
     }
     const message = e instanceof Error ? e.message : '获取订单失败'
+    if (message.includes('无权操作')) {
+      return apiError(403, message)
+    }
     return apiError(500, message)
   }
 }

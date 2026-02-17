@@ -327,7 +327,7 @@ class AIGenerateService {
         const { consumeCreditsWithTransaction } = await import(
           './credit-service'
         )
-        await consumeCreditsWithTransaction(
+        const deducted = await consumeCreditsWithTransaction(
           BigInt(userId),
           creditsConsumed,
           'AI_GENERATE_DESKTOP_PROMPT',
@@ -338,8 +338,26 @@ class AIGenerateService {
           outputPricePerM,
           `桌面端AI生成: ${moduleTitle}`,
         )
+        if (!deducted) {
+          yield {
+            event: 'error',
+            data: {
+              error: '积分扣减失败，请稍后重试',
+              code: 'CREDIT_DEDUCTION_FAILED',
+            },
+          }
+          return
+        }
       } catch (error) {
         console.error(`积分扣减失败: ${error}`)
+        yield {
+          event: 'error',
+          data: {
+            error: '积分扣减失败，请稍后重试',
+            code: 'CREDIT_DEDUCTION_FAILED',
+          },
+        }
+        return
       }
     }
 

@@ -125,7 +125,7 @@ export async function POST(request: NextRequest) {
         } = await getConfigParams(configId)
         const credits = calculateCredits(inputTokens, outputTokens, ip, op)
         try {
-          await consumeCreditsWithTransaction(
+          const deducted = await consumeCreditsWithTransaction(
             user.id,
             credits,
             'DESKTOP_ASSISTANT_LLM',
@@ -136,6 +136,11 @@ export async function POST(request: NextRequest) {
             op,
             '桌面端助手对话',
           )
+          if (!deducted) {
+            console.error(
+              `[LLM] Credit deduction failed: user=${user.id}, credits=${credits}`,
+            )
+          }
         } catch (e) {
           console.error('积分扣减失败:', e)
         }

@@ -10,6 +10,11 @@ interface CheckoutSessionResult {
   sessionId: string
 }
 
+interface CheckoutSessionInfo extends CheckoutSessionResult {
+  status: string | null
+  paymentStatus: string | null
+}
+
 interface WebhookEventResult {
   status: string
   orderNo?: string
@@ -80,31 +85,34 @@ class StripeService {
 
     const amountCents = Math.round(amount * 100)
 
-    const session = await stripe.checkout.sessions.create({
-      customer: customerId,
-      payment_method_types: ['card', 'wechat_pay'],
-      payment_method_options: {
-        card: { setup_future_usage: 'off_session' },
-        wechat_pay: { client: 'web' },
-      },
-      line_items: [
-        {
-          price_data: {
-            currency: 'usd',
-            product_data: {
-              name: `Qritor ${planName} Plan`,
-              description: `Order: ${orderNo}`,
-            },
-            unit_amount: amountCents,
-          },
-          quantity: 1,
+    const session = await stripe.checkout.sessions.create(
+      {
+        customer: customerId,
+        payment_method_types: ['card', 'wechat_pay'],
+        payment_method_options: {
+          card: { setup_future_usage: 'off_session' },
+          wechat_pay: { client: 'web' },
         },
-      ],
-      mode: 'payment',
-      success_url: successUrl,
-      cancel_url: cancelUrl,
-      metadata: { order_no: orderNo, plan_name: planName },
-    })
+        line_items: [
+          {
+            price_data: {
+              currency: 'usd',
+              product_data: {
+                name: `Qritor ${planName} Plan`,
+                description: `Order: ${orderNo}`,
+              },
+              unit_amount: amountCents,
+            },
+            quantity: 1,
+          },
+        ],
+        mode: 'payment',
+        success_url: successUrl,
+        cancel_url: cancelUrl,
+        metadata: { order_no: orderNo, plan_name: planName },
+      },
+      { idempotencyKey: `checkout_${orderNo}` },
+    )
 
     console.log(
       `Stripe Checkout Session created: ${session.id}, order_no: ${orderNo}`,
@@ -114,6 +122,22 @@ class StripeService {
       checkoutUrl: session.url,
       sessionId: session.id,
     }
+  }
+
+  async getCheckoutSession(sessionId: string): Promise<CheckoutSessionInfo> {
+    const stripe = this._getStripeClient()
+    const session = await stripe.checkout.sessions.retrieve(sessionId)
+    return {
+      checkoutUrl: session.url,
+      sessionId: session.id,
+      status: session.status,
+      paymentStatus: session.payment_status,
+    }
+  }
+
+  async expireCheckoutSession(sessionId: string): Promise<void> {
+    const stripe = this._getStripeClient()
+    await stripe.checkout.sessions.expire(sessionId)
   }
 
   // -------------------------------------------------------------------------
@@ -232,21 +256,39 @@ class StripeService {
     const stripe = this._getStripeClient()
     const amountCents = Math.round(amount * 100)
 
-    const paymentIntent = await stripe.paymentIntents.create({
-      amount: amountCents,
-      currency: 'usd',
-      customer: customerId,
-      payment_method: paymentMethodId,
-      off_session: true,
-      confirm: true,
-      metadata: { order_no: orderNo },
-    })
+    const paymentIntent = await stripe.paymentIntents.create(
+      {
+        amount: amountCents,
+        currency: 'usd',
+        customer: customerId,
+        payment_method: paymentMethodId,
+        off_session: true,
+        confirm: true,
+        metadata: { order_no: orderNo },
+      },
+      { idempotencyKey: `pi_${orderNo}_${paymentMethodId}` },
+    )
 
     return {
       paymentIntentId: paymentIntent.id,
       status: paymentIntent.status,
       clientSecret: paymentIntent.client_secret,
     }
+  }
+
+  async getPaymentIntent(paymentIntentId: string): Promise<ChargeResult> {
+    const stripe = this._getStripeClient()
+    const paymentIntent = await stripe.paymentIntents.retrieve(paymentIntentId)
+    return {
+      paymentIntentId: paymentIntent.id,
+      status: paymentIntent.status,
+      clientSecret: paymentIntent.client_secret,
+    }
+  }
+
+  async cancelPaymentIntent(paymentIntentId: string): Promise<void> {
+    const stripe = this._getStripeClient()
+    await stripe.paymentIntents.cancel(paymentIntentId)
   }
 
   // -------------------------------------------------------------------------
@@ -302,16 +344,11 @@ class StripeService {
       if (orderNo) {
         const { completePaymentViaWebhook } = await import('./order-service')
 
-        try {
-          await completePaymentViaWebhook(orderNo, 'STRIPE', paymentIntent.id)
-          console.log(
-            `Order ${orderNo} paid via saved method, subscription activated`,
-          )
-          return { status: 'success', orderNo }
-        } catch {
-          // Order may already be marked PAID by the pay-with-saved endpoint
-          return { status: 'already_processed', orderNo }
-        }
+        await completePaymentViaWebhook(orderNo, 'STRIPE', paymentIntent.id)
+        console.log(
+          `Order ${orderNo} paid via saved method, subscription activated`,
+        )
+        return { status: 'success', orderNo }
       }
     }
 

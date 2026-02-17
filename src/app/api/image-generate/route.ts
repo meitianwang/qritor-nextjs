@@ -31,18 +31,20 @@ export async function POST(request: NextRequest) {
       return apiError(400, '该生图模型已禁用')
     }
 
-    // Calculate credit consumption
-    const baseCredits = Math.max(1.0, (width * height) / 1000000)
+    // Calculate credit consumption: ceil(width × height / 1,000,000 × credit_rate), minimum 1
+    const baseCredits = (width * height) / 1_000_000
     const creditRate = config.credit_rate ?? 1.0
-    const creditsToConsume = baseCredits * creditRate
+    const creditsToConsume = Math.max(1, Math.ceil(baseCredits * creditRate))
 
     // Credit check - import dynamically to avoid circular dependencies
-    const { hasEnoughCredits } = await import('@/lib/services/credit-service')
+    const { hasEnoughCredits, consumeCreditsWithTransaction } = await import(
+      '@/lib/services/credit-service'
+    )
     if (!(await hasEnoughCredits(user.id, creditsToConsume))) {
       return apiError(402, '积分不足，请充值后再试')
     }
 
-    // Create async task
+    // Create async task first, then charge credits.
     const taskId = randomUUID()
 
     await prisma.image_generation_task.create({
@@ -59,9 +61,33 @@ export async function POST(request: NextRequest) {
           ? JSON.stringify(body.reference_images)
           : null,
         strength: body.strength ?? 0.7,
+        credits_consumed: creditsToConsume,
         created_at: new Date(),
       },
     })
+
+    const deducted = await consumeCreditsWithTransaction(
+      user.id,
+      creditsToConsume,
+      'IMAGE_GENERATE',
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      `图片生成: ${config.provider}/${config.model_name} (${width}x${height})`,
+    )
+    if (!deducted) {
+      await prisma.image_generation_task.update({
+        where: { id: taskId },
+        data: {
+          status: 'failed',
+          error_message: '积分扣减失败，任务已取消',
+          completed_at: new Date(),
+        },
+      })
+      return apiError(409, '积分扣减失败，请重试')
+    }
 
     // Note: Background task processing is handled separately
     // In Next.js, we would use a queue or cron-based approach
@@ -69,6 +95,7 @@ export async function POST(request: NextRequest) {
     return apiSuccess({
       taskId: taskId,
       message: '任务已创建，请轮询获取结果',
+      creditsConsumed: creditsToConsume,
     })
   } catch (error) {
     if (error instanceof Response) return error

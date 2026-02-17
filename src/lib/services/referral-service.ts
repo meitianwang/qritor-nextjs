@@ -7,6 +7,22 @@ import { prisma } from '@/lib/prisma'
 
 const CODE_CHARS = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'
 const CODE_LENGTH = 8
+const REFERRAL_INVITER_REWARD_KEYS = [
+  'referral.inviter_reward',
+  'referral_inviter_reward',
+]
+const REFERRAL_INVITEE_REWARD_KEYS = [
+  'referral.invitee_reward',
+  'referral_invitee_reward',
+]
+const REFERRAL_REWARD_EXPIRE_DAYS_KEYS = [
+  'referral.reward_expire_days',
+  'referral_reward_expire_days',
+]
+const REFERRAL_MAX_REWARDS_KEYS = [
+  'referral.max_rewards',
+  'referral_max_rewards',
+]
 
 // ---------------------------------------------------------------------------
 // Types
@@ -62,6 +78,23 @@ async function getOrCreateCode(userId: bigint): Promise<string> {
   return code
 }
 
+async function getNumericConfig(
+  keys: string[],
+  fallback: number,
+): Promise<number> {
+  for (const key of keys) {
+    const config = await prisma.system_config.findFirst({
+      where: { config_key: key },
+    })
+    if (!config?.config_value) continue
+    const parsed = parseInt(config.config_value, 10)
+    if (!Number.isNaN(parsed)) {
+      return parsed
+    }
+  }
+  return fallback
+}
+
 // ---------------------------------------------------------------------------
 // Public API
 // ---------------------------------------------------------------------------
@@ -69,20 +102,10 @@ async function getOrCreateCode(userId: bigint): Promise<string> {
 export async function getReferralInfo(
   userId: bigint,
 ): Promise<ReferralInfoDTO> {
-  // Get referral settings from system_config
-  const inviterRewardConfig = await prisma.system_config.findFirst({
-    where: { config_key: 'referral_inviter_reward' },
-  })
-  const inviteeRewardConfig = await prisma.system_config.findFirst({
-    where: { config_key: 'referral_invitee_reward' },
-  })
-
-  const inviterReward = inviterRewardConfig?.config_value
-    ? parseInt(inviterRewardConfig.config_value, 10)
-    : 100
-  const inviteeReward = inviteeRewardConfig?.config_value
-    ? parseInt(inviteeRewardConfig.config_value, 10)
-    : 50
+  const [inviterReward, inviteeReward] = await Promise.all([
+    getNumericConfig(REFERRAL_INVITER_REWARD_KEYS, 50),
+    getNumericConfig(REFERRAL_INVITEE_REWARD_KEYS, 30),
+  ])
 
   const code = await getOrCreateCode(userId)
 
@@ -195,48 +218,56 @@ export async function processReferral(
   })
   if (existingReward) return
 
-  // Get reward settings
-  const inviterRewardConfig = await prisma.system_config.findFirst({
-    where: { config_key: 'referral_inviter_reward' },
-  })
-  const inviteeRewardConfig = await prisma.system_config.findFirst({
-    where: { config_key: 'referral_invitee_reward' },
-  })
+  const [inviterRewardCredits, inviteeRewardCredits, rewardExpireDays, maxRewards] =
+    await Promise.all([
+      getNumericConfig(REFERRAL_INVITER_REWARD_KEYS, 50),
+      getNumericConfig(REFERRAL_INVITEE_REWARD_KEYS, 30),
+      getNumericConfig(REFERRAL_REWARD_EXPIRE_DAYS_KEYS, 30),
+      getNumericConfig(REFERRAL_MAX_REWARDS_KEYS, 0),
+    ])
 
-  const inviterRewardCredits = inviterRewardConfig?.config_value
-    ? parseInt(inviterRewardConfig.config_value, 10)
-    : null
-  const inviteeRewardCredits = inviteeRewardConfig?.config_value
-    ? parseInt(inviteeRewardConfig.config_value, 10)
-    : null
+  const inviterRewardCount =
+    maxRewards > 0
+      ? await prisma.referral_rewards.count({
+          where: {
+            user_id: referral.inviter_id,
+            reward_type: 'INVITER',
+          },
+        })
+      : 0
 
-  if (inviterRewardCredits === null || inviteeRewardCredits === null) {
-    console.error('邀请奖励配置缺失，无法发放奖励')
-    return
+  const shouldGrantInviterReward =
+    maxRewards <= 0 || inviterRewardCount < maxRewards
+
+  const expireAt = new Date(
+    now.getTime() + rewardExpireDays * 24 * 60 * 60 * 1000,
+  )
+
+  const rewardRows = [
+    {
+      user_id: inviteeId,
+      referral_id: completed.id,
+      reward_type: 'INVITEE',
+      credits: BigInt(inviteeRewardCredits),
+      credits_used: BigInt(0),
+      expire_at: expireAt,
+      created_at: now,
+    },
+  ]
+
+  if (shouldGrantInviterReward) {
+    rewardRows.push({
+      user_id: referral.inviter_id,
+      referral_id: completed.id,
+      reward_type: 'INVITER',
+      credits: BigInt(inviterRewardCredits),
+      credits_used: BigInt(0),
+      expire_at: expireAt,
+      created_at: now,
+    })
   }
 
-  const expireAt = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000) // 30 days
-
   await prisma.referral_rewards.createMany({
-    data: [
-      {
-        user_id: referral.inviter_id,
-        referral_id: completed.id,
-        reward_type: 'INVITER',
-        credits: BigInt(inviterRewardCredits),
-        credits_used: BigInt(0),
-        expire_at: expireAt,
-        created_at: now,
-      },
-      {
-        user_id: inviteeId,
-        referral_id: completed.id,
-        reward_type: 'INVITEE',
-        credits: BigInt(inviteeRewardCredits),
-        credits_used: BigInt(0),
-        expire_at: expireAt,
-        created_at: now,
-      },
-    ],
+    data: rewardRows,
   })
 }

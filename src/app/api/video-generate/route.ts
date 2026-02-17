@@ -32,10 +32,10 @@ export async function POST(request: NextRequest) {
 
     const provider = config.provider?.toLowerCase() || ''
 
-    // Calculate credit consumption based on duration
-    const baseCredits = Math.max(1.0, duration * 2.0)
+    // Calculate credit consumption: ceil(duration × credit_rate), minimum 1
+    const baseCredits = duration
     const creditRate = config.credit_rate ?? 1.0
-    const creditsToConsume = baseCredits * creditRate
+    const creditsToConsume = Math.max(1, Math.ceil(baseCredits * creditRate))
 
     // Credit check
     const { hasEnoughCredits, consumeCreditsWithTransaction } = await import(
@@ -48,7 +48,7 @@ export async function POST(request: NextRequest) {
     if (provider === 'apimart') {
       const apiBase = config.api_base || 'https://api.apimart.ai/v1'
 
-      const requestBody: Record<string, any> = {
+      const requestBody: Record<string, unknown> = {
         model: config.model_name,
         prompt: body.prompt,
         duration: Math.min(duration, config.max_duration || 60),
@@ -99,27 +99,40 @@ export async function POST(request: NextRequest) {
         )
       }
 
-      // Deduct credits
-      try {
-        await consumeCreditsWithTransaction(
-          user.id,
-          creditsToConsume,
-          'VIDEO_GENERATE',
-          undefined, // llmConfigId
-          undefined, // inputTokens
-          undefined, // outputTokens
-          undefined, // creditRate
-          undefined, // normalizationFactor
-          `视频生成: ${config.provider}/${config.model_name} (${duration}s)`
+      // Deduct credits after task creation. If deduction fails, still return taskId
+      // to avoid creating an unreachable external task.
+      const deducted = await consumeCreditsWithTransaction(
+        user.id,
+        creditsToConsume,
+        'VIDEO_GENERATE',
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+        `视频生成: ${config.provider}/${config.model_name} (${duration}s)`,
+      )
+      if (!deducted) {
+        console.error(
+          `视频任务已创建但积分扣减失败: user=${user.id}, taskId=${taskId}, credits=${creditsToConsume}`,
         )
-      } catch (e) {
-        console.error('视频生成积分扣减失败:', e)
+        return apiSuccess({
+          taskId: taskId,
+          status: 'pending',
+          creditsConsumed: creditsToConsume,
+          creditsCharged: false,
+          billingStatus: 'PENDING_RECONCILIATION',
+          estimatedTime: duration * 10,
+          warning: '任务已创建，但积分扣减失败，系统将自动重试或人工处理',
+        })
       }
 
       return apiSuccess({
         taskId: taskId,
         status: 'pending',
         creditsConsumed: creditsToConsume,
+        creditsCharged: true,
+        billingStatus: 'CHARGED',
         estimatedTime: duration * 10,
       })
     } else {

@@ -1,3 +1,4 @@
+import { Prisma } from '@/generated/prisma/client'
 import { prisma } from '@/lib/prisma'
 
 // ---------------------------------------------------------------------------
@@ -56,6 +57,13 @@ function toISOStringOrNull(date: Date | null | undefined): string | null {
   return date ? date.toISOString() : null
 }
 
+function normalizeCreditAmount(amount: number): number {
+  if (!Number.isFinite(amount) || amount <= 0) {
+    throw new Error('积分数量必须大于0')
+  }
+  return Math.max(1, Math.ceil(amount))
+}
+
 // ---------------------------------------------------------------------------
 // Service
 // ---------------------------------------------------------------------------
@@ -65,7 +73,7 @@ async function getSubscriptionCredits(
   now: Date,
 ): Promise<CreditCategory> {
   const subs = await prisma.user_subscriptions.findMany({
-    where: { user_id: userId, expire_at: { gt: now } },
+    where: { user_id: userId, status: 'ACTIVE', expire_at: { gt: now } },
   })
 
   const total = subs.reduce((sum, s) => sum + Number(s.credits ?? 0), 0)
@@ -189,121 +197,134 @@ export async function hasEnoughCredits(
   userId: bigint,
   amount: number,
 ): Promise<boolean> {
+  const normalizedAmount = normalizeCreditAmount(amount)
   const balance = await getTotalBalance(userId)
-  return balance >= amount
+  return balance >= normalizedAmount
 }
 
 export async function consumeCredits(
   userId: bigint,
   amount: number,
 ): Promise<boolean> {
-  if (amount <= 0) {
-    throw new Error('积分数量必须大于0')
-  }
+  const normalizedAmount = normalizeCreditAmount(amount)
 
-  const now = new Date()
-  const sources: CreditSource[] = []
+  return prisma.$transaction(
+    async (tx) => {
+      const now = new Date()
+      const sources: CreditSource[] = []
 
-  // Collect all credit sources
-  const subs = await prisma.user_subscriptions.findMany({
-    where: { user_id: userId, expire_at: { gt: now } },
-  })
-  for (const sub of subs) {
-    const remaining = Number(sub.credits ?? 0) - Number(sub.credits_used ?? 0)
-    if (remaining > 0) {
-      sources.push({
-        sourceType: 'SUBSCRIPTION',
-        sourceId: sub.id,
-        expireAt: sub.expire_at,
-        remaining,
+      // Collect all credit sources inside one transaction to avoid race conditions.
+      const subs = await tx.user_subscriptions.findMany({
+        where: {
+          user_id: userId,
+          status: 'ACTIVE',
+          expire_at: { gt: now },
+        },
       })
-    }
-  }
-
-  const rewards = await prisma.referral_rewards.findMany({
-    where: { user_id: userId, expire_at: { gt: now } },
-  })
-  for (const reward of rewards) {
-    const remaining = Number(reward.credits) - Number(reward.credits_used ?? 0)
-    if (remaining > 0) {
-      sources.push({
-        sourceType: 'REFERRAL',
-        sourceId: reward.id,
-        expireAt: reward.expire_at,
-        remaining,
-      })
-    }
-  }
-
-  const purchases = await prisma.boost_pack_purchases.findMany({
-    where: { user_id: userId, expire_at: { gt: now } },
-  })
-  for (const purchase of purchases) {
-    const remaining = Number(purchase.credits) - Number(purchase.credits_used ?? 0)
-    if (remaining > 0 && purchase.expire_at) {
-      sources.push({
-        sourceType: 'BOOST_PACK',
-        sourceId: purchase.id,
-        expireAt: purchase.expire_at,
-        remaining,
-      })
-    }
-  }
-
-  // Sort by expire_at (soonest first)
-  sources.sort((a, b) => a.expireAt.getTime() - b.expireAt.getTime())
-
-  const availableCredits = sources.reduce((sum, s) => sum + s.remaining, 0)
-  if (availableCredits < amount) {
-    return false
-  }
-
-  // Deduct credits in a transaction
-  let remainingToDeduct = amount
-
-  await prisma.$transaction(async (tx) => {
-    for (const source of sources) {
-      if (remainingToDeduct <= 0) break
-
-      const deduct = Math.min(remainingToDeduct, source.remaining)
-
-      if (source.sourceType === 'SUBSCRIPTION') {
-        const sub = await tx.user_subscriptions.findUnique({
-          where: { id: source.sourceId },
-        })
-        if (sub) {
-          await tx.user_subscriptions.update({
-            where: { id: source.sourceId },
-            data: { credits_used: BigInt(Number(sub.credits_used ?? 0) + deduct) },
-          })
-        }
-      } else if (source.sourceType === 'REFERRAL') {
-        const reward = await tx.referral_rewards.findUnique({
-          where: { id: source.sourceId },
-        })
-        if (reward) {
-          await tx.referral_rewards.update({
-            where: { id: source.sourceId },
-            data: { credits_used: BigInt(Number(reward.credits_used ?? 0) + deduct) },
-          })
-        }
-      } else if (source.sourceType === 'BOOST_PACK') {
-        const purchase = await tx.boost_pack_purchases.findUnique({
-          where: { id: source.sourceId },
-        })
-        if (purchase) {
-          await tx.boost_pack_purchases.update({
-            where: { id: source.sourceId },
-            data: { credits_used: BigInt(Number(purchase.credits_used ?? 0) + deduct) },
+      for (const sub of subs) {
+        const remaining = Number(sub.credits ?? 0) - Number(sub.credits_used ?? 0)
+        if (remaining > 0) {
+          sources.push({
+            sourceType: 'SUBSCRIPTION',
+            sourceId: sub.id,
+            expireAt: sub.expire_at,
+            remaining,
           })
         }
       }
 
-      remainingToDeduct -= deduct
-    }
-  })
+      const rewards = await tx.referral_rewards.findMany({
+        where: { user_id: userId, expire_at: { gt: now } },
+      })
+      for (const reward of rewards) {
+        const remaining = Number(reward.credits) - Number(reward.credits_used ?? 0)
+        if (remaining > 0) {
+          sources.push({
+            sourceType: 'REFERRAL',
+            sourceId: reward.id,
+            expireAt: reward.expire_at,
+            remaining,
+          })
+        }
+      }
 
-  return true
+      const purchases = await tx.boost_pack_purchases.findMany({
+        where: { user_id: userId, expire_at: { gt: now } },
+      })
+      for (const purchase of purchases) {
+        const remaining =
+          Number(purchase.credits) - Number(purchase.credits_used ?? 0)
+        if (remaining > 0 && purchase.expire_at) {
+          sources.push({
+            sourceType: 'BOOST_PACK',
+            sourceId: purchase.id,
+            expireAt: purchase.expire_at,
+            remaining,
+          })
+        }
+      }
+
+      sources.sort((a, b) => a.expireAt.getTime() - b.expireAt.getTime())
+
+      const availableCredits = sources.reduce((sum, s) => sum + s.remaining, 0)
+      if (availableCredits < normalizedAmount) {
+        return false
+      }
+
+      let remainingToDeduct = normalizedAmount
+
+      for (const source of sources) {
+        if (remainingToDeduct <= 0) break
+
+        const deduct = Math.min(remainingToDeduct, source.remaining)
+
+        if (source.sourceType === 'SUBSCRIPTION') {
+          const sub = await tx.user_subscriptions.findUnique({
+            where: { id: source.sourceId },
+          })
+          if (sub) {
+            await tx.user_subscriptions.update({
+              where: { id: source.sourceId },
+              data: {
+                credits_used: BigInt(Number(sub.credits_used ?? 0) + deduct),
+              },
+            })
+          }
+        } else if (source.sourceType === 'REFERRAL') {
+          const reward = await tx.referral_rewards.findUnique({
+            where: { id: source.sourceId },
+          })
+          if (reward) {
+            await tx.referral_rewards.update({
+              where: { id: source.sourceId },
+              data: {
+                credits_used: BigInt(Number(reward.credits_used ?? 0) + deduct),
+              },
+            })
+          }
+        } else if (source.sourceType === 'BOOST_PACK') {
+          const purchase = await tx.boost_pack_purchases.findUnique({
+            where: { id: source.sourceId },
+          })
+          if (purchase) {
+            await tx.boost_pack_purchases.update({
+              where: { id: source.sourceId },
+              data: {
+                credits_used: BigInt(
+                  Number(purchase.credits_used ?? 0) + deduct,
+                ),
+              },
+            })
+          }
+        }
+
+        remainingToDeduct -= deduct
+      }
+
+      return remainingToDeduct <= 0
+    },
+    { isolationLevel: Prisma.TransactionIsolationLevel.Serializable },
+  )
 }
 
 export async function consumeCreditsWithTransaction(
@@ -317,7 +338,8 @@ export async function consumeCreditsWithTransaction(
   outputPricePerM?: number,
   description?: string,
 ): Promise<boolean> {
-  const success = await consumeCredits(userId, amount)
+  const normalizedAmount = normalizeCreditAmount(amount)
+  const success = await consumeCredits(userId, normalizedAmount)
 
   if (success) {
     await prisma.credit_transactions.create({
@@ -331,7 +353,7 @@ export async function consumeCreditsWithTransaction(
         total_tokens: (inputTokens ?? 0) + (outputTokens ?? 0),
         input_price_per_m: inputPricePerM ?? null,
         output_price_per_m: outputPricePerM ?? null,
-        credits_consumed: amount,
+        credits_consumed: normalizedAmount,
         description: description ?? '',
         created_at: new Date(),
       },

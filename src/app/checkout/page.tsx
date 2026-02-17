@@ -1,6 +1,6 @@
 'use client'
 
-import { Suspense, useState, useEffect } from 'react'
+import { Suspense, useState, useEffect, useCallback } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { useAuth } from '@/hooks/useAuth'
@@ -43,13 +43,7 @@ function CheckoutPageContent() {
     const [savedMethods, setSavedMethods] = useState<SavedPaymentMethod[]>([])
     const [selectedMethodId, setSelectedMethodId] = useState<string | null>(null) // null = use new card
 
-    // Fetch plan details and saved payment methods
-    useEffect(() => {
-        fetchPlanDetails()
-        fetchSavedMethods()
-    }, [planName])
-
-    const fetchPlanDetails = async () => {
+    const fetchPlanDetails = useCallback(async () => {
         try {
             setLoading(true)
             const response = await authFetch('/api/subscription/plans')
@@ -67,14 +61,14 @@ function CheckoutPageContent() {
             } else {
                 setError(t('checkout.errors.fetchFailed'))
             }
-        } catch (err) {
+        } catch {
             setError(t('checkout.errors.networkError'))
         } finally {
             setLoading(false)
         }
-    }
+    }, [planName, t])
 
-    const fetchSavedMethods = async () => {
+    const fetchSavedMethods = useCallback(async () => {
         try {
             const res = await authFetch('/api/payment-methods')
             const data = await res.json()
@@ -91,7 +85,13 @@ function CheckoutPageContent() {
         } catch {
             // No saved methods, proceed with new card flow
         }
-    }
+    }, [])
+
+    // Fetch plan details and saved payment methods
+    useEffect(() => {
+        fetchPlanDetails()
+        fetchSavedMethods()
+    }, [fetchPlanDetails, fetchSavedMethods])
 
     // Create order and pay
     const handleCheckout = async () => {
@@ -350,7 +350,6 @@ function CheckoutPageContent() {
                                     <span className="payment-methods-label">{t('checkout.supportedPaymentMethods')}</span>
                                     <div className="payment-method-icons">
                                         <span title={t('checkout.creditCard')}>💳</span>
-                                        <span title={t('checkout.alipay')}>🔵</span>
                                         <span title={t('checkout.wechat')}>🟢</span>
                                     </div>
                                 </div>

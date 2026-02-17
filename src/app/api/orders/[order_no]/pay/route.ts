@@ -8,7 +8,7 @@ export async function POST(
   { params }: { params: Promise<{ order_no: string }> },
 ) {
   try {
-    await getCurrentUser(request)
+    const user = await getCurrentUser(request)
     const { order_no } = await params
     const body = await request.json()
     const { paymentMethod } = body
@@ -17,13 +17,16 @@ export async function POST(
       return apiError(400, '缺少 paymentMethod 参数')
     }
 
-    const order = await payOrder(order_no, paymentMethod)
+    const order = await payOrder(order_no, paymentMethod, user.id)
     return apiSuccess(order)
   } catch (e) {
     if (e instanceof Response || (e && typeof e === 'object' && 'status' in e)) {
       return e as Response
     }
     const message = e instanceof Error ? e.message : '支付失败'
+    if (message.includes('无权操作')) {
+      return apiError(403, message)
+    }
     return apiError(500, message)
   }
 }
