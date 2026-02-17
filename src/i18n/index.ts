@@ -91,3 +91,19 @@ export function getCurrentLanguageInfo(): LanguageInfo {
     const lang = getLanguage()
     return SUPPORTED_LANGUAGES[lang] || SUPPORTED_LANGUAGES[DEFAULT_LANGUAGE]
 }
+
+/**
+ * Sync language setting from server after login
+ * Fetches user's language preference and applies it to localStorage
+ */
+export async function syncLanguageFromServer(): Promise<void> {
+    try {
+        const response = await authFetch('/api/user/settings')
+        const data = await response.json()
+        if (data.code === 200 && data.data?.language && SUPPORTED_LANGUAGES[data.data.language]) {
+            localStorage.setItem(LANGUAGE_STORAGE_KEY, data.data.language)
+        }
+    } catch {
+        // Ignore errors - language will fall back to localStorage/browser/default
+    }
+}

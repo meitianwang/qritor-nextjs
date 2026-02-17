@@ -7,6 +7,7 @@ import { useAuth } from '@/hooks/useAuth'
 import { useTranslation } from '@/hooks/useTranslation'
 import { useDocumentMeta } from '@/hooks/useDocumentMeta'
 import { apiFetch, buildCallbackUrl } from '@/lib/auth-utils'
+import { syncLanguageFromServer } from '@/i18n/index'
 import { AuthBackground, AuthHeader } from '@/components/auth/AuthSharedComponents'
 import LoginForm from '@/components/auth/LoginForm'
 
@@ -52,8 +53,11 @@ function LoginPageContent() {
     }, [searchParams])
 
     // Handle login success redirect logic
-    const handleLoginSuccess = useCallback((data: Record<string, unknown>, isDesktop = false, desktopCallback: string | null = null) => {
+    const handleLoginSuccess = useCallback(async (data: Record<string, unknown>, isDesktop = false, desktopCallback: string | null = null) => {
         login(data)
+
+        // Sync language setting from server (non-blocking)
+        syncLanguageFromServer()
 
         if (isDesktop && desktopCallback) {
             const { accessToken, refreshToken, expiresAt, ...user } = data
@@ -115,6 +119,7 @@ function LoginPageContent() {
                     })
                     sessionStorage.setItem('desktopCallbackUrl', callbackUrl)
                     login(data.data)
+                    syncLanguageFromServer()
                     router.push(`/desktop-login-success?user=${encodeURIComponent(JSON.stringify(user))}`)
                 } else {
                     handleLoginSuccess(data.data)
