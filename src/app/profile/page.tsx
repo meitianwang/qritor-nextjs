@@ -22,7 +22,6 @@ function ProfilePageContent() {
     const router = useRouter()
     const searchParams = useSearchParams()
     const { getUser, logout, updateUser } = useAuth()
-    const user = getUser()
     const { t } = useTranslation('portal')
     const { notification, showToast } = useToast()
 
@@ -46,14 +45,22 @@ function ProfilePageContent() {
     const [creditsData, setCreditsData] = useState<any>(undefined)
     const [subscriptionData, setSubscriptionData] = useState<any>(undefined)
 
+    // Track mount state to avoid hydration mismatch (user info is in localStorage, unavailable on server)
+    const [mounted, setMounted] = useState(false)
+    useEffect(() => {
+        setMounted(true)
+    }, [])
+
+    const user = mounted ? getUser() : null
+
     // Redirect to login if not logged in (must run in effect, not during render)
     useEffect(() => {
-        if (!user) {
+        if (mounted && !getUser()) {
             router.replace('/login')
         }
-    }, [user, router])
+    }, [mounted, router, getUser])
 
-    if (!user) {
+    if (!mounted || !user) {
         return null
     }
 
