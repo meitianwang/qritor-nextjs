@@ -3,6 +3,7 @@ import { apiSuccess, apiError, apiNotFound } from '@/lib/api-response'
 import { getCurrentAdminUser } from '@/lib/middleware/auth-middleware'
 import { prisma } from '@/lib/prisma'
 import { generateText, createGateway } from 'ai'
+import { resolveModelRequestPolicy } from '@/lib/services/reasoning-options'
 
 export async function POST(
   request: NextRequest,
@@ -26,11 +27,15 @@ export async function POST(
     }
 
     const gateway = createGateway({ apiKey: gatewayApiKey })
+    const modelPolicy = resolveModelRequestPolicy(config.model_name)
     const startTime = Date.now()
 
     const { text } = await generateText({
-      model: gateway(config.model_name),
+      model: gateway(modelPolicy.resolvedModelName),
       messages: [{ role: 'user', content: 'Say "hello" in one word.' }],
+      ...(modelPolicy.providerOptions
+        ? { providerOptions: modelPolicy.providerOptions }
+        : {}),
       maxOutputTokens: 10,
     })
 
@@ -39,6 +44,7 @@ export async function POST(
     return apiSuccess({
       success: true,
       modelName: config.model_name,
+      resolvedModelName: modelPolicy.resolvedModelName,
       latencyMs,
       reply: text.slice(0, 100),
     })

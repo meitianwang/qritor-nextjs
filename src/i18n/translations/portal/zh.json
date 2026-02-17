@@ -95,6 +95,7 @@
         "logout": "退出",
         "save": "保存",
         "cancel": "取消",
+        "edit": "编辑",
         "confirm": "确认",
         "delete": "删除",
         "deleting": "删除中...",
@@ -389,7 +390,20 @@
             "amount": "金额",
             "status": "状态",
             "description": "描述",
-            "noInvoices": "未找到账单。"
+            "noInvoices": "未找到账单。",
+            "currentPlanNote": "你当前的订阅计划。",
+            "viewPlans": "查看方案",
+            "paymentMethods": "付款方式",
+            "addCard": "添加新卡",
+            "removeCard": "删除",
+            "setDefault": "设为默认",
+            "defaultBadge": "默认",
+            "cardEnding": "尾号 {{last4}}",
+            "noPaymentMethods": "暂无保存的付款方式",
+            "addCardDesc": "添加信用卡或借记卡以便快速支付。",
+            "removeConfirm": "确定要删除此付款方式吗？",
+            "cardAdded": "卡片添加成功",
+            "cardRemoved": "卡片已删除"
         },
         "deleteAccountModal": {
             "title": "删除账号",
@@ -404,6 +418,29 @@
             "sendCodeFailed": "验证码发送失败",
             "codeInvalid": "请输入6位验证码",
             "deleteFailed": "删除失败"
+        }
+    },
+    "billingManage": {
+        "title": "账单信息",
+        "backToProfile": "返回个人中心",
+        "noticeTitle": "注意",
+        "notice1": "你需要绑定至少一个支付方式，以保持订阅持续有效。",
+        "notice2": "每个订阅周期的费用将自动从你的默认支付方式中扣除。",
+        "notice3": "更新的计费信息将从下一次付款生效，不会影响已生成的历史账单。",
+        "paymentMethods": "支付方式",
+        "billingAddress": "账单地址",
+        "address": {
+            "country": "国家 / 地区",
+            "state": "州 / 省 / 地区",
+            "city": "城市",
+            "line1": "详细地址",
+            "selectCountry": "请选择国家或地区",
+            "statePlaceholder": "请输入州/省/地区",
+            "cityPlaceholder": "请输入你的城市",
+            "line1Placeholder": "例如: 中山路 123 号",
+            "save": "确认并保存",
+            "noAddress": "暂未设置账单地址",
+            "add": "添加"
         }
     },
     "referral": {
@@ -480,13 +517,17 @@
         "unlimitedProjects": "无限创作项目",
         "backToPricing": "返回价格页面",
         "supportedPaymentMethods": "支持的支付方式",
+        "savedPaymentMethods": "已保存的付款方式",
+        "useNewCard": "使用新卡支付",
+        "payWithSavedCard": "使用已保存的卡支付",
         "errors": {
             "planNotFound": "未找到该订阅计划",
             "fetchFailed": "获取计划信息失败",
             "networkError": "网络错误，请稍后重试",
             "createOrderFailed": "创建订单失败",
             "getPaymentLinkFailed": "获取支付链接失败，请重试",
-            "initiatePaymentFailed": "发起支付失败"
+            "initiatePaymentFailed": "发起支付失败",
+            "authRequired": "此卡需要额外验证，请使用新卡支付"
         }
     },
     "payment": {

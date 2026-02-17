@@ -3,6 +3,9 @@ import { streamText, jsonSchema } from 'ai'
 import { getCurrentUser } from '@/lib/middleware/auth-middleware'
 import { gateway, getConfigById } from '@/lib/services/ai-service'
 import {
+  resolveModelRequestPolicy,
+} from '@/lib/services/reasoning-options'
+import {
   calculateCredits,
   estimateInputTokens,
   getConfigParams,
@@ -71,8 +74,11 @@ export async function POST(request: NextRequest) {
     const config = await getConfigById(configId)
     if (!config) return jsonError(400, '没有可用的 LLM 配置')
 
+    const modelPolicy = resolveModelRequestPolicy(config.model_name)
+    const toolsForModel = modelPolicy.allowTools ? tools : undefined
+
     console.log(
-      `[LLM] Request: model=${config.model_name}, messages=${messages.length}, tools=${tools ? Object.keys(tools).length : 0}`,
+      `[LLM] Request: model=${config.model_name}, resolved=${modelPolicy.resolvedModelName}, messages=${messages.length}, toolsIn=${tools ? Object.keys(tools).length : 0}, toolsForwarded=${toolsForModel ? Object.keys(toolsForModel).length : 0}`,
     )
 
     // 积分预检
@@ -94,15 +100,24 @@ export async function POST(request: NextRequest) {
     // 透传给 AI Gateway，积分在 onFinish 回调中扣减
     const systemPrompt: string | undefined = body.systemPrompt || body.system
     const result = streamText({
-      model: gateway(config.model_name),
+      model: gateway(modelPolicy.resolvedModelName),
       ...(systemPrompt ? { system: systemPrompt } : {}),
       messages,
-      tools,
-      temperature,
+      ...(toolsForModel ? { tools: toolsForModel } : {}),
+      ...(modelPolicy.providerOptions
+        ? { providerOptions: modelPolicy.providerOptions }
+        : {}),
+      ...(modelPolicy.allowTemperature ? { temperature } : {}),
       onFinish: async ({ totalUsage }) => {
         const inputTokens = totalUsage.inputTokens ?? 0
         const outputTokens = totalUsage.outputTokens ?? 0
-        console.log(`[LLM] Finish: in=${inputTokens}, out=${outputTokens}`)
+        const reasoningTokens =
+          totalUsage.outputTokenDetails?.reasoningTokens ??
+          totalUsage.reasoningTokens ??
+          0
+        console.log(
+          `[LLM] Finish: in=${inputTokens}, out=${outputTokens}, reasoning=${reasoningTokens}`,
+        )
         const {
           inputPricePerM: ip,
           outputPricePerM: op,
@@ -128,12 +143,20 @@ export async function POST(request: NextRequest) {
     })
 
     return result.toUIMessageStreamResponse({
+      sendReasoning: true,
+      sendSources: true,
       messageMetadata: ({ part }) => {
         if (part.type === 'finish') {
+          const reasoningTokens =
+            part.totalUsage.outputTokenDetails?.reasoningTokens ??
+            part.totalUsage.reasoningTokens ??
+            0
+
           return {
             usage: {
               inputTokens: part.totalUsage.inputTokens ?? 0,
               outputTokens: part.totalUsage.outputTokens ?? 0,
+              ...(reasoningTokens > 0 ? { reasoningTokens } : {}),
             },
           }
         }

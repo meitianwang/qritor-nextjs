@@ -659,6 +659,178 @@
     padding: var(--spacing-2xl) !important;
 }
 
+/* Billing management page */
+.billing-manage-page {
+    max-width: 700px;
+    margin: 0 auto;
+    padding: var(--spacing-2xl) 0;
+}
+
+.billing-back-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    background: none;
+    border: none;
+    color: var(--color-text-tertiary);
+    font-size: var(--font-size-sm);
+    cursor: pointer;
+    padding: 0;
+    margin-bottom: var(--spacing-lg);
+    transition: color 0.15s;
+}
+
+.billing-back-link:hover {
+    color: var(--color-text-primary);
+}
+
+.billing-manage-title {
+    font-size: var(--font-size-xl);
+    font-weight: 600;
+    margin-bottom: var(--spacing-xl);
+}
+
+.billing-section-title {
+    font-size: var(--font-size-lg);
+    font-weight: 600;
+    margin-top: var(--spacing-xl);
+    margin-bottom: var(--spacing-md);
+}
+
+.billing-info-card {
+    display: flex;
+    gap: var(--spacing-md);
+    padding: var(--spacing-lg);
+    background: rgba(59, 130, 246, 0.08);
+    border: 1px solid rgba(59, 130, 246, 0.2);
+    border-radius: var(--radius-xl);
+    margin-bottom: var(--spacing-lg);
+}
+
+.billing-info-icon {
+    flex-shrink: 0;
+    color: #3b82f6;
+    margin-top: 0.1rem;
+}
+
+.billing-info-content {
+    flex: 1;
+}
+
+.billing-info-title {
+    font-size: var(--font-size-sm);
+    font-weight: 600;
+    color: #3b82f6;
+    margin-bottom: 0.5rem;
+}
+
+.billing-info-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.billing-info-list li {
+    font-size: var(--font-size-sm);
+    color: var(--color-text-secondary);
+    line-height: 1.6;
+    padding-left: 0.75rem;
+    position: relative;
+}
+
+.billing-info-list li::before {
+    content: '\00B7';
+    position: absolute;
+    left: 0;
+    font-weight: 700;
+}
+
+.billing-edit-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    background: none;
+    border: none;
+    color: var(--color-primary);
+    font-size: var(--font-size-sm);
+    cursor: pointer;
+    padding: 0;
+    transition: opacity 0.15s;
+}
+
+.billing-edit-link:hover {
+    opacity: 0.8;
+}
+
+/* Billing address */
+.billing-address-display {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-md);
+}
+
+.billing-address-row {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.billing-address-row .billing-address-label {
+    font-size: 0.75rem;
+    color: var(--color-text-tertiary);
+    font-weight: 500;
+}
+
+.billing-address-row .billing-address-value {
+    font-size: var(--font-size-sm);
+    color: var(--color-text-primary);
+}
+
+.billing-address-form {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-lg);
+}
+
+.billing-address-field {
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+}
+
+.billing-address-field .billing-address-label {
+    font-size: 0.8rem;
+    color: var(--color-text-secondary);
+    font-weight: 500;
+}
+
+.billing-address-input {
+    width: 100%;
+    padding: 0.6rem 0.75rem;
+    background: var(--color-bg-secondary);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    color: var(--color-text-primary);
+    font-size: var(--font-size-sm);
+    outline: none;
+    transition: border-color 0.15s;
+}
+
+.billing-address-input:focus {
+    border-color: var(--color-primary);
+}
+
+.billing-address-input option {
+    background: var(--color-bg-secondary);
+    color: var(--color-text-primary);
+}
+
+.billing-address-actions {
+    display: flex;
+    gap: 0.5rem;
+    padding-top: 0.25rem;
+}
+
 /* 删除账号弹窗 */
 .delete-account-modal-overlay {
     position: fixed;

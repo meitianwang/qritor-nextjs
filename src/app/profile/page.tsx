@@ -242,7 +242,7 @@ function ProfilePageContent() {
                     />
                 )
             case 'billing':
-                return <BillingSection />
+                return <BillingSection subscriptionData={subscriptionData} />
             default:
                 return (
                     <ProfileInfoSection

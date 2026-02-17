@@ -2,6 +2,7 @@ import crypto from 'crypto'
 import { prisma } from '@/lib/prisma'
 import type { orders, subscription_plans } from '@/generated/prisma/client'
 import { subscribe } from './subscription-service'
+import { stripeService } from './stripe-service'
 
 // ---------------------------------------------------------------------------
 // Constants
@@ -213,14 +214,25 @@ export async function payOrder(
   const successUrl = `${baseUrl}/payment/success?orderNo=${order.order_no}`
   const cancelUrl = `${baseUrl}/checkout?plan=${order.plan_name.toLowerCase()}`
 
-  // Get customer email
+  // Get or create Stripe customer (so payment method is saved automatically)
   const user = await prisma.users.findFirst({
     where: { id: order.user_id },
   })
-  const _customerEmail = user?.email ?? null
 
-  // TODO: integrate stripe_service.createCheckoutSession()
-  // For now, update status and return order info
+  const customerId = await stripeService.getOrCreateCustomer(
+    order.user_id,
+    user?.email ?? '',
+  )
+
+  const stripeResult = await stripeService.createCheckoutSession(
+    order.order_no,
+    order.plan_name,
+    Number(order.amount),
+    successUrl,
+    cancelUrl,
+    customerId,
+  )
+
   await prisma.orders.update({
     where: { id: order.id },
     data: {
@@ -235,13 +247,101 @@ export async function payOrder(
     plan,
   )
   orderInfo.requiresAction = true
-  // orderInfo.checkoutUrl and orderInfo.stripeSessionId will be set after Stripe integration
-
-  // Suppress unused-variable warnings for values needed by future Stripe integration
-  void successUrl
-  void cancelUrl
+  orderInfo.checkoutUrl = stripeResult.checkoutUrl ?? undefined
+  orderInfo.stripeSessionId = stripeResult.sessionId
 
   return orderInfo
+}
+
+export async function payOrderWithSavedMethod(
+  orderNo: string,
+  paymentMethodId: string,
+  userId: bigint,
+): Promise<OrderInfo & { clientSecret?: string | null }> {
+  const order = await prisma.orders.findUnique({
+    where: { order_no: orderNo },
+  })
+
+  if (!order) {
+    throw new Error(`订单不存在: ${orderNo}`)
+  }
+
+  if (order.user_id !== userId) {
+    throw new Error('无权操作此订单')
+  }
+
+  if (order.status !== STATUS_PENDING && order.status !== STATUS_AWAITING_PAYMENT) {
+    throw new Error('订单状态不正确，无法支付')
+  }
+
+  if (order.expired_at < new Date()) {
+    await prisma.orders.update({
+      where: { id: order.id },
+      data: { status: STATUS_EXPIRED },
+    })
+    throw new Error('订单已过期')
+  }
+
+  const user = await prisma.users.findFirst({ where: { id: userId } })
+  if (!user?.stripe_customer_id) {
+    throw new Error('未找到支付账户')
+  }
+
+  const chargeResult = await stripeService.chargeWithSavedMethod(
+    user.stripe_customer_id,
+    paymentMethodId,
+    Number(order.amount),
+    order.order_no,
+  )
+
+  const plan = await prisma.subscription_plans.findFirst({
+    where: { id: order.plan_id },
+  })
+
+  if (chargeResult.status === 'succeeded') {
+    const now = new Date()
+    await prisma.orders.update({
+      where: { id: order.id },
+      data: {
+        status: STATUS_PAID,
+        payment_method: PAYMENT_STRIPE,
+        stripe_payment_intent_id: chargeResult.paymentIntentId,
+        paid_at: now,
+        updated_at: now,
+      },
+    })
+
+    await subscribe(order.user_id, order.plan_name)
+
+    return toOrderInfo(
+      { ...order, status: STATUS_PAID, payment_method: PAYMENT_STRIPE, paid_at: now },
+      plan,
+    )
+  }
+
+  if (chargeResult.status === 'requires_action') {
+    await prisma.orders.update({
+      where: { id: order.id },
+      data: {
+        status: STATUS_AWAITING_PAYMENT,
+        payment_method: PAYMENT_STRIPE,
+        stripe_payment_intent_id: chargeResult.paymentIntentId,
+        updated_at: new Date(),
+      },
+    })
+
+    const orderInfo = toOrderInfo(
+      { ...order, status: STATUS_AWAITING_PAYMENT, payment_method: PAYMENT_STRIPE },
+      plan,
+    )
+    return {
+      ...orderInfo,
+      requiresAction: true,
+      clientSecret: chargeResult.clientSecret,
+    }
+  }
+
+  throw new Error(`支付失败，状态: ${chargeResult.status}`)
 }
 
 export async function completePaymentViaWebhook(

@@ -16,6 +16,15 @@ interface Plan {
     features?: string[]
 }
 
+interface SavedPaymentMethod {
+    id: string
+    brand: string
+    last4: string
+    expMonth: number
+    expYear: number
+    isDefault: boolean
+}
+
 /**
  * Checkout page
  * Shows subscription plan details and order summary, then redirects to Stripe payment
@@ -31,10 +40,13 @@ function CheckoutPageContent() {
     const [loading, setLoading] = useState(true)
     const [error, setError] = useState<string | null>(null)
     const [processing, setProcessing] = useState(false)
+    const [savedMethods, setSavedMethods] = useState<SavedPaymentMethod[]>([])
+    const [selectedMethodId, setSelectedMethodId] = useState<string | null>(null) // null = use new card
 
-    // Fetch plan details
+    // Fetch plan details and saved payment methods
     useEffect(() => {
         fetchPlanDetails()
+        fetchSavedMethods()
     }, [planName])
 
     const fetchPlanDetails = async () => {
@@ -62,7 +74,26 @@ function CheckoutPageContent() {
         }
     }
 
-    // Create order and redirect to Stripe payment
+    const fetchSavedMethods = async () => {
+        try {
+            const res = await authFetch('/api/payment-methods')
+            const data = await res.json()
+            if (data.code === 200 && data.data) {
+                setSavedMethods(data.data)
+                // Pre-select default card
+                const defaultMethod = data.data.find((m: SavedPaymentMethod) => m.isDefault)
+                if (defaultMethod) {
+                    setSelectedMethodId(defaultMethod.id)
+                } else if (data.data.length > 0) {
+                    setSelectedMethodId(data.data[0].id)
+                }
+            }
+        } catch {
+            // No saved methods, proceed with new card flow
+        }
+    }
+
+    // Create order and pay
     const handleCheckout = async () => {
         const token = getAccessToken()
         if (!token) {
@@ -87,24 +118,48 @@ function CheckoutPageContent() {
 
             const orderNo = createData.data.orderNo || createData.data.order_no
 
-            // 2. Initiate payment, get Stripe Checkout URL
-            const payResponse = await authFetch(`/api/order/${orderNo}/pay`, {
-                method: 'POST',
-                body: { paymentMethod: 'STRIPE' }
-            })
-            const payData = await payResponse.json()
+            // 2. Pay with saved method or redirect to Stripe Checkout
+            if (selectedMethodId) {
+                const payResponse = await authFetch(`/api/orders/${orderNo}/pay-with-saved`, {
+                    method: 'POST',
+                    body: { paymentMethodId: selectedMethodId }
+                })
+                const payData = await payResponse.json()
 
-            if (payData.code === 200 && payData.data) {
-                const checkoutUrl = payData.data.checkout_url || payData.data.checkoutUrl
-                if (checkoutUrl) {
-                    window.location.href = checkoutUrl
+                if (payData.code === 200 && payData.data) {
+                    if (payData.data.status === 'PAID') {
+                        router.push(`/payment/success?orderNo=${orderNo}`)
+                        return
+                    }
+                    if (payData.data.requiresAction && payData.data.clientSecret) {
+                        // 3D Secure needed — redirect to Stripe Checkout as fallback
+                        setError(t('checkout.errors.authRequired'))
+                    } else {
+                        setError(payData.message || t('checkout.errors.initiatePaymentFailed'))
+                    }
                 } else {
-                    setError(t('checkout.errors.getPaymentLinkFailed'))
+                    setError(payData.message || t('checkout.errors.initiatePaymentFailed'))
                 }
             } else {
-                setError(payData.message || t('checkout.errors.initiatePaymentFailed'))
+                // Use new card — redirect to Stripe Checkout
+                const payResponse = await authFetch(`/api/orders/${orderNo}/pay`, {
+                    method: 'POST',
+                    body: { paymentMethod: 'STRIPE' }
+                })
+                const payData = await payResponse.json()
+
+                if (payData.code === 200 && payData.data) {
+                    const checkoutUrl = payData.data.checkout_url || payData.data.checkoutUrl
+                    if (checkoutUrl) {
+                        window.location.href = checkoutUrl
+                    } else {
+                        setError(t('checkout.errors.getPaymentLinkFailed'))
+                    }
+                } else {
+                    setError(payData.message || t('checkout.errors.initiatePaymentFailed'))
+                }
             }
-        } catch (err) {
+        } catch {
             setError(t('checkout.errors.networkError'))
         } finally {
             setProcessing(false)
@@ -222,22 +277,96 @@ function CheckoutPageContent() {
                                 <span className="summary-total-value">${plan.price}</span>
                             </div>
 
-                            {/* Supported payment methods */}
-                            <div className="payment-methods-preview">
-                                <span className="payment-methods-label">{t('checkout.supportedPaymentMethods')}</span>
-                                <div className="payment-method-icons">
-                                    <span title={t('checkout.creditCard')}>💳</span>
-                                    <span title={t('checkout.alipay')}>🔵</span>
-                                    <span title={t('checkout.wechat')}>🟢</span>
+                            {/* Payment method selector */}
+                            {savedMethods.length > 0 && (
+                                <div style={{ marginBottom: '1rem' }}>
+                                    <span className="payment-methods-label">{t('checkout.savedPaymentMethods')}</span>
+                                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', marginTop: '0.5rem' }}>
+                                        {savedMethods.map((pm) => (
+                                            <label
+                                                key={pm.id}
+                                                style={{
+                                                    display: 'flex',
+                                                    alignItems: 'center',
+                                                    gap: '0.75rem',
+                                                    padding: '0.6rem 0.75rem',
+                                                    background: selectedMethodId === pm.id ? 'rgba(var(--color-primary-rgb, 99, 102, 241), 0.1)' : 'var(--color-bg-tertiary)',
+                                                    border: selectedMethodId === pm.id ? '1px solid var(--color-primary)' : '1px solid var(--color-border)',
+                                                    borderRadius: 'var(--radius-md)',
+                                                    cursor: 'pointer',
+                                                    fontSize: '0.875rem',
+                                                }}
+                                            >
+                                                <input
+                                                    type="radio"
+                                                    name="paymentMethod"
+                                                    checked={selectedMethodId === pm.id}
+                                                    onChange={() => setSelectedMethodId(pm.id)}
+                                                    style={{ accentColor: 'var(--color-primary)' }}
+                                                />
+                                                <span>💳 {pm.brand.charAt(0).toUpperCase() + pm.brand.slice(1)} •••• {pm.last4}</span>
+                                                {pm.isDefault && (
+                                                    <span style={{
+                                                        fontSize: '0.7rem',
+                                                        color: 'var(--color-primary)',
+                                                        background: 'rgba(var(--color-primary-rgb, 99, 102, 241), 0.15)',
+                                                        padding: '0.1rem 0.3rem',
+                                                        borderRadius: 'var(--radius-sm)',
+                                                    }}>
+                                                        {t('profile.billing.defaultBadge')}
+                                                    </span>
+                                                )}
+                                            </label>
+                                        ))}
+                                        <label
+                                            style={{
+                                                display: 'flex',
+                                                alignItems: 'center',
+                                                gap: '0.75rem',
+                                                padding: '0.6rem 0.75rem',
+                                                background: selectedMethodId === null ? 'rgba(var(--color-primary-rgb, 99, 102, 241), 0.1)' : 'var(--color-bg-tertiary)',
+                                                border: selectedMethodId === null ? '1px solid var(--color-primary)' : '1px solid var(--color-border)',
+                                                borderRadius: 'var(--radius-md)',
+                                                cursor: 'pointer',
+                                                fontSize: '0.875rem',
+                                            }}
+                                        >
+                                            <input
+                                                type="radio"
+                                                name="paymentMethod"
+                                                checked={selectedMethodId === null}
+                                                onChange={() => setSelectedMethodId(null)}
+                                                style={{ accentColor: 'var(--color-primary)' }}
+                                            />
+                                            <span>{t('checkout.useNewCard')}</span>
+                                        </label>
+                                    </div>
                                 </div>
-                            </div>
+                            )}
+
+                            {/* Supported payment methods (show only for new card flow) */}
+                            {(savedMethods.length === 0 || selectedMethodId === null) && (
+                                <div className="payment-methods-preview">
+                                    <span className="payment-methods-label">{t('checkout.supportedPaymentMethods')}</span>
+                                    <div className="payment-method-icons">
+                                        <span title={t('checkout.creditCard')}>💳</span>
+                                        <span title={t('checkout.alipay')}>🔵</span>
+                                        <span title={t('checkout.wechat')}>🟢</span>
+                                    </div>
+                                </div>
+                            )}
 
                             <button
                                 className="checkout-btn"
                                 onClick={handleCheckout}
                                 disabled={processing}
                             >
-                                {processing ? t('checkout.redirecting') : t('checkout.payNow')}
+                                {processing
+                                    ? t('checkout.redirecting')
+                                    : selectedMethodId
+                                        ? t('checkout.payWithSavedCard')
+                                        : t('checkout.payNow')
+                                }
                             </button>
 
                             <div className="security-notice">

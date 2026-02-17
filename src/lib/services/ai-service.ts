@@ -5,6 +5,9 @@ import {
   estimateInputTokens,
   getConfigParams,
 } from './token-calculator'
+import {
+  resolveModelRequestPolicy,
+} from './reasoning-options'
 
 // ---------------------------------------------------------------------------
 // Types
@@ -162,7 +165,7 @@ class GatewayAIService {
     }
 
     // model_name should be in "provider/model" format, e.g. "deepseek/deepseek-chat"
-    const modelName = config.model_name
+    const modelPolicy = resolveModelRequestPolicy(config.model_name)
 
     const messages: Array<{ role: 'system' | 'user'; content: string }> = []
     if (systemPrompt) {
@@ -171,16 +174,34 @@ class GatewayAIService {
     messages.push({ role: 'user', content: prompt })
 
     let outputText = ''
+    let usageInputTokens: number | undefined
+    let usageOutputTokens: number | undefined
 
     try {
       const result = streamText({
-        model: gateway(modelName),
+        model: gateway(modelPolicy.resolvedModelName),
         messages,
+        ...(modelPolicy.providerOptions
+          ? { providerOptions: modelPolicy.providerOptions }
+          : {}),
       })
 
-      for await (const part of (await result).textStream) {
-        outputText += part
-        yield { type: 'chunk', content: part }
+      for await (const part of result.fullStream) {
+        if (part.type === 'text-delta') {
+          outputText += part.text
+          yield { type: 'chunk', content: part.text }
+        } else if (part.type === 'reasoning-delta') {
+          yield { type: 'reasoning', content: part.text }
+        } else if (part.type === 'finish') {
+          usageInputTokens = part.totalUsage.inputTokens
+          usageOutputTokens = part.totalUsage.outputTokens
+        } else if (part.type === 'error') {
+          yield {
+            type: 'chunk',
+            content: `[错误] AI Gateway 流式异常: ${String(part.error)}`,
+          }
+          return
+        }
       }
     } catch (error) {
       yield {
@@ -190,12 +211,11 @@ class GatewayAIService {
       return
     }
 
-    // Estimate token usage
     const inputText = (systemPrompt || '') + '\n' + prompt
     yield {
       type: 'usage',
-      inputTokens: estimateInputTokens(inputText),
-      outputTokens: estimateInputTokens(outputText),
+      inputTokens: usageInputTokens ?? estimateInputTokens(inputText),
+      outputTokens: usageOutputTokens ?? estimateInputTokens(outputText),
     }
   }
 }

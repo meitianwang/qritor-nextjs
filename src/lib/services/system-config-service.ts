@@ -5,11 +5,6 @@ import { prisma } from '@/lib/prisma'
 // ---------------------------------------------------------------------------
 
 export const ConfigKeys = {
-  // Stripe / Payment
-  STRIPE_SECRET_KEY: 'payment.stripe_secret_key',
-  STRIPE_PUBLISHABLE_KEY: 'payment.stripe_publishable_key',
-  STRIPE_WEBHOOK_SECRET: 'payment.stripe_webhook_secret',
-
   // Referral programme
   INVITER_REWARD: 'referral.inviter_reward',
   INVITEE_REWARD: 'referral.invitee_reward',
@@ -59,84 +54,6 @@ async function setConfig(
       updated_at: now,
     },
   })
-}
-
-// ---------------------------------------------------------------------------
-// Stripe helpers
-// ---------------------------------------------------------------------------
-
-interface StripeConfig {
-  secretKey: string | null
-  publishableKey: string | null
-  webhookSecret: string | null
-}
-
-async function getStripeConfig(): Promise<StripeConfig> {
-  const [secretKey, publishableKey, webhookSecret] = await Promise.all([
-    getConfig(ConfigKeys.STRIPE_SECRET_KEY),
-    getConfig(ConfigKeys.STRIPE_PUBLISHABLE_KEY),
-    getConfig(ConfigKeys.STRIPE_WEBHOOK_SECRET),
-  ])
-
-  return { secretKey, publishableKey, webhookSecret }
-}
-
-// ---------------------------------------------------------------------------
-// Payment settings (admin-facing, masked)
-// ---------------------------------------------------------------------------
-
-interface PaymentSettings {
-  stripeSecretKey: string | null
-  stripePublishableKey: string | null
-  stripeWebhookSecret: string | null
-}
-
-async function getPaymentSettings(): Promise<PaymentSettings> {
-  const raw = await getStripeConfig()
-
-  return {
-    stripeSecretKey: raw.secretKey ? _maskKey(raw.secretKey) : null,
-    stripePublishableKey: raw.publishableKey
-      ? _maskKey(raw.publishableKey)
-      : null,
-    stripeWebhookSecret: raw.webhookSecret
-      ? _maskKey(raw.webhookSecret)
-      : null,
-  }
-}
-
-async function updatePaymentSettings(
-  secretKey?: string,
-  publishableKey?: string,
-  webhookSecret?: string,
-): Promise<void> {
-  const ops: Promise<void>[] = []
-
-  if (secretKey !== undefined) {
-    ops.push(
-      setConfig(ConfigKeys.STRIPE_SECRET_KEY, secretKey, 'Stripe secret key'),
-    )
-  }
-  if (publishableKey !== undefined) {
-    ops.push(
-      setConfig(
-        ConfigKeys.STRIPE_PUBLISHABLE_KEY,
-        publishableKey,
-        'Stripe publishable key',
-      ),
-    )
-  }
-  if (webhookSecret !== undefined) {
-    ops.push(
-      setConfig(
-        ConfigKeys.STRIPE_WEBHOOK_SECRET,
-        webhookSecret,
-        'Stripe webhook secret',
-      ),
-    )
-  }
-
-  await Promise.all(ops)
 }
 
 // ---------------------------------------------------------------------------
@@ -231,33 +148,12 @@ async function getInviteeReward(): Promise<number | null> {
 }
 
 // ---------------------------------------------------------------------------
-// Internal helpers
-// ---------------------------------------------------------------------------
-
-/**
- * Mask a sensitive key, showing only the first 4 and last 4 characters.
- * Keys shorter than 12 characters are fully masked.
- */
-function _maskKey(key: string): string {
-  if (key.length <= 8) {
-    return '*'.repeat(key.length)
-  }
-  const start = key.slice(0, 4)
-  const end = key.slice(-4)
-  const masked = '*'.repeat(key.length - 8)
-  return `${start}${masked}${end}`
-}
-
-// ---------------------------------------------------------------------------
 // Singleton export
 // ---------------------------------------------------------------------------
 
 export const systemConfigService = {
   getConfig,
   setConfig,
-  getStripeConfig,
-  getPaymentSettings,
-  updatePaymentSettings,
   getReferralSettings,
   updateReferralSettings,
   getInviterReward,

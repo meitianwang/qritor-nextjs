@@ -47,6 +47,7 @@
         "logout": "Logout",
         "save": "Save",
         "cancel": "Cancel",
+        "edit": "Edit",
         "confirm": "Confirm",
         "delete": "Delete",
         "deleting": "Deleting...",
@@ -341,7 +342,20 @@
             "amount": "Amount",
             "status": "Status",
             "description": "Description",
-            "noInvoices": "No invoices found."
+            "noInvoices": "No invoices found.",
+            "currentPlanNote": "Your current subscription plan.",
+            "viewPlans": "View Plans",
+            "paymentMethods": "Payment Methods",
+            "addCard": "Add Card",
+            "removeCard": "Remove",
+            "setDefault": "Set as Default",
+            "defaultBadge": "Default",
+            "cardEnding": "Ending in {{last4}}",
+            "noPaymentMethods": "No saved payment methods",
+            "addCardDesc": "Add a credit or debit card for faster checkout.",
+            "removeConfirm": "Remove this payment method?",
+            "cardAdded": "Card added successfully",
+            "cardRemoved": "Card removed"
         },
         "deleteAccountModal": {
             "title": "Delete Account",
@@ -356,6 +370,29 @@
             "sendCodeFailed": "Failed to send verification code",
             "codeInvalid": "Please enter a 6-digit verification code",
             "deleteFailed": "Failed to delete account"
+        }
+    },
+    "billingManage": {
+        "title": "Billing Information",
+        "backToProfile": "Back to Profile",
+        "noticeTitle": "Notice",
+        "notice1": "You need to have at least one payment method to keep your subscription active.",
+        "notice2": "Subscription fees will be automatically charged from your default payment method.",
+        "notice3": "Updated billing information will take effect from the next payment and won't affect existing invoices.",
+        "paymentMethods": "Payment Methods",
+        "billingAddress": "Billing Address",
+        "address": {
+            "country": "Country / Region",
+            "state": "State / Province",
+            "city": "City",
+            "line1": "Street Address",
+            "selectCountry": "Select your country or region",
+            "statePlaceholder": "Enter your state or province",
+            "cityPlaceholder": "Enter your city",
+            "line1Placeholder": "e.g., 123 Main Street",
+            "save": "Confirm & Save",
+            "noAddress": "No billing address set",
+            "add": "Add"
         }
     },
     "referral": {
@@ -432,13 +469,17 @@
         "unlimitedProjects": "Unlimited projects",
         "backToPricing": "Back to Pricing",
         "supportedPaymentMethods": "Supported Payment Methods",
+        "savedPaymentMethods": "Saved Payment Methods",
+        "useNewCard": "Use a new card",
+        "payWithSavedCard": "Pay with saved card",
         "errors": {
             "planNotFound": "Plan not found",
             "fetchFailed": "Failed to fetch plan information",
             "networkError": "Network error, please try again",
             "createOrderFailed": "Failed to create order",
             "getPaymentLinkFailed": "Failed to get payment link, please retry",
-            "initiatePaymentFailed": "Failed to initiate payment"
+            "initiatePaymentFailed": "Failed to initiate payment",
+            "authRequired": "This card requires additional verification. Please use a new card."
         }
     },
     "payment": {
