@@ -355,7 +355,11 @@
             "addCardDesc": "Add a credit or debit card for faster checkout.",
             "removeConfirm": "Remove this payment method?",
             "cardAdded": "Card added successfully",
-            "cardRemoved": "Card removed"
+            "cardRemoved": "Card removed",
+            "statusPaid": "Paid",
+            "statusPending": "Processing",
+            "statusFailed": "Failed",
+            "statusCancelled": "Cancelled"
         },
         "deleteAccountModal": {
             "title": "Delete Account",

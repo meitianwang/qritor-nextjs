@@ -1,7 +1,9 @@
 'use client'
 
 import Link from 'next/link'
+import { useState, useEffect } from 'react'
 import { useTranslation } from '@/hooks/useTranslation'
+import { authFetch } from '@/lib/auth-utils'
 
 interface SubscriptionData {
     planName?: string
@@ -10,6 +12,16 @@ interface SubscriptionData {
     status?: string | null
     expireAt?: string | null
     autoRenew?: boolean
+}
+
+interface Order {
+    orderNo: string
+    amount: number
+    status: string
+    planName: string
+    planDisplayName: string
+    monthlyCredits: number
+    createdAt: string
 }
 
 interface BillingSectionProps {
@@ -21,11 +33,87 @@ interface BillingSectionProps {
  */
 function BillingSection({ subscriptionData }: BillingSectionProps) {
     const { t } = useTranslation('portal')
+    const [orders, setOrders] = useState<Order[]>([])
+    const [ordersLoading, setOrdersLoading] = useState(true)
+
+    // Fetch orders on mount
+    useEffect(() => {
+        const fetchOrders = async () => {
+            try {
+                const response = await authFetch('/api/orders')
+                const data = await response.json()
+                if (data.code === 200 && Array.isArray(data.data)) {
+                    setOrders(data.data)
+                }
+            } catch (err) {
+                console.error('Failed to fetch orders:', err)
+            } finally {
+                setOrdersLoading(false)
+            }
+        }
+
+        fetchOrders()
+    }, [])
 
     const planName = subscriptionData?.planName || 'FREE'
     const displayName = subscriptionData?.displayName || t('profile.billing.free')
     const price = subscriptionData?.price ?? 0
     const isFree = planName.toUpperCase() === 'FREE'
+
+    // Format date for display
+    const formatDate = (dateString: string) => {
+        try {
+            return new Date(dateString).toLocaleDateString('zh-CN', {
+                year: 'numeric',
+                month: '2-digit',
+                day: '2-digit',
+                hour: '2-digit',
+                minute: '2-digit'
+            })
+        } catch {
+            return dateString
+        }
+    }
+
+    // Get status badge color
+    const getStatusColor = (status: string) => {
+        const upperStatus = status.toUpperCase()
+        // Success/Paid statuses
+        if (upperStatus === 'PAID') {
+            return 'status-paid'
+        }
+        // Processing/Pending statuses
+        if (upperStatus.includes('PENDING') || upperStatus.includes('AWAITING')) {
+            return 'status-pending'
+        }
+        // Failed/Cancelled statuses
+        if (upperStatus.includes('FAILED') || upperStatus.includes('CANCELLED')) {
+            return 'status-failed'
+        }
+        return 'status-default'
+    }
+
+    // Get status label
+    const getStatusLabel = (status: string) => {
+        const upperStatus = status.toUpperCase()
+
+        // Success/Paid
+        if (upperStatus === 'PAID') {
+            return t('profile.billing.statusPaid') || '已支付'
+        }
+        // Processing/Pending
+        if (upperStatus.includes('PENDING') || upperStatus.includes('AWAITING')) {
+            return t('profile.billing.statusPending') || '处理中'
+        }
+        // Failed/Cancelled
+        if (upperStatus.includes('FAILED')) {
+            return t('profile.billing.statusFailed') || '失败'
+        }
+        if (upperStatus.includes('CANCELLED')) {
+            return t('profile.billing.statusCancelled') || '已取消'
+        }
+        return status
+    }
 
     return (
         <div className="profile-content">
@@ -74,7 +162,7 @@ function BillingSection({ subscriptionData }: BillingSectionProps) {
                 </div>
             </div>
 
-            {/* Invoice records */}
+            {/* Order records */}
             <div className="profile-card">
                 <h3 className="profile-card-title">{t('profile.billing.invoices')}</h3>
                 <table className="billing-table">
@@ -87,9 +175,28 @@ function BillingSection({ subscriptionData }: BillingSectionProps) {
                         </tr>
                     </thead>
                     <tbody>
-                        <tr>
-                            <td colSpan={4} className="billing-empty">{t('profile.billing.noInvoices')}</td>
-                        </tr>
+                        {ordersLoading ? (
+                            <tr>
+                                <td colSpan={4} className="billing-empty">加载中...</td>
+                            </tr>
+                        ) : orders.length === 0 ? (
+                            <tr>
+                                <td colSpan={4} className="billing-empty">{t('profile.billing.noInvoices')}</td>
+                            </tr>
+                        ) : (
+                            orders.map(order => (
+                                <tr key={order.orderNo}>
+                                    <td>{formatDate(order.createdAt)}</td>
+                                    <td>${order.amount.toFixed(2)}</td>
+                                    <td>
+                                        <span className={`billing-status ${getStatusColor(order.status)}`}>
+                                            {getStatusLabel(order.status)}
+                                        </span>
+                                    </td>
+                                    <td>{order.planDisplayName || order.planName} - {order.monthlyCredits} 积分/月</td>
+                                </tr>
+                            ))
+                        )}
                     </tbody>
                 </table>
             </div>

@@ -131,17 +131,23 @@ function PaymentSuccessPageContent() {
             <div className="payment-container">
                 {isPaid ? (
                     <div className="payment-success">
-                        <div className="success-icon">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                        {/* 成功图标与动画 */}
+                        <div className="success-icon" role="img" aria-label="支付成功">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
                                 <polyline points="20 6 9 17 4 12" />
                             </svg>
                         </div>
-                        <h2 className="success-title">支付成功！</h2>
+
+                        {/* 主标题 */}
+                        <h1 className="success-title">支付成功！</h1>
+
+                        {/* 确认信息 */}
                         <p className="success-message">
-                            您已成功订阅 <strong>{order?.planDisplayName || order?.planName}</strong> 计划，
-                            积分已添加到您的账户。
+                            您已成功订阅 <strong>{order?.planDisplayName || order?.planName}</strong> 计划，积分已添加到您的账户。
                         </p>
-                        <div className="order-confirmation">
+
+                        {/* 订单详情卡片 */}
+                        <div className="order-confirmation" role="region" aria-label="订单详情">
                             <div className="confirmation-row">
                                 <span className="label">订单号</span>
                                 <span className="value">{order?.orderNo}</span>
@@ -155,9 +161,15 @@ function PaymentSuccessPageContent() {
                                 <span className="value">{order?.monthlyCredits} 积分</span>
                             </div>
                         </div>
+
+                        {/* 行动按钮 */}
                         <div className="success-actions">
-                            <Link href="/profile?tab=usage" className="btn btn-primary">查看我的订阅</Link>
-                            <Link href="/download" className="btn btn-secondary">下载客户端</Link>
+                            <Link href="/profile?tab=usage" className="btn btn-primary">
+                                查看我的订阅
+                            </Link>
+                            <Link href="/download" className="btn btn-secondary">
+                                下载客户端
+                            </Link>
                         </div>
                     </div>
                 ) : (

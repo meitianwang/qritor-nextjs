@@ -403,7 +403,11 @@
             "addCardDesc": "添加信用卡或借记卡以便快速支付。",
             "removeConfirm": "确定要删除此付款方式吗？",
             "cardAdded": "卡片添加成功",
-            "cardRemoved": "卡片已删除"
+            "cardRemoved": "卡片已删除",
+            "statusPaid": "已支付",
+            "statusPending": "处理中",
+            "statusFailed": "失败",
+            "statusCancelled": "已取消"
         },
         "deleteAccountModal": {
             "title": "删除账号",
