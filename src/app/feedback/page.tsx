@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useRef, useCallback } from 'react'
+import { useState, useRef, useCallback, useEffect } from 'react'
 import { useTranslation } from '@/hooks/useTranslation'
 import { useDocumentMeta } from '@/hooks/useDocumentMeta'
 import { useAuth } from '@/hooks/useAuth'
@@ -36,14 +36,9 @@ const CATEGORY_ICONS: Record<string, React.ReactNode> = {
 
 export default function FeedbackPage() {
     const { t } = useTranslation('portal')
-    const { getUser } = useAuth()
+    const { isLoggedIn, restoreToken } = useAuth()
     const { notification, showToast } = useToast()
-
-    useDocumentMeta({
-        title: t('seo.feedback.title'),
-        description: t('seo.feedback.description'),
-    })
-
+    const [authReady, setAuthReady] = useState(false)
     const [category, setCategory] = useState('')
     const [subject, setSubject] = useState('')
     const [message, setMessage] = useState('')
@@ -57,6 +52,31 @@ export default function FeedbackPage() {
 
     const fileInputRef = useRef<HTMLInputElement>(null)
 
+    useDocumentMeta({
+        title: t('seo.feedback.title'),
+        description: t('seo.feedback.description'),
+    })
+
+    // Restore auth state on mount
+    useEffect(() => {
+        let cancelled = false
+        const restore = async () => {
+            await restoreToken()
+            if (!cancelled) {
+                setAuthReady(true)
+            }
+        }
+        restore()
+        return () => { cancelled = true }
+    }, [restoreToken])
+
+    // Redirect to login if not authenticated
+    useEffect(() => {
+        if (authReady && !isLoggedIn()) {
+            const currentPath = window.location.pathname + window.location.search
+            window.location.href = `/login?redirect=${encodeURIComponent(currentPath)}`
+        }
+    }, [authReady, isLoggedIn])
 
     const resetForm = useCallback(() => {
         setCategory('')
@@ -206,6 +226,10 @@ export default function FeedbackPage() {
             setSubmitting(false)
         }
     }, [category, subject, message, screenshotUrl, t, showToast, resetForm])
+
+    if (!authReady || !isLoggedIn()) {
+        return null
+    }
 
     const charCountClass = message.length > 2000
         ? 'feedback-char-count limit'
