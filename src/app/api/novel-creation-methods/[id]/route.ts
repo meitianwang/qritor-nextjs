@@ -177,7 +177,6 @@ export async function DELETE(
       await tx.module_type.deleteMany({ where: { novel_creation_method_id: methodId } })
       await tx.workflow.deleteMany({ where: { novel_creation_method_id: methodId } })
       await tx.prompt.deleteMany({ where: { novel_creation_method_id: methodId } })
-      await tx.knowledge.deleteMany({ where: { novel_creation_method_id: methodId } })
       await tx.novel_creation_method.delete({ where: { id: methodId } })
     })
 

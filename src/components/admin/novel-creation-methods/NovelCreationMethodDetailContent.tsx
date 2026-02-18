@@ -60,14 +60,6 @@ interface ModuleType {
     [key: string]: any
 }
 
-interface Knowledge {
-    id: number
-    name: string
-    content: string
-    novelCreationMethodId: number
-    [key: string]: any
-}
-
 interface NodeAction {
     action: string
     title: string
@@ -98,7 +90,6 @@ function NovelCreationMethodDetailPageContent() {
     // Data states
     const [prompts, setPrompts] = useState<Prompt[]>([])
     const [moduleTypes, setModuleTypes] = useState<ModuleType[]>([])
-    const [knowledges, setKnowledges] = useState<Knowledge[]>([])
     const [nodeActions, setNodeActions] = useState<NodeAction[]>([])
 
     // ReactFlow states
@@ -179,16 +170,14 @@ function NovelCreationMethodDetailPageContent() {
 
     const fetchResources = async () => {
         try {
-            const [promptsRes, moduleTypesRes, knowledgesRes, workflowsRes] = await Promise.all([
+            const [promptsRes, moduleTypesRes, workflowsRes] = await Promise.all([
                 authFetch(`/api/prompts/novel-creation-method/${id}`),
                 authFetch(`/api/module-types/novel-creation-method/${id}`),
-                authFetch(`/api/knowledges/novel-creation-method/${id}`),
                 authFetch(`/api/workflows/novel-creation-method/${id}/all`)
             ])
 
             if (promptsRes.ok) setPrompts((await promptsRes.json()).data || [])
             if (moduleTypesRes.ok) setModuleTypes((await moduleTypesRes.json()).data || [])
-            if (knowledgesRes.ok) setKnowledges((await knowledgesRes.json()).data || [])
 
             if (workflowsRes.ok) {
                 const result = await workflowsRes.json()
@@ -402,7 +391,6 @@ function NovelCreationMethodDetailPageContent() {
         switch (type) {
             case 'prompt': url = `/api/prompts/${itemId}`; break
             case 'moduleType': url = `/api/module-types/${itemId}`; break
-            case 'knowledge': url = `/api/knowledges/${itemId}`; break
         }
         try {
             const response = await authFetch(url, { method: 'DELETE' })
@@ -604,7 +592,6 @@ function NovelCreationMethodDetailPageContent() {
                         method={method}
                         nodeActions={nodeActions}
                         moduleTypes={moduleTypes}
-                        knowledges={knowledges}
                         prompts={prompts}
                         fetchResources={fetchResources}
                         deletingItem={deletingItem}

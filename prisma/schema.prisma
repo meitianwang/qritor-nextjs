@@ -62,19 +62,6 @@ model credit_transactions {
   @@index([user_id], map: "ix_credit_transactions_user_id")
 }
 
-model knowledge {
-  id                       BigInt    @id @default(autoincrement())
-  name                     String    @db.VarChar(200)
-  content                  String    @db.Text
-  novel_creation_method_id BigInt?
-  built_in                 Int       @db.SmallInt
-  created_at               DateTime  @db.DateTime(0)
-  updated_at               DateTime? @db.DateTime(0)
-
-  @@index([name], map: "idx_knowledge_name")
-  @@index([id], map: "ix_knowledge_id")
-}
-
 model llm_config {
   id                  BigInt    @id @default(autoincrement())
   model_name          String    @unique(map: "model_name") @db.VarChar(200)

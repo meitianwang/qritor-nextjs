@@ -237,22 +237,6 @@ export async function POST(request: NextRequest) {
           })
         }
 
-        // Copy knowledges
-        const templateKnowledges = await tx.knowledge.findMany({
-          where: { novel_creation_method_id: template.id },
-        })
-        for (const k of templateKnowledges) {
-          await tx.knowledge.create({
-            data: {
-              name: k.name,
-              content: k.content,
-              novel_creation_method_id: newMethod.id,
-              built_in: 0,
-              created_at: new Date(),
-            },
-          })
-        }
-
         return newMethod
       } else {
         // Create new method with init workflow
