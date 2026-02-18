@@ -6,9 +6,7 @@ export async function GET() {
     const settings = await systemConfigService.getReferralSettings()
     return apiSuccess({
       ...settings,
-      // Backward-compatible aliases for existing frontend fields.
       maxReward: settings.maxRewards,
-      monthlyLimit: settings.maxRewards,
     })
   } catch (e) {
     console.error('获取邀请配置失败:', e)

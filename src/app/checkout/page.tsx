@@ -277,16 +277,6 @@ function CheckoutPageContent() {
 
                             <h3 className="plan-features-title">{t('checkout.featuresIncluded')}</h3>
                             <ul className="plan-features-list">
-                                <li className="plan-feature-item">
-                                    <CheckIcon />
-                                    {t('checkout.monthlyCredits', { count: plan.monthlyCredits ?? 0 })}
-                                </li>
-                                <li className="plan-feature-item">
-                                    <CheckIcon />
-                                    {plan.maxProjects === -1
-                                        ? t('checkout.unlimitedProjects')
-                                        : t('checkout.monthlyProjects', { count: plan.maxProjects ?? 0 })}
-                                </li>
                                 {plan.features && plan.features.map((feature, index) => (
                                     <li key={index} className="plan-feature-item">
                                         <CheckIcon />

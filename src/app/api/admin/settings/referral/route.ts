@@ -11,9 +11,7 @@ export async function GET(request: NextRequest) {
 
     return apiSuccess({
       ...settings,
-      // Backward-compatible aliases for existing admin page fields.
       maxReward: settings.maxRewards,
-      monthlyLimit: settings.maxRewards,
     })
   } catch (error) {
     if (error instanceof Response) return error
@@ -31,24 +29,30 @@ export async function PUT(request: NextRequest) {
       rewardExpireDays,
       maxRewards,
       maxReward,
+      milestoneCount,
+      milestoneReward,
       monthlyLimit,
-    } =
-      body as {
-        inviterReward?: number
-        inviteeReward?: number
-        rewardExpireDays?: number
-        maxRewards?: number
-        maxReward?: number
-        monthlyLimit?: number
-      }
+    } = body as {
+      inviterReward?: number
+      inviteeReward?: number
+      rewardExpireDays?: number
+      maxRewards?: number
+      maxReward?: number
+      milestoneCount?: number
+      milestoneReward?: number
+      monthlyLimit?: number
+    }
 
-    const resolvedMaxRewards = maxRewards ?? maxReward ?? monthlyLimit
+    const resolvedMaxRewards = maxRewards ?? maxReward
 
     await systemConfigService.updateReferralSettings(
       inviterReward,
       inviteeReward,
       rewardExpireDays,
       resolvedMaxRewards,
+      milestoneCount,
+      milestoneReward,
+      monthlyLimit,
     )
 
     const updatedSettings = await systemConfigService.getReferralSettings()
@@ -57,7 +61,6 @@ export async function PUT(request: NextRequest) {
       {
         ...updatedSettings,
         maxReward: updatedSettings.maxRewards,
-        monthlyLimit: updatedSettings.maxRewards,
       },
       '推荐设置已更新',
     )

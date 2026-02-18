@@ -199,19 +199,6 @@ export default function ReferralSettingsPage() {
 
                 <div className="settings-form">
                     <div className="form-group">
-                        <label className="form-label">最大奖励积分</label>
-                        <input
-                            type="number"
-                            className="form-input"
-                            value={settings.maxReward ?? ''}
-                            onChange={(e) => handleInputChange('maxReward', e.target.value)}
-                            min="0"
-                            placeholder="请输入数值"
-                        />
-                        <p className="form-hint">邀请页面展示的最高可获得积分数（仅用于展示）</p>
-                    </div>
-
-                    <div className="form-group">
                         <label className="form-label">每月邀请人数上限</label>
                         <input
                             type="number"

@@ -10,6 +10,9 @@ export const ConfigKeys = {
   INVITEE_REWARD: 'referral.invitee_reward',
   REFERRAL_REWARD_EXPIRE_DAYS: 'referral.reward_expire_days',
   REFERRAL_MAX_REWARDS: 'referral.max_rewards',
+  REFERRAL_MILESTONE_COUNT: 'referral.milestone_count',
+  REFERRAL_MILESTONE_REWARD: 'referral.milestone_reward',
+  REFERRAL_MONTHLY_LIMIT: 'referral.monthly_limit',
 } as const
 
 export type ConfigKey = (typeof ConfigKeys)[keyof typeof ConfigKeys]
@@ -65,23 +68,31 @@ interface ReferralSettings {
   inviteeReward: number | null
   rewardExpireDays: number | null
   maxRewards: number | null
+  milestoneCount: number | null
+  milestoneReward: number | null
+  monthlyLimit: number | null
 }
 
 async function getReferralSettings(): Promise<ReferralSettings> {
-  const [inviterReward, inviteeReward, rewardExpireDays, maxRewards] =
+  const [inviterReward, inviteeReward, rewardExpireDays, maxRewards, milestoneCount, milestoneReward, monthlyLimit] =
     await Promise.all([
       getConfig(ConfigKeys.INVITER_REWARD),
       getConfig(ConfigKeys.INVITEE_REWARD),
       getConfig(ConfigKeys.REFERRAL_REWARD_EXPIRE_DAYS),
       getConfig(ConfigKeys.REFERRAL_MAX_REWARDS),
+      getConfig(ConfigKeys.REFERRAL_MILESTONE_COUNT),
+      getConfig(ConfigKeys.REFERRAL_MILESTONE_REWARD),
+      getConfig(ConfigKeys.REFERRAL_MONTHLY_LIMIT),
     ])
 
   return {
     inviterReward: inviterReward !== null ? Number(inviterReward) : null,
     inviteeReward: inviteeReward !== null ? Number(inviteeReward) : null,
-    rewardExpireDays:
-      rewardExpireDays !== null ? Number(rewardExpireDays) : null,
+    rewardExpireDays: rewardExpireDays !== null ? Number(rewardExpireDays) : null,
     maxRewards: maxRewards !== null ? Number(maxRewards) : null,
+    milestoneCount: milestoneCount !== null ? Number(milestoneCount) : null,
+    milestoneReward: milestoneReward !== null ? Number(milestoneReward) : null,
+    monthlyLimit: monthlyLimit !== null ? Number(monthlyLimit) : null,
   }
 }
 
@@ -90,44 +101,32 @@ async function updateReferralSettings(
   inviteeReward?: number,
   rewardExpireDays?: number,
   maxRewards?: number,
+  milestoneCount?: number,
+  milestoneReward?: number,
+  monthlyLimit?: number,
 ): Promise<void> {
   const ops: Promise<void>[] = []
 
   if (inviterReward !== undefined) {
-    ops.push(
-      setConfig(
-        ConfigKeys.INVITER_REWARD,
-        String(inviterReward),
-        'Credits rewarded to the inviter',
-      ),
-    )
+    ops.push(setConfig(ConfigKeys.INVITER_REWARD, String(inviterReward), 'Credits rewarded to the inviter'))
   }
   if (inviteeReward !== undefined) {
-    ops.push(
-      setConfig(
-        ConfigKeys.INVITEE_REWARD,
-        String(inviteeReward),
-        'Credits rewarded to the invitee',
-      ),
-    )
+    ops.push(setConfig(ConfigKeys.INVITEE_REWARD, String(inviteeReward), 'Credits rewarded to the invitee'))
   }
   if (rewardExpireDays !== undefined) {
-    ops.push(
-      setConfig(
-        ConfigKeys.REFERRAL_REWARD_EXPIRE_DAYS,
-        String(rewardExpireDays),
-        'Days until referral reward expires',
-      ),
-    )
+    ops.push(setConfig(ConfigKeys.REFERRAL_REWARD_EXPIRE_DAYS, String(rewardExpireDays), 'Days until referral reward expires'))
   }
   if (maxRewards !== undefined) {
-    ops.push(
-      setConfig(
-        ConfigKeys.REFERRAL_MAX_REWARDS,
-        String(maxRewards),
-        'Maximum referral rewards per user',
-      ),
-    )
+    ops.push(setConfig(ConfigKeys.REFERRAL_MAX_REWARDS, String(maxRewards), 'Maximum referral rewards per user'))
+  }
+  if (milestoneCount !== undefined) {
+    ops.push(setConfig(ConfigKeys.REFERRAL_MILESTONE_COUNT, String(milestoneCount), 'Referral milestone count'))
+  }
+  if (milestoneReward !== undefined) {
+    ops.push(setConfig(ConfigKeys.REFERRAL_MILESTONE_REWARD, String(milestoneReward), 'Credits rewarded at milestone'))
+  }
+  if (monthlyLimit !== undefined) {
+    ops.push(setConfig(ConfigKeys.REFERRAL_MONTHLY_LIMIT, String(monthlyLimit), 'Monthly referral limit per user'))
   }
 
   await Promise.all(ops)
