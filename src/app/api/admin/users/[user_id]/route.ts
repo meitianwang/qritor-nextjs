@@ -3,6 +3,7 @@ import { apiSuccess, apiError, apiNotFound } from '@/lib/api-response'
 import { getCurrentAdminUser } from '@/lib/middleware/auth-middleware'
 import { prisma } from '@/lib/prisma'
 import { serializeCamel } from '@/lib/serialize'
+import { deleteUserWithRelationsInTx } from '@/lib/services/user-deletion-service'
 
 export async function GET(
   request: NextRequest,
@@ -95,18 +96,12 @@ export async function DELETE(
       return apiNotFound('用户不存在')
     }
 
-    // Cascade delete: remove related records first
     const userId = BigInt(user_id)
-    await prisma.$transaction([
-      prisma.credit_transactions.deleteMany({ where: { user_id: userId } }),
-      prisma.user_subscriptions.deleteMany({ where: { user_id: userId } }),
-      prisma.referral_rewards.deleteMany({ where: { user_id: userId } }),
-      prisma.boost_pack_purchases.deleteMany({ where: { user_id: userId } }),
-      prisma.orders.deleteMany({ where: { user_id: userId } }),
-      prisma.user_settings.deleteMany({ where: { user_id: userId } }),
-      prisma.refresh_tokens.deleteMany({ where: { user_id: userId } }),
-      prisma.users.delete({ where: { id: userId } }),
-    ])
+    await prisma.$transaction(async (tx) => {
+      await deleteUserWithRelationsInTx(tx, userId, {
+        userEmail: existing.email,
+      })
+    })
 
     return apiSuccess(null, '用户已删除')
   } catch (error) {

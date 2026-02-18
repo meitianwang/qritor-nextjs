@@ -379,7 +379,7 @@ model user_settings {
   notify_updates Boolean
   created_at     DateTime @db.DateTime(0)
   updated_at     DateTime @db.DateTime(0)
-  users          users    @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "user_settings_ibfk_1")
+  users          users    @relation(fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "user_settings_ibfk_1")
 
   @@index([id], map: "ix_user_settings_id")
 }

@@ -3,6 +3,7 @@ import { prisma } from '@/lib/prisma'
 import { Prisma } from '@/generated/prisma/client'
 import { apiError } from '@/lib/api-response'
 import { getCurrentUser } from '@/lib/middleware/auth-middleware'
+import { deleteUserWithRelationsInTx } from '@/lib/services/user-deletion-service'
 
 type TransactionClient = Prisma.TransactionClient
 
@@ -44,39 +45,7 @@ export async function POST(request: NextRequest) {
           throw new Error('INVALID_OR_EXPIRED_CODE')
         }
 
-        // Delete refresh tokens
-        await tx.refresh_tokens.deleteMany({ where: { user_id: userId } })
-
-        // Delete user subscriptions
-        await tx.user_subscriptions.deleteMany({ where: { user_id: userId } })
-
-        // Delete referral rewards
-        await tx.referral_rewards.deleteMany({ where: { user_id: userId } })
-
-        // Delete boost pack purchases
-        await tx.boost_pack_purchases.deleteMany({ where: { user_id: userId } })
-
-        // Delete orders
-        await tx.orders.deleteMany({ where: { user_id: userId } })
-
-        // Delete referrals (both as inviter and invitee)
-        await tx.referrals.deleteMany({
-          where: {
-            OR: [{ inviter_id: userId }, { invitee_id: userId }],
-          },
-        })
-
-        // Delete novel creation methods
-        await tx.novel_creation_method.deleteMany({ where: { user_id: userId } })
-
-        // Delete credit transactions
-        await tx.credit_transactions.deleteMany({ where: { user_id: userId } })
-
-        // Delete user settings
-        await tx.user_settings.deleteMany({ where: { user_id: userId } })
-
-        // Delete user
-        await tx.users.delete({ where: { id: userId } })
+        await deleteUserWithRelationsInTx(tx, userId, { userEmail: user.email })
       })
     } catch (error) {
       if (error instanceof Error && error.message === 'INVALID_OR_EXPIRED_CODE') {
