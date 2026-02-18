@@ -119,7 +119,7 @@ function PortalHeader() {
                     {/* Right action area */}
                     <div className="navbar-actions">
                         {/* Get more credits button - always visible */}
-                        <Link href="/referral" className="btn-earn-credits" title={t('common.getMoreCredits')}>
+                        <Link href="/referral" className="btn-earn-credits" data-tooltip={t('common.getMoreCredits')} data-tooltip-position="bottom">
                             <GiftIcon size={16} />
                         </Link>
                         {!isRestoring && isLoggedIn() && user ? (

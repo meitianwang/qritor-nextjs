@@ -222,7 +222,7 @@ export default function PricingPage() {
                     <h1 className="page-title animate-fade-in">{t('pricing.title')}</h1>
                     <div className="subtitle-row animate-fade-in delay-100">
                         <p className="page-subtitle">{t('pricing.subtitle')}</p>
-                        <a href="/docs" className="learn-more-link">
+                        <a href={`/docs/${language}/support/credits-pricing`} className="learn-more-link">
                             {t('common.learnMore')} <span className="arrow">↗</span>
                         </a>
                     </div>

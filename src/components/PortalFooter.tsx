@@ -59,8 +59,7 @@ function PortalFooter() {
                     <div className="footer-column">
                         <h3 className="footer-column-title">{t('footer.resources')}</h3>
                         <Link href="/docs" className="footer-link">{t('footer.docs')}</Link>
-                        <a href="#" className="footer-link">{t('footer.tutorials')}</a>
-                        <a href="#" className="footer-link">{t('footer.community')}</a>
+                        <Link href="/download" className="footer-link">{t('footer.downloadApp')}</Link>
                     </div>
 
                     {/* Legal */}
@@ -75,7 +74,7 @@ function PortalFooter() {
                     <div className="footer-column">
                         <h3 className="footer-column-title">{t('footer.contact')}</h3>
                         <a href="mailto:nick@qritor.com" className="footer-link">nick@qritor.com</a>
-                        <a href="#" className="footer-link">{t('footer.feedback')}</a>
+                        <Link href="/feedback" className="footer-link">{t('footer.feedback')}</Link>
                     </div>
                 </div>
 
