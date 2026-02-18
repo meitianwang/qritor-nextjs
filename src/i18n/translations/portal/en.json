@@ -36,6 +36,10 @@
             "title": "Refund Policy",
             "description": "Qritor Refund Policy. Understand refund conditions and process."
         },
+        "feedback": {
+            "title": "Feedback",
+            "description": "Submit feedback, report issues, or suggest features to the Qritor team."
+        },
         "changelog": {
             "title": "Changelog",
             "description": "Explore the latest updates from Qritor, including version updates and feature improvements."
@@ -99,6 +103,7 @@
         "docs": "Docs",
         "tutorials": "Tutorials",
         "community": "Community",
+        "downloadApp": "Download",
         "legal": "Legal",
         "privacy": "Privacy Policy",
         "terms": "Terms of Service",
@@ -294,7 +299,7 @@
         "q2": "Can I cancel my subscription at any time?",
         "a2": "Plans are currently purchased manually and do not auto-renew. After a plan expires, purchase again if you want to continue.",
         "q3": "What happens when I run out of credits?",
-        "a3": "When your credits are exhausted, we will continue to provide service using basic models. You can also upgrade your subscription plan or purchase boost packs to get more credits.",
+        "a3": "You can also upgrade your subscription plan or purchase boost packs to get more credits.",
         "q4": "What payment methods are supported?",
         "a4": "We support WeChat Pay and credit/debit cards. Payments are secured by Stripe."
     },
@@ -859,6 +864,50 @@
                 "title": "8. Policy Changes",
                 "desc": "We reserve the right to modify this refund policy at any time. The modified policy will be published on the Platform with the update date noted. The refund policy applicable when you purchase services is the version effective at the time of purchase."
             }
+        }
+    },
+    "feedback": {
+        "title": "Feedback",
+        "subtitle": "We value every piece of feedback to help us improve.",
+        "category": {
+            "label": "Category",
+            "bug": "Bug Report",
+            "suggestion": "Feature Suggestion",
+            "other": "Other"
+        },
+        "subject": {
+            "label": "Subject",
+            "placeholder": "Briefly describe your feedback"
+        },
+        "message": {
+            "label": "Description",
+            "placeholder": "Please describe the issue or suggestion in detail..."
+        },
+        "screenshot": {
+            "label": "Screenshot (optional)",
+            "hint": "Click or drag to upload a screenshot. Supports JPG, PNG, GIF, WebP. Max 5MB.",
+            "uploading": "Uploading...",
+            "uploaded": "Uploaded",
+            "remove": "Remove",
+            "formatError": "Unsupported image format. Only JPG, PNG, GIF, WebP are supported.",
+            "sizeError": "File size cannot exceed 5MB"
+        },
+        "email": {
+            "label": "Contact Email"
+        },
+        "submit": "Submit Feedback",
+        "submitting": "Submitting...",
+        "success": "Thank you for your feedback! We'll review it as soon as possible.",
+        "loginRequired": "Please log in to submit feedback",
+        "loginButton": "Log In",
+        "errors": {
+            "categoryRequired": "Please select a category",
+            "subjectRequired": "Please enter a subject",
+            "subjectTooLong": "Subject cannot exceed 100 characters",
+            "messageRequired": "Please enter a description",
+            "messageTooLong": "Description cannot exceed 2000 characters",
+            "submitFailed": "Failed to submit feedback. Please try again later.",
+            "uploadFailed": "Failed to upload screenshot. Please try again."
         }
     },
     "changelog": {

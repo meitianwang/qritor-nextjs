@@ -31,5 +31,8 @@
 /* 订单和支付页面 */
 @import './_checkout.css';
 
+/* 意见反馈页面 */
+@import './feedback-page.css';
+
 /* 响应式布局 */
 @import './_responsive.css';

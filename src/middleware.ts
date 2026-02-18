@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 
-const protectedPaths = ['/profile', '/checkout', '/payment', '/referral']
+const protectedPaths = ['/profile', '/checkout', '/payment', '/referral', '/feedback']
 
 const corsOrigins = (process.env.BACKEND_CORS_ORIGINS || '').split(',').filter(Boolean)
 

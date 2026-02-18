@@ -36,6 +36,10 @@
             "title": "退款政策",
             "description": "Qritor 退款政策，了解退款条件和流程。"
         },
+        "feedback": {
+            "title": "意见反馈",
+            "description": "向 Qritor 团队提交反馈、报告问题或提出功能建议。"
+        },
         "changelog": {
             "title": "更新日志",
             "description": "探索 Qritor 的最新动态，了解版本更新和功能优化。",
@@ -147,6 +151,7 @@
         "docs": "文档",
         "tutorials": "教程",
         "community": "社区",
+        "downloadApp": "下载",
         "legal": "法律",
         "privacy": "隐私政策",
         "terms": "服务条款",
@@ -342,7 +347,7 @@
         "q2": "订阅后可以随时取消吗？",
         "a2": "当前套餐为手动购买，不会自动续费。到期后如需继续使用，请再次购买对应套餐。",
         "q3": "积分用完了怎么办？",
-        "a3": "当您的积分消耗完毕后，我们会继续使用基础模型为您提供服务。您也可以升级订阅计划或购买积分包来获取更多积分。",
+        "a3": "您可以升级订阅计划或购买积分包来获取更多积分。后续会推出加油包模式获取额外积分",
         "q4": "支持哪些支付方式？",
         "a4": "我们支持微信支付和银行卡支付。支付由 Stripe 提供安全保障。"
     },
@@ -907,6 +912,50 @@
                 "title": "8. 政策变更",
                 "desc": "我们保留随时修改本退款政策的权利。修改后的政策将在平台上公布并标注更新日期。您购买服务时适用的退款政策以购买当时有效的版本为准。"
             }
+        }
+    },
+    "feedback": {
+        "title": "意见反馈",
+        "subtitle": "我们重视每一条反馈，帮助我们做得更好。",
+        "category": {
+            "label": "反馈类别",
+            "bug": "Bug 报告",
+            "suggestion": "功能建议",
+            "other": "其他"
+        },
+        "subject": {
+            "label": "主题",
+            "placeholder": "简要描述你的反馈"
+        },
+        "message": {
+            "label": "详细描述",
+            "placeholder": "请详细描述你遇到的问题或建议..."
+        },
+        "screenshot": {
+            "label": "截图（可选）",
+            "hint": "点击或拖拽上传截图，支持 JPG、PNG、GIF、WebP 格式，最大 5MB",
+            "uploading": "上传中...",
+            "uploaded": "已上传",
+            "remove": "删除",
+            "formatError": "不支持的图片格式，仅支持 JPG、PNG、GIF、WebP",
+            "sizeError": "文件大小不能超过 5MB"
+        },
+        "email": {
+            "label": "联系邮箱"
+        },
+        "submit": "提交反馈",
+        "submitting": "提交中...",
+        "success": "感谢你的反馈！我们会尽快查看并处理。",
+        "loginRequired": "提交反馈需要先登录账号",
+        "loginButton": "去登录",
+        "errors": {
+            "categoryRequired": "请选择反馈类别",
+            "subjectRequired": "请输入反馈主题",
+            "subjectTooLong": "主题不能超过 100 个字符",
+            "messageRequired": "请输入反馈内容",
+            "messageTooLong": "反馈内容不能超过 2000 个字符",
+            "submitFailed": "反馈提交失败，请稍后重试",
+            "uploadFailed": "截图上传失败，请重试"
         }
     },
     "changelog": {
