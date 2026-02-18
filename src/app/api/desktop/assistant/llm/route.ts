@@ -13,6 +13,7 @@ import {
 import {
   consumeCreditsWithTransaction,
   hasEnoughCredits,
+  recordCreditDebt,
 } from '@/lib/services/credit-service'
 
 export const dynamic = 'force-dynamic'
@@ -140,9 +141,21 @@ export async function POST(request: NextRequest) {
             console.error(
               `[LLM] Credit deduction failed: user=${user.id}, credits=${credits}`,
             )
+            await recordCreditDebt(
+              user.id,
+              credits,
+              'DESKTOP_ASSISTANT_LLM',
+              '桌面端助手扣费失败，已记入欠费',
+            )
           }
         } catch (e) {
           console.error('积分扣减失败:', e)
+          await recordCreditDebt(
+            user.id,
+            credits,
+            'DESKTOP_ASSISTANT_LLM',
+            '桌面端助手扣费异常，已记入欠费',
+          )
         }
       },
     })

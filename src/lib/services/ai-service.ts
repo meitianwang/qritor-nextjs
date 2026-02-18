@@ -313,20 +313,22 @@ class AIGenerateService {
 
     // Deduct credits
     let creditsConsumed = 0
+    let completionStatus = 'done'
     if (userId) {
-      try {
-        const { inputPricePerM, outputPricePerM, configId: finalConfigId } =
-          await getConfigParams(actualConfigId)
-        creditsConsumed = calculateCredits(
-          inputTokens,
-          outputTokens,
-          inputPricePerM,
-          outputPricePerM,
-        )
+      const { inputPricePerM, outputPricePerM, configId: finalConfigId } =
+        await getConfigParams(actualConfigId)
+      creditsConsumed = calculateCredits(
+        inputTokens,
+        outputTokens,
+        inputPricePerM,
+        outputPricePerM,
+      )
 
-        const { consumeCreditsWithTransaction } = await import(
-          './credit-service'
-        )
+      const { consumeCreditsWithTransaction, recordCreditDebt } = await import(
+        './credit-service'
+      )
+
+      try {
         const deducted = await consumeCreditsWithTransaction(
           BigInt(userId),
           creditsConsumed,
@@ -339,32 +341,34 @@ class AIGenerateService {
           `桌面端AI生成: ${moduleTitle}`,
         )
         if (!deducted) {
-          yield {
-            event: 'error',
-            data: {
-              error: '积分扣减失败，请稍后重试',
-              code: 'CREDIT_DEDUCTION_FAILED',
-            },
-          }
-          return
+          await recordCreditDebt(
+            BigInt(userId),
+            creditsConsumed,
+            'AI_GENERATE_DESKTOP_PROMPT',
+            `桌面端AI生成扣费失败，已记入欠费: ${moduleTitle}`,
+          )
+          completionStatus = 'done_with_debt'
         }
       } catch (error) {
         console.error(`积分扣减失败: ${error}`)
-        yield {
-          event: 'error',
-          data: {
-            error: '积分扣减失败，请稍后重试',
-            code: 'CREDIT_DEDUCTION_FAILED',
-          },
+        try {
+          await recordCreditDebt(
+            BigInt(userId),
+            creditsConsumed,
+            'AI_GENERATE_DESKTOP_PROMPT',
+            `桌面端AI生成扣费异常，已记入欠费: ${moduleTitle}`,
+          )
+          completionStatus = 'done_with_debt'
+        } catch (debtError) {
+          console.error(`记录积分欠费失败: ${debtError}`)
         }
-        return
       }
     }
 
     yield {
       event: 'complete',
       data: {
-        status: 'done',
+        status: completionStatus,
         usage: {
           inputTokens,
           outputTokens,

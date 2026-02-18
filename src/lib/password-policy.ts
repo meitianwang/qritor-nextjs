@@ -1,5 +1,3 @@
-'use client'
-
 /**
  * Password strength validation policy
  */

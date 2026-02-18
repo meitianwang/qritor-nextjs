@@ -3,6 +3,7 @@
 import { Suspense, useState, useEffect, useCallback } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
 import Link from 'next/link'
+import { loadStripe, type Stripe } from '@stripe/stripe-js'
 import { useAuth } from '@/hooks/useAuth'
 import { useTranslation } from '@/hooks/useTranslation'
 import { authFetch } from '@/lib/auth-utils'
@@ -42,6 +43,7 @@ function CheckoutPageContent() {
     const [processing, setProcessing] = useState(false)
     const [savedMethods, setSavedMethods] = useState<SavedPaymentMethod[]>([])
     const [selectedMethodId, setSelectedMethodId] = useState<string | null>(null) // null = use new card
+    const [stripePromise, setStripePromise] = useState<Promise<Stripe | null> | null>(null)
 
     const fetchPlanDetails = useCallback(async () => {
         try {
@@ -87,6 +89,22 @@ function CheckoutPageContent() {
         }
     }, [])
 
+    const ensureStripe = useCallback(async (): Promise<Stripe | null> => {
+        if (stripePromise) {
+            return stripePromise
+        }
+
+        const cfgRes = await fetch('/api/stripe/config/public')
+        const cfgData = await cfgRes.json()
+        if (cfgData.code !== 200 || !cfgData.data?.publishableKey) {
+            return null
+        }
+
+        const promise = loadStripe(cfgData.data.publishableKey)
+        setStripePromise(promise)
+        return promise
+    }, [stripePromise])
+
     // Fetch plan details and saved payment methods
     useEffect(() => {
         fetchPlanDetails()
@@ -106,8 +124,9 @@ function CheckoutPageContent() {
             setError(null)
 
             // 1. Create order
-            const createResponse = await authFetch(`/api/order/create?planName=${planName}`, {
-                method: 'POST'
+            const createResponse = await authFetch('/api/orders', {
+                method: 'POST',
+                body: { planName }
             })
             const createData = await createResponse.json()
 
@@ -132,8 +151,33 @@ function CheckoutPageContent() {
                         return
                     }
                     if (payData.data.requiresAction && payData.data.clientSecret) {
-                        // 3D Secure needed — redirect to Stripe Checkout as fallback
-                        setError(t('checkout.errors.authRequired'))
+                        const stripe = await ensureStripe()
+                        if (!stripe) {
+                            setError(t('checkout.errors.initiatePaymentFailed'))
+                            return
+                        }
+
+                        const confirmation = await stripe.confirmCardPayment(payData.data.clientSecret)
+                        if (confirmation.error) {
+                            setError(confirmation.error.message || t('checkout.errors.authRequired'))
+                            return
+                        }
+
+                        if (confirmation.paymentIntent?.status === 'succeeded') {
+                            const finalizeResponse = await authFetch(`/api/orders/${orderNo}/pay-with-saved`, {
+                                method: 'POST',
+                                body: { paymentMethodId: selectedMethodId }
+                            })
+                            const finalizeData = await finalizeResponse.json()
+                            if (finalizeData.code === 200 && finalizeData.data?.status === 'PAID') {
+                                router.push(`/payment/success?orderNo=${orderNo}`)
+                                return
+                            }
+                            setError(finalizeData.message || t('checkout.errors.initiatePaymentFailed'))
+                            return
+                        }
+
+                        setError(t('checkout.errors.initiatePaymentFailed'))
                     } else {
                         setError(payData.message || t('checkout.errors.initiatePaymentFailed'))
                     }

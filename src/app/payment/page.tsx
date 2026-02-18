@@ -1,6 +1,6 @@
 'use client'
 
-import { Suspense, useState, useEffect } from 'react'
+import { Suspense, useState, useEffect, useCallback } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { useAuth } from '@/hooks/useAuth'
@@ -33,17 +33,7 @@ function PaymentPageContent() {
     const [paying, setPaying] = useState(false)
     const [paymentSuccess, setPaymentSuccess] = useState(false)
 
-    // Fetch order details
-    useEffect(() => {
-        if (orderNo) {
-            fetchOrderDetails()
-        } else {
-            setError('订单号不存在')
-            setLoading(false)
-        }
-    }, [orderNo])
-
-    const fetchOrderDetails = async () => {
+    const fetchOrderDetails = useCallback(async () => {
         const token = getAccessToken()
         if (!token) {
             router.push('/login?redirect=' + encodeURIComponent('/payment?orderNo=' + orderNo))
@@ -52,7 +42,7 @@ function PaymentPageContent() {
 
         try {
             setLoading(true)
-            const response = await authFetch(`/api/order/${orderNo}`)
+            const response = await authFetch(`/api/orders/${orderNo}`)
             const data = await response.json()
 
             if (data.code === 200 && data.data) {
@@ -65,12 +55,22 @@ function PaymentPageContent() {
             } else {
                 setError(data.message || '获取订单信息失败')
             }
-        } catch (err) {
+        } catch {
             setError('网络错误，请稍后重试')
         } finally {
             setLoading(false)
         }
-    }
+    }, [getAccessToken, orderNo, router])
+
+    // Fetch order details
+    useEffect(() => {
+        if (orderNo) {
+            fetchOrderDetails()
+        } else {
+            setError('订单号不存在')
+            setLoading(false)
+        }
+    }, [orderNo, fetchOrderDetails])
 
     // Initiate Stripe payment
     const handlePay = async () => {
@@ -82,7 +82,7 @@ function PaymentPageContent() {
 
         try {
             setPaying(true)
-            const response = await authFetch(`/api/order/${orderNo}/pay`, {
+            const response = await authFetch(`/api/orders/${orderNo}/pay`, {
                 method: 'POST',
                 body: {
                     paymentMethod: 'STRIPE'
@@ -91,8 +91,8 @@ function PaymentPageContent() {
             const data = await response.json()
 
             if (data.code === 200 && data.data) {
-                if (data.data.requires_action && data.data.checkout_url) {
-                    window.location.href = data.data.checkout_url
+                if (data.data.requiresAction && data.data.checkoutUrl) {
+                    window.location.href = data.data.checkoutUrl
                 } else if (data.data.status === 'PAID') {
                     setPaymentSuccess(true)
                     setOrder(data.data)
@@ -102,7 +102,7 @@ function PaymentPageContent() {
             } else {
                 setError(data.message || '支付失败')
             }
-        } catch (err) {
+        } catch {
             setError('网络错误，请稍后重试')
         } finally {
             setPaying(false)
@@ -218,7 +218,7 @@ function PaymentPageContent() {
 
                             <div className="summary-total">
                                 <span className="summary-total-label">应付金额</span>
-                                <span className="summary-total-value">¥{order?.amount}</span>
+                                <span className="summary-total-value">${order?.amount}</span>
                             </div>
 
                             {/* Payment methods info */}
@@ -226,7 +226,6 @@ function PaymentPageContent() {
                                 <h4>支持的支付方式</h4>
                                 <div className="payment-method-icons">
                                     <span className="payment-icon" title="信用卡/借记卡">💳</span>
-                                    <span className="payment-icon" title="支付宝">🔵</span>
                                     <span className="payment-icon" title="微信支付">🟢</span>
                                 </div>
                                 <p className="payment-method-note">点击支付后将跳转到安全支付页面</p>
@@ -237,7 +236,7 @@ function PaymentPageContent() {
                                 onClick={handlePay}
                                 disabled={paying}
                             >
-                                {paying ? '处理中...' : `立即支付 ¥${order?.amount}`}
+                                {paying ? '处理中...' : `立即支付 $${order?.amount}`}
                             </button>
 
                             <div className="security-notice">

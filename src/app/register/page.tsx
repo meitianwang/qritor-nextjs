@@ -266,7 +266,7 @@ function RegisterPageContent() {
                     email: formData.email,
                     password: formData.password,
                     code: codeString,
-                    referralCode: referralCodeFromUrl || null
+                    referral_code: referralCodeFromUrl || null
                 }
             })
 

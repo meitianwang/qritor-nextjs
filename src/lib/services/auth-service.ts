@@ -18,29 +18,24 @@ export async function verifyPassword(
 }
 
 // ---------------------------------------------------------------------------
-// Verification Code Service (in-memory)
+// Verification Code Service (Prisma-backed)
 // ---------------------------------------------------------------------------
-
-interface StoredCode {
-  code: string
-  expiresAt: number // epoch ms
-  createdAt: number // epoch ms
-}
 
 const CODE_EXPIRE_MS = 5 * 60 * 1000 // 5 minutes
 const RESEND_COOLDOWN_MS = 60 * 1000 // 60 seconds
 
 class VerificationCodeService {
-  private codes: Map<string, StoredCode> = new Map()
-
   /**
    * Generate a 6-digit verification code for the given key (e.g. email).
    * Returns the code string, or `null` if within the resend cooldown.
    */
-  generate(key: string): string | null {
-    const existing = this.codes.get(key)
+  async generate(key: string): Promise<string | null> {
+    const existing = await prisma.verification_codes.findUnique({
+      where: { code_key: key },
+    })
+
     if (existing) {
-      const elapsed = Date.now() - existing.createdAt
+      const elapsed = Date.now() - existing.created_at.getTime()
       if (elapsed < RESEND_COOLDOWN_MS) {
         return null // cooldown not yet passed
       }
@@ -49,11 +44,21 @@ class VerificationCodeService {
     const code = String(
       crypto.randomInt(100000, 1000000), // [100000, 999999]
     )
+    const now = new Date()
 
-    this.codes.set(key, {
-      code,
-      expiresAt: Date.now() + CODE_EXPIRE_MS,
-      createdAt: Date.now(),
+    await prisma.verification_codes.upsert({
+      where: { code_key: key },
+      create: {
+        code_key: key,
+        code,
+        expires_at: new Date(now.getTime() + CODE_EXPIRE_MS),
+        created_at: now,
+      },
+      update: {
+        code,
+        expires_at: new Date(now.getTime() + CODE_EXPIRE_MS),
+        created_at: now,
+      },
     })
 
     return code
@@ -62,30 +67,51 @@ class VerificationCodeService {
   /**
    * Validate a code for the given key. Consumes the code on success.
    */
-  validate(key: string, code: string): boolean {
-    const stored = this.codes.get(key)
+  async validate(key: string, code: string): Promise<boolean> {
+    const stored = await prisma.verification_codes.findUnique({
+      where: { code_key: key },
+    })
     if (!stored) return false
-    if (Date.now() > stored.expiresAt) {
-      this.codes.delete(key)
+
+    if (new Date() > stored.expires_at) {
+      await prisma.verification_codes.deleteMany({
+        where: { code_key: key },
+      })
       return false
     }
     if (stored.code !== code) return false
 
     // consume the code
-    this.codes.delete(key)
-    return true
+    const result = await prisma.verification_codes.deleteMany({
+      where: {
+        code_key: key,
+        code,
+      },
+    })
+    return result.count > 0
   }
 
   /**
    * Return the number of seconds remaining in the resend cooldown, or 0 if
    * a new code can be sent immediately.
    */
-  cooldownRemaining(key: string): number {
-    const stored = this.codes.get(key)
+  async cooldownRemaining(key: string): Promise<number> {
+    const stored = await prisma.verification_codes.findUnique({
+      where: { code_key: key },
+    })
     if (!stored) return 0
-    const elapsed = Date.now() - stored.createdAt
+    const elapsed = Date.now() - stored.created_at.getTime()
     if (elapsed >= RESEND_COOLDOWN_MS) return 0
     return Math.ceil((RESEND_COOLDOWN_MS - elapsed) / 1000)
+  }
+
+  async cleanupExpired(): Promise<number> {
+    const result = await prisma.verification_codes.deleteMany({
+      where: {
+        expires_at: { lt: new Date() },
+      },
+    })
+    return result.count
   }
 }
 

@@ -3,7 +3,7 @@ import { getCurrentUser } from '@/lib/middleware/auth-middleware'
 import { apiSuccess, apiError } from '@/lib/api-response'
 import { payOrder } from '@/lib/services/order-service'
 
-export async function GET(
+export async function POST(
   request: NextRequest,
   { params }: { params: Promise<{ order_no: string }> },
 ) {
@@ -23,4 +23,8 @@ export async function GET(
     }
     return apiError(500, message)
   }
+}
+
+export async function GET() {
+  return apiError(405, '该接口仅支持 POST 请求')
 }

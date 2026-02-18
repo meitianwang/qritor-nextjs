@@ -38,7 +38,7 @@ export async function POST(request: NextRequest) {
     const creditsToConsume = Math.max(1, Math.ceil(baseCredits * creditRate))
 
     // Credit check
-    const { hasEnoughCredits, consumeCreditsWithTransaction } = await import(
+    const { hasEnoughCredits, consumeCreditsWithTransaction, recordCreditDebt } = await import(
       '@/lib/services/credit-service'
     )
     if (!(await hasEnoughCredits(user.id, creditsToConsume))) {
@@ -113,17 +113,33 @@ export async function POST(request: NextRequest) {
         `视频生成: ${config.provider}/${config.model_name} (${duration}s)`,
       )
       if (!deducted) {
-        console.error(
-          `视频任务已创建但积分扣减失败: user=${user.id}, taskId=${taskId}, credits=${creditsToConsume}`,
-        )
+        let debtRecorded = false
+        try {
+          await recordCreditDebt(
+            user.id,
+            creditsToConsume,
+            'VIDEO_GENERATE',
+            `视频任务已创建但积分扣减失败，已记入欠费: ${taskId}`,
+          )
+          debtRecorded = true
+        } catch (debtError) {
+          console.error(
+            `视频任务欠费记录失败: user=${user.id}, taskId=${taskId}, credits=${creditsToConsume}, error=${String(debtError)}`,
+          )
+        }
+
         return apiSuccess({
           taskId: taskId,
           status: 'pending',
           creditsConsumed: creditsToConsume,
           creditsCharged: false,
-          billingStatus: 'PENDING_RECONCILIATION',
+          billingStatus: debtRecorded
+            ? 'DEBT_RECORDED'
+            : 'PENDING_RECONCILIATION',
           estimatedTime: duration * 10,
-          warning: '任务已创建，但积分扣减失败，系统将自动重试或人工处理',
+          warning: debtRecorded
+            ? '任务已创建，但本次扣费失败，已记入欠费并将在后续消费时自动补扣'
+            : '任务已创建，但积分扣减失败，请联系客服处理',
         })
       }
 

@@ -27,6 +27,13 @@ export async function POST(
     if (message.includes('无权操作')) {
       return apiError(403, message)
     }
+    if (
+      message.includes('支付方式') ||
+      message.includes('订单') ||
+      message.includes('支付')
+    ) {
+      return apiError(400, message)
+    }
     return apiError(500, message)
   }
 }

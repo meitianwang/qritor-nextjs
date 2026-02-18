@@ -16,6 +16,56 @@ interface RateLimitResult {
 class RateLimiter {
   private store: Map<string, RateLimitEntry> = new Map()
 
+  private getActiveEntry(key: string, now: number): RateLimitEntry | null {
+    const entry = this.store.get(key)
+    if (!entry) return null
+    if (now >= entry.resetAt) {
+      this.store.delete(key)
+      return null
+    }
+    return entry
+  }
+
+  /**
+   * Read current rate-limit status without incrementing counters.
+   */
+  peek(key: string, limit: number, windowMs: number): RateLimitResult {
+    const now = Date.now()
+    const entry = this.getActiveEntry(key, now)
+    if (!entry) {
+      return { allowed: true, remaining: limit, resetAt: now + windowMs }
+    }
+    if (entry.count >= limit) {
+      return { allowed: false, remaining: 0, resetAt: entry.resetAt }
+    }
+    return {
+      allowed: true,
+      remaining: limit - entry.count,
+      resetAt: entry.resetAt,
+    }
+  }
+
+  /**
+   * Increment usage and return the updated rate-limit status.
+   */
+  consume(key: string, limit: number, windowMs: number): RateLimitResult {
+    const now = Date.now()
+    const entry = this.getActiveEntry(key, now)
+
+    if (!entry) {
+      const resetAt = now + windowMs
+      this.store.set(key, { count: 1, resetAt })
+      return { allowed: true, remaining: limit - 1, resetAt }
+    }
+
+    if (entry.count < limit) {
+      entry.count++
+      return { allowed: true, remaining: limit - entry.count, resetAt: entry.resetAt }
+    }
+
+    return { allowed: false, remaining: 0, resetAt: entry.resetAt }
+  }
+
   /**
    * Check whether a request identified by `key` is allowed under the given
    * rate limit policy.
@@ -29,24 +79,7 @@ class RateLimiter {
    *          attempts remain, and when the window resets (epoch ms).
    */
   check(key: string, limit: number, windowMs: number): RateLimitResult {
-    const now = Date.now()
-    const entry = this.store.get(key)
-
-    // No entry or window has expired -> start a new window
-    if (!entry || now >= entry.resetAt) {
-      const resetAt = now + windowMs
-      this.store.set(key, { count: 1, resetAt })
-      return { allowed: true, remaining: limit - 1, resetAt }
-    }
-
-    // Within the current window
-    if (entry.count < limit) {
-      entry.count++
-      return { allowed: true, remaining: limit - entry.count, resetAt: entry.resetAt }
-    }
-
-    // Limit exceeded
-    return { allowed: false, remaining: 0, resetAt: entry.resetAt }
+    return this.consume(key, limit, windowMs)
   }
 
   /**

@@ -26,6 +26,12 @@ export async function POST(
   } catch (e) {
     if (e instanceof Response) return e
     const message = e instanceof Error ? e.message : '支付失败'
+    if (message.includes('无权操作')) {
+      return apiError(403, message)
+    }
+    if (message.includes('订单') || message.includes('支付')) {
+      return apiError(400, message)
+    }
     return apiError(500, message)
   }
 }

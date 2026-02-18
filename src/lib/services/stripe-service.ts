@@ -13,6 +13,7 @@ interface CheckoutSessionResult {
 interface CheckoutSessionInfo extends CheckoutSessionResult {
   status: string | null
   paymentStatus: string | null
+  paymentIntentId?: string
 }
 
 interface WebhookEventResult {
@@ -127,11 +128,17 @@ class StripeService {
   async getCheckoutSession(sessionId: string): Promise<CheckoutSessionInfo> {
     const stripe = this._getStripeClient()
     const session = await stripe.checkout.sessions.retrieve(sessionId)
+    const paymentIntentId =
+      typeof session.payment_intent === 'string'
+        ? session.payment_intent
+        : session.payment_intent?.id
+
     return {
       checkoutUrl: session.url,
       sessionId: session.id,
       status: session.status,
       paymentStatus: session.payment_status,
+      paymentIntentId,
     }
   }
 
@@ -324,15 +331,47 @@ class StripeService {
       const session = event.data.object as Stripe.Checkout.Session
       const orderNo = session.metadata?.order_no
 
-      if (orderNo) {
+      if (orderNo && session.payment_status === 'paid') {
         const { completePaymentViaWebhook } = await import('./order-service')
 
-        await completePaymentViaWebhook(
+        const completed = await completePaymentViaWebhook(
           orderNo,
           'STRIPE',
           session.payment_intent as string | undefined,
         )
+        if (!completed) {
+          console.warn(
+            `Order ${orderNo} payment succeeded but order is not payable anymore`,
+          )
+          return { status: 'ignored', orderNo, eventType }
+        }
         console.log(`Order ${orderNo} paid, subscription activated`)
+        return { status: 'success', orderNo }
+      }
+
+      if (orderNo && session.payment_status !== 'paid') {
+        console.log(
+          `Order ${orderNo} checkout completed but payment is ${session.payment_status}`,
+        )
+        return { status: 'pending', orderNo, eventType }
+      }
+    }
+
+    if (eventType === 'checkout.session.async_payment_succeeded') {
+      const session = event.data.object as Stripe.Checkout.Session
+      const orderNo = session.metadata?.order_no
+
+      if (orderNo) {
+        const { completePaymentViaWebhook } = await import('./order-service')
+        const completed = await completePaymentViaWebhook(
+          orderNo,
+          'STRIPE',
+          session.payment_intent as string | undefined,
+        )
+        if (!completed) {
+          return { status: 'ignored', orderNo, eventType }
+        }
+        console.log(`Order ${orderNo} async payment succeeded`)
         return { status: 'success', orderNo }
       }
     }
@@ -344,7 +383,14 @@ class StripeService {
       if (orderNo) {
         const { completePaymentViaWebhook } = await import('./order-service')
 
-        await completePaymentViaWebhook(orderNo, 'STRIPE', paymentIntent.id)
+        const completed = await completePaymentViaWebhook(
+          orderNo,
+          'STRIPE',
+          paymentIntent.id,
+        )
+        if (!completed) {
+          return { status: 'ignored', orderNo, eventType }
+        }
         console.log(
           `Order ${orderNo} paid via saved method, subscription activated`,
         )

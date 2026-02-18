@@ -13,6 +13,8 @@ const STATUS_CANCELLED = 'CANCELLED'
 const STATUS_EXPIRED = 'EXPIRED'
 const STATUS_AWAITING_PAYMENT = 'AWAITING_PAYMENT'
 const PAYMENT_STRIPE = 'STRIPE'
+const PAYABLE_STATUSES = [STATUS_PENDING, STATUS_AWAITING_PAYMENT] as const
+const TERMINAL_STATUSES = [STATUS_CANCELLED, STATUS_EXPIRED] as const
 
 // ---------------------------------------------------------------------------
 // Types
@@ -97,6 +99,12 @@ function isSerializationConflict(error: unknown): boolean {
   )
 }
 
+function isPayableStatus(status: string): boolean {
+  return PAYABLE_STATUSES.includes(
+    status as (typeof PAYABLE_STATUSES)[number],
+  )
+}
+
 async function cancelExternalPaymentIfNeeded(order: orders): Promise<void> {
   const paymentId = order.stripe_payment_intent_id
   if (!paymentId) return
@@ -118,17 +126,75 @@ async function cancelExternalPaymentIfNeeded(order: orders): Promise<void> {
   }
 }
 
+async function reconcileOrderPaymentIfNeeded(
+  order: orders,
+): Promise<OrderInfo | null> {
+  const recoverFromTerminalStatus = TERMINAL_STATUSES.includes(
+    order.status as (typeof TERMINAL_STATUSES)[number],
+  )
+  if (!isPayableStatus(order.status) && !recoverFromTerminalStatus) return null
+  const paymentId = order.stripe_payment_intent_id
+  if (!paymentId) return null
+
+  try {
+    if (isCheckoutSessionId(paymentId)) {
+      const session = await stripeService.getCheckoutSession(paymentId)
+      if (session.paymentStatus === 'paid') {
+        return markOrderPaidAndActivateSubscription(
+          order,
+          PAYMENT_STRIPE,
+          session.paymentIntentId ?? session.sessionId,
+          recoverFromTerminalStatus,
+        )
+      }
+      return null
+    }
+
+    if (isPaymentIntentId(paymentId)) {
+      const intent = await stripeService.getPaymentIntent(paymentId)
+      if (intent.status === 'succeeded') {
+        return markOrderPaidAndActivateSubscription(
+          order,
+          PAYMENT_STRIPE,
+          intent.paymentIntentId,
+          recoverFromTerminalStatus,
+        )
+      }
+    }
+  } catch (error) {
+    console.warn(
+      `订单支付状态对账失败(order=${order.order_no}, paymentId=${paymentId}):`,
+      error,
+    )
+  }
+
+  return null
+}
+
 async function activateSubscriptionInTx(
   tx: Prisma.TransactionClient,
   userId: bigint,
-  planName: string,
+  planId: bigint,
   now: Date,
 ): Promise<subscription_plans> {
   const plan = await tx.subscription_plans.findFirst({
-    where: { name: planName },
+    where: { id: planId },
   })
   if (!plan) {
-    throw new Error(`Plan not found: ${planName}`)
+    throw new Error(`Plan not found: ${String(planId)}`)
+  }
+
+  const activeSubscriptions = await tx.user_subscriptions.findMany({
+    where: { user_id: userId, status: 'ACTIVE', expire_at: { gt: now } },
+    orderBy: { expire_at: 'desc' },
+  })
+
+  let carryoverCredits = BigInt(0)
+  for (const sub of activeSubscriptions) {
+    const remaining = (sub.credits ?? BigInt(0)) - (sub.credits_used ?? BigInt(0))
+    if (remaining > 0) {
+      carryoverCredits += remaining
+    }
   }
 
   await tx.user_subscriptions.updateMany({
@@ -136,7 +202,11 @@ async function activateSubscriptionInTx(
     data: { status: 'CANCELLED', updated_at: now },
   })
 
-  const expireAt = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000)
+  const cycleStart =
+    activeSubscriptions[0]?.expire_at && activeSubscriptions[0].expire_at > now
+      ? activeSubscriptions[0].expire_at
+      : now
+  const expireAt = new Date(cycleStart.getTime() + 30 * 24 * 60 * 60 * 1000)
   await tx.user_subscriptions.create({
     data: {
       user_id: userId,
@@ -144,7 +214,7 @@ async function activateSubscriptionInTx(
       status: 'ACTIVE',
       start_at: now,
       expire_at: expireAt,
-      credits: plan.monthly_credits,
+      credits: plan.monthly_credits + carryoverCredits,
       credits_used: BigInt(0),
       auto_renew: false,
       created_at: now,
@@ -159,6 +229,7 @@ async function markOrderPaidAndActivateSubscription(
   order: orders,
   paymentMethod: string,
   externalPaymentId?: string,
+  allowRecoverFromTerminalStatus: boolean = false,
 ): Promise<OrderInfo> {
   const maxRetries = 2
 
@@ -180,29 +251,29 @@ async function markOrderPaidAndActivateSubscription(
             return toOrderInfo(current, paidPlan)
           }
 
-          if (
-            current.status !== STATUS_PENDING &&
-            current.status !== STATUS_AWAITING_PAYMENT &&
-            current.status !== STATUS_CANCELLED &&
-            current.status !== STATUS_EXPIRED
-          ) {
+          const canRecoverFromTerminalStatus =
+            allowRecoverFromTerminalStatus &&
+            TERMINAL_STATUSES.includes(
+              current.status as (typeof TERMINAL_STATUSES)[number],
+            )
+
+          if (!isPayableStatus(current.status) && !canRecoverFromTerminalStatus) {
             throw new Error(`订单状态不正确: ${current.status}`)
           }
 
           const now = new Date()
           const resolvedExternalPaymentId =
             externalPaymentId ?? current.stripe_payment_intent_id ?? null
+          const allowedStatuses = [
+            ...PAYABLE_STATUSES,
+            ...(allowRecoverFromTerminalStatus ? [...TERMINAL_STATUSES] : []),
+          ]
 
           const updateResult = await tx.orders.updateMany({
             where: {
               id: current.id,
               status: {
-                in: [
-                  STATUS_PENDING,
-                  STATUS_AWAITING_PAYMENT,
-                  STATUS_CANCELLED,
-                  STATUS_EXPIRED,
-                ],
+                in: allowedStatuses,
               },
             },
             data: {
@@ -236,7 +307,7 @@ async function markOrderPaidAndActivateSubscription(
           const plan = await activateSubscriptionInTx(
             tx,
             current.user_id,
-            current.plan_name,
+            current.plan_id,
             now,
           )
 
@@ -274,7 +345,7 @@ export async function createOrder(
   planName: string,
 ): Promise<OrderInfo> {
   const plan = await prisma.subscription_plans.findFirst({
-    where: { name: planName.toUpperCase() },
+    where: { name: planName.toUpperCase(), is_active: true },
   })
 
   if (!plan) {
@@ -285,48 +356,79 @@ export async function createOrder(
     throw new Error('免费计划无需购买')
   }
 
-  const now = new Date()
+  const maxRetries = 2
 
-  // Cancel existing payable orders before creating a new one.
-  const openOrders = await prisma.orders.findMany({
-    where: {
-      user_id: userId,
-      status: { in: [STATUS_PENDING, STATUS_AWAITING_PAYMENT] },
-    },
-  })
-  for (const openOrder of openOrders) {
-    if (openOrder.status === STATUS_AWAITING_PAYMENT) {
-      await cancelExternalPaymentIfNeeded(openOrder)
+  for (let attempt = 0; attempt <= maxRetries; attempt++) {
+    try {
+      const { order, openOrders } = await prisma.$transaction(
+        async (tx) => {
+          const lockedUsers = await tx.$queryRaw<Array<{ id: bigint }>>`
+            SELECT id FROM users WHERE id = ${userId} FOR UPDATE
+          `
+          if (lockedUsers.length === 0) {
+            throw new Error('用户不存在')
+          }
+
+          const now = new Date()
+
+          const existingOpenOrders = await tx.orders.findMany({
+            where: {
+              user_id: userId,
+              status: { in: [...PAYABLE_STATUSES] },
+            },
+          })
+
+          if (existingOpenOrders.length > 0) {
+            await tx.orders.updateMany({
+              where: {
+                user_id: userId,
+                status: { in: [...PAYABLE_STATUSES] },
+              },
+              data: { status: STATUS_CANCELLED, updated_at: now },
+            })
+          }
+
+          const orderNo = generateOrderNo()
+          const expiredAt = new Date(now.getTime() + 30 * 60 * 1000) // 30 minutes
+
+          const createdOrder = await tx.orders.create({
+            data: {
+              order_no: orderNo,
+              user_id: userId,
+              plan_id: plan.id,
+              plan_name: plan.name,
+              amount: plan.price,
+              status: STATUS_PENDING,
+              created_at: now,
+              updated_at: now,
+              expired_at: expiredAt,
+            },
+          })
+
+          return {
+            order: createdOrder,
+            openOrders: existingOpenOrders,
+          }
+        },
+        { isolationLevel: Prisma.TransactionIsolationLevel.Serializable },
+      )
+
+      for (const openOrder of openOrders) {
+        if (openOrder.status === STATUS_AWAITING_PAYMENT) {
+          await cancelExternalPaymentIfNeeded(openOrder)
+        }
+      }
+
+      return toOrderInfo(order, plan)
+    } catch (error) {
+      if (isSerializationConflict(error) && attempt < maxRetries) {
+        continue
+      }
+      throw error
     }
   }
-  if (openOrders.length > 0) {
-    await prisma.orders.updateMany({
-      where: {
-        user_id: userId,
-        status: { in: [STATUS_PENDING, STATUS_AWAITING_PAYMENT] },
-      },
-      data: { status: STATUS_CANCELLED, updated_at: now },
-    })
-  }
 
-  const orderNo = generateOrderNo()
-  const expiredAt = new Date(now.getTime() + 30 * 60 * 1000) // 30 minutes
-
-  const order = await prisma.orders.create({
-    data: {
-      order_no: orderNo,
-      user_id: userId,
-      plan_id: plan.id,
-      plan_name: plan.name,
-      amount: plan.price,
-      status: STATUS_PENDING,
-      created_at: now,
-      updated_at: now,
-      expired_at: expiredAt,
-    },
-  })
-
-  return toOrderInfo(order, plan)
+  throw new Error('创建订单失败，请重试')
 }
 
 export async function getOrderByOrderNo(
@@ -345,12 +447,14 @@ export async function getOrderByOrderNo(
     throw new Error('无权操作此订单')
   }
 
+  // Reconcile with Stripe in case webhook delivery is delayed.
+  const reconciled = await reconcileOrderPaymentIfNeeded(order)
+  if (reconciled) {
+    return reconciled
+  }
+
   // Check if payable order has expired
-  if (
-    (order.status === STATUS_PENDING ||
-      order.status === STATUS_AWAITING_PAYMENT) &&
-    order.expired_at < new Date()
-  ) {
+  if (isPayableStatus(order.status) && order.expired_at < new Date()) {
     if (order.status === STATUS_AWAITING_PAYMENT) {
       await cancelExternalPaymentIfNeeded(order)
     }
@@ -389,7 +493,7 @@ export async function getOrdersByUserId(
 
 export async function payOrder(
   orderNo: string,
-  _paymentMethod: string,
+  paymentMethod: string,
   userId?: bigint,
 ): Promise<OrderInfo> {
   const order = await prisma.orders.findUnique({
@@ -404,7 +508,18 @@ export async function payOrder(
     throw new Error('无权操作此订单')
   }
 
-  if (order.status !== STATUS_PENDING && order.status !== STATUS_AWAITING_PAYMENT) {
+  if (order.status === STATUS_PAID) {
+    const paidPlan = await prisma.subscription_plans.findFirst({
+      where: { id: order.plan_id },
+    })
+    return toOrderInfo(order, paidPlan)
+  }
+
+  if (paymentMethod.toUpperCase() !== PAYMENT_STRIPE) {
+    throw new Error(`暂不支持支付方式: ${paymentMethod}`)
+  }
+
+  if (!isPayableStatus(order.status)) {
     throw new Error('订单状态不正确，无法支付')
   }
 
@@ -435,7 +550,11 @@ export async function payOrder(
       )
 
       if (session.paymentStatus === 'paid') {
-        return markOrderPaidAndActivateSubscription(order, PAYMENT_STRIPE)
+        return markOrderPaidAndActivateSubscription(
+          order,
+          PAYMENT_STRIPE,
+          session.paymentIntentId ?? session.sessionId,
+        )
       }
 
       if (session.status === 'open' && session.checkoutUrl) {
@@ -537,7 +656,14 @@ export async function payOrderWithSavedMethod(
     throw new Error('无权操作此订单')
   }
 
-  if (order.status !== STATUS_PENDING && order.status !== STATUS_AWAITING_PAYMENT) {
+  if (order.status === STATUS_PAID) {
+    const paidPlan = await prisma.subscription_plans.findFirst({
+      where: { id: order.plan_id },
+    })
+    return toOrderInfo(order, paidPlan)
+  }
+
+  if (!isPayableStatus(order.status)) {
     throw new Error('订单状态不正确，无法支付')
   }
 
@@ -555,6 +681,12 @@ export async function payOrderWithSavedMethod(
   const user = await prisma.users.findFirst({ where: { id: userId } })
   if (!user?.stripe_customer_id) {
     throw new Error('未找到支付账户')
+  }
+
+  const paymentMethodCustomerId =
+    await stripeService.getPaymentMethodCustomerId(paymentMethodId)
+  if (paymentMethodCustomerId !== user.stripe_customer_id) {
+    throw new Error('无权操作此支付方式')
   }
 
   const plan = await prisma.subscription_plans.findFirst({
@@ -599,7 +731,11 @@ export async function payOrderWithSavedMethod(
       )
 
       if (session.paymentStatus === 'paid') {
-        return markOrderPaidAndActivateSubscription(order, PAYMENT_STRIPE)
+        return markOrderPaidAndActivateSubscription(
+          order,
+          PAYMENT_STRIPE,
+          session.paymentIntentId ?? session.sessionId,
+        )
       }
 
       if (session.status === 'open') {
@@ -660,7 +796,7 @@ export async function completePaymentViaWebhook(
   orderNo: string,
   paymentMethod: string = PAYMENT_STRIPE,
   externalPaymentId?: string,
-): Promise<OrderInfo> {
+): Promise<OrderInfo | null> {
   const order = await prisma.orders.findUnique({
     where: { order_no: orderNo },
   })
@@ -673,12 +809,16 @@ export async function completePaymentViaWebhook(
     return toOrderInfo(order, null)
   }
 
-  if (
-    order.status !== STATUS_PENDING &&
-    order.status !== STATUS_AWAITING_PAYMENT &&
-    order.status !== STATUS_CANCELLED &&
-    order.status !== STATUS_EXPIRED
-  ) {
+  const recoverFromTerminalStatus =
+    order.status === STATUS_CANCELLED || order.status === STATUS_EXPIRED
+
+  if (recoverFromTerminalStatus) {
+    console.warn(
+      `收到已失效订单的支付成功回调，执行权益补偿(order=${orderNo}, status=${order.status}, paymentId=${externalPaymentId ?? '-'})`,
+    )
+  }
+
+  if (!isPayableStatus(order.status) && !recoverFromTerminalStatus) {
     throw new Error(`订单状态不正确: ${order.status}`)
   }
 
@@ -686,6 +826,7 @@ export async function completePaymentViaWebhook(
     order,
     paymentMethod,
     externalPaymentId,
+    recoverFromTerminalStatus,
   )
 }
 

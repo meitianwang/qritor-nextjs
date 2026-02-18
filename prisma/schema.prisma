@@ -231,6 +231,18 @@ model token_blacklist {
   @@index([id], map: "ix_token_blacklist_id")
 }
 
+model verification_codes {
+  id         BigInt   @id @default(autoincrement())
+  code_key   String   @unique(map: "ix_verification_codes_code_key") @db.VarChar(150)
+  code       String   @db.VarChar(6)
+  expires_at DateTime @db.DateTime(0)
+  created_at DateTime @db.DateTime(0)
+
+  @@index([id], map: "ix_verification_codes_id")
+  @@index([created_at], map: "ix_verification_codes_created_at")
+  @@index([expires_at], map: "ix_verification_codes_expires_at")
+}
+
 model user_subscriptions {
   id           BigInt   @id @default(autoincrement())
   user_id      BigInt

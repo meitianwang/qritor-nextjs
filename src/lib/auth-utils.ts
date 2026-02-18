@@ -1,5 +1,9 @@
 'use client'
 
+import { isPasswordStrong } from '@/lib/password-policy'
+
+export { isPasswordStrong }
+
 /**
  * Authentication utility functions
  * Dual Token auth: Access Token in memory, Refresh Token in HttpOnly Cookie
@@ -349,24 +353,6 @@ export function startTokenAutoRefresh(): void {
 
     autoRefreshTimer = setInterval(checkAndPreRefresh, AUTO_REFRESH_CHECK_INTERVAL_MS)
     document.addEventListener('visibilitychange', handleVisibilityChange)
-}
-
-// ============== Password Policy ==============
-const MIN_LENGTH = 8
-const COMMON_PASSWORDS = new Set([
-    'password', '123456', '12345678', '123456789', 'qwerty',
-    'abc123', 'letmein', 'iloveyou', 'admin', 'login',
-    '111111', '000000', '123123', 'passw0rd', 'dragon'
-])
-
-export function isPasswordStrong(password: string): boolean {
-    if (!password || password.length < MIN_LENGTH) return false
-    if (!/[A-Z]/.test(password)) return false
-    if (!/[a-z]/.test(password)) return false
-    if (!/[0-9]/.test(password)) return false
-    if (!/[^A-Za-z0-9]/.test(password)) return false
-    if (COMMON_PASSWORDS.has(password.toLowerCase())) return false
-    return true
 }
 
 // ============== Callback URL Builder ==============
