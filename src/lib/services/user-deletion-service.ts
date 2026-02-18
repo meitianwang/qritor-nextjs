@@ -11,7 +11,6 @@ type UserDeletionTx = Pick<
   | 'novel_creation_method'
   | 'credit_transactions'
   | 'user_settings'
-  | 'token_blacklist'
   | 'image_generation_task'
   | 'verification_codes'
   | 'users'
@@ -40,7 +39,6 @@ export async function deleteUserWithRelationsInTx(
   await tx.novel_creation_method.deleteMany({ where: { user_id: userId } })
   await tx.credit_transactions.deleteMany({ where: { user_id: userId } })
   await tx.user_settings.deleteMany({ where: { user_id: userId } })
-  await tx.token_blacklist.deleteMany({ where: { user_id: userId } })
   await tx.image_generation_task.deleteMany({ where: { user_id: userId } })
 
   if (options.userEmail) {

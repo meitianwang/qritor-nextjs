@@ -221,16 +221,6 @@ model system_config {
   @@index([id], map: "ix_system_config_id")
 }
 
-model token_blacklist {
-  id         BigInt   @id @default(autoincrement())
-  token      String   @unique(map: "token") @db.VarChar(500)
-  expires_at DateTime @db.DateTime(0)
-  user_id    BigInt
-  created_at DateTime @db.DateTime(0)
-
-  @@index([id], map: "ix_token_blacklist_id")
-}
-
 model verification_codes {
   id         BigInt   @id @default(autoincrement())
   code_key   String   @unique(map: "ix_verification_codes_code_key") @db.VarChar(150)
