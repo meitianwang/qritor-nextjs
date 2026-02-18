@@ -10,7 +10,42 @@ import { docsContent } from '@/data/docsData'
 function formatContent(markdown: string): string {
     if (!markdown) return ''
 
-    let html = markdown
+    // First, extract and convert tables to HTML before other processing
+    let html = markdown.replace(
+        /(?:^|\n)((?:\|.+\|\n)+)/g,
+        (_match, tableBlock: string) => {
+            const rows = tableBlock.trim().split('\n').filter((r: string) => r.trim())
+            if (rows.length < 2) return tableBlock
+
+            // Check if second row is separator (|---|---|)
+            const isSeparator = /^\|[\s-:|]+\|$/.test(rows[1].trim())
+            if (!isSeparator) return tableBlock
+
+            const parseRow = (row: string) =>
+                row.split('|').slice(1, -1).map((cell: string) => cell.trim())
+
+            const headerCells = parseRow(rows[0])
+            const datRows = rows.slice(2)
+
+            let table = '<table class="docs-table"><thead><tr>'
+            headerCells.forEach((cell: string) => {
+                table += `<th>${cell}</th>`
+            })
+            table += '</tr></thead><tbody>'
+            datRows.forEach((row: string) => {
+                const cells = parseRow(row)
+                table += '<tr>'
+                cells.forEach((cell: string) => {
+                    table += `<td>${cell}</td>`
+                })
+                table += '</tr>'
+            })
+            table += '</tbody></table>'
+            return '\n' + table + '\n'
+        }
+    )
+
+    html = html
         // Headings (process from small to large to avoid mismatching)
         .replace(/^#### (.+)$/gm, '<h4>$1</h4>')
         .replace(/^### (.+)$/gm, '<h3>$1</h3>')
