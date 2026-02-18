@@ -14,7 +14,7 @@ const MAX_FILE_SIZE = 5 * 1024 * 1024
 
 const CATEGORY_ICONS: Record<string, React.ReactNode> = {
     bug: (
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
             <path d="m8 2 1.88 1.88" /><path d="M14.12 3.88 16 2" /><path d="M9 7.13v-1a3.003 3.003 0 1 1 6 0v1" />
             <path d="M12 20c-3.3 0-6-2.7-6-6v-3a4 4 0 0 1 4-4h4a4 4 0 0 1 4 4v3c0 3.3-2.7 6-6 6" />
             <path d="M12 20v-9" /><path d="M6.53 9C4.6 8.8 3 7.1 3 5" /><path d="M6 13H2" /><path d="M3 21c0-2.1 1.7-3.9 3.8-4" />
@@ -22,13 +22,13 @@ const CATEGORY_ICONS: Record<string, React.ReactNode> = {
         </svg>
     ),
     suggestion: (
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
             <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z" />
             <circle cx="12" cy="12" r="3" />
         </svg>
     ),
     other: (
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
             <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
         </svg>
     ),
@@ -56,7 +56,7 @@ export default function FeedbackPage() {
     const [dragging, setDragging] = useState(false)
 
     const fileInputRef = useRef<HTMLInputElement>(null)
-    const user = getUser()
+
 
     const resetForm = useCallback(() => {
         setCategory('')
@@ -129,6 +129,7 @@ export default function FeedbackPage() {
 
     const handleDrop = useCallback((e: React.DragEvent) => {
         e.preventDefault()
+        e.stopPropagation()
         setDragging(false)
         const file = e.dataTransfer.files?.[0]
         if (file) {
@@ -138,11 +139,13 @@ export default function FeedbackPage() {
 
     const handleDragOver = useCallback((e: React.DragEvent) => {
         e.preventDefault()
+        e.stopPropagation()
         setDragging(true)
     }, [])
 
     const handleDragLeave = useCallback((e: React.DragEvent) => {
         e.preventDefault()
+        e.stopPropagation()
         setDragging(false)
     }, [])
 
@@ -210,40 +213,32 @@ export default function FeedbackPage() {
             ? 'feedback-char-count warning'
             : 'feedback-char-count'
 
-    const emailInitial = (user?.email as string)?.[0]?.toUpperCase() || '?'
-
     return (
-        <>
-            {/* Hero */}
-            <section className="feedback-hero">
-                <h1 className="feedback-hero-title animate-fade-in">
-                    {t('feedback.title')}
-                </h1>
-                <p className="feedback-hero-subtitle animate-fade-in delay-100">
-                    {t('feedback.subtitle')}
-                </p>
-            </section>
+        <main className="feedback-page">
+            {/* Background Effects */}
+            <div className="feedback-glow">
+                <div className="feedback-glow-orb feedback-glow-1"></div>
+                <div className="feedback-glow-orb feedback-glow-2"></div>
+            </div>
 
-            {/* Form */}
-            <section style={{ paddingBottom: '8rem' }} className="px-4">
+            <div className="feedback-container">
+                {/* Header */}
+                <div className="page-header animate-fade-in">
+                    <h1 className="page-title">
+                        {t('feedback.title')}
+                    </h1>
+                    <p className="page-subtitle">
+                        {t('feedback.subtitle')}
+                    </p>
+                </div>
+
+                {/* Form Card */}
                 <form className="feedback-card animate-fade-in delay-200" onSubmit={handleSubmit}>
-                    {/* User Badge */}
-                    <div className="feedback-user-badge">
-                        <div className="feedback-user-avatar">{emailInitial}</div>
-                        <div className="feedback-user-info">
-                            <span className="feedback-user-label">
-                                {t('feedback.email.label')}
-                            </span>
-                            <span className="feedback-user-email">
-                                {user?.email as string || ''}
-                            </span>
-                        </div>
-                    </div>
 
-                    {/* Category */}
+                    {/* Category Selection */}
                     <div className="feedback-section">
                         <label className="feedback-label">
-                            {t('feedback.category.label')}
+                            {t('feedback.category.label')} <span className="text-red-500">*</span>
                         </label>
                         <div className="feedback-category-grid">
                             {CATEGORIES.map((cat) => (
@@ -268,12 +263,10 @@ export default function FeedbackPage() {
                         </div>
                     </div>
 
-                    <div className="feedback-divider" />
-
                     {/* Subject */}
-                    <div className="feedback-section">
+                    <div className="feedback-section feedback-input-wrapper">
                         <label className="feedback-label">
-                            {t('feedback.subject.label')}
+                            {t('feedback.subject.label')} <span className="text-red-500">*</span>
                         </label>
                         <input
                             type="text"
@@ -289,9 +282,9 @@ export default function FeedbackPage() {
                     </div>
 
                     {/* Message */}
-                    <div className="feedback-section">
+                    <div className="feedback-section feedback-input-wrapper">
                         <label className="feedback-label">
-                            {t('feedback.message.label')}
+                            {t('feedback.message.label')} <span className="text-red-500">*</span>
                         </label>
                         <textarea
                             className="feedback-input feedback-textarea"
@@ -308,10 +301,10 @@ export default function FeedbackPage() {
                         </div>
                     </div>
 
-                    {/* Screenshot */}
+                    {/* Screenshot Upload */}
                     <div className="feedback-section">
                         <label className="feedback-label">
-                            {t('feedback.screenshot.label')}
+                            {t('feedback.screenshot.label')} <span className="text-zinc-500 text-xs font-normal ml-2">({t('feedback.screenshot.optional') || 'Optional'})</span>
                         </label>
                         <input
                             ref={fileInputRef}
@@ -322,34 +315,39 @@ export default function FeedbackPage() {
                         />
 
                         {uploading ? (
-                            <div className="feedback-uploading">
-                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="animate-spin">
-                                    <path d="M21 12a9 9 0 1 1-6.219-8.56" />
-                                </svg>
-                                {t('feedback.screenshot.uploading')}
+                            <div className="feedback-upload-area">
+                                <div className="feedback-loading">
+                                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="animate-spin">
+                                        <path d="M21 12a9 9 0 1 1-6.219-8.56" />
+                                    </svg>
+                                    <span>{t('feedback.screenshot.uploading')}</span>
+                                </div>
                             </div>
                         ) : screenshotPreview ? (
-                            <div className="feedback-preview">
-                                <img src={screenshotPreview} alt="Screenshot preview" />
+                            <div className="feedback-preview-container">
+                                <img src={screenshotPreview} alt="Screenshot preview" className="feedback-preview-img" />
                                 <button
                                     type="button"
                                     className="feedback-preview-remove"
                                     onClick={removeScreenshot}
                                     title={t('feedback.screenshot.remove')}
                                 >
-                                    &times;
+                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                        <path d="M18 6 6 18" />
+                                        <path d="m6 6 12 12" />
+                                    </svg>
                                 </button>
                             </div>
                         ) : (
                             <div
-                                className={`feedback-upload${dragging ? ' dragging' : ''}`}
+                                className={`feedback-upload-area${dragging ? ' dragging' : ''}`}
                                 onClick={() => fileInputRef.current?.click()}
                                 onDrop={handleDrop}
                                 onDragOver={handleDragOver}
                                 onDragLeave={handleDragLeave}
                             >
                                 <div className="feedback-upload-icon">
-                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                                    <svg width="100%" height="100%" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
                                         <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
                                         <polyline points="17 8 12 3 7 8" />
                                         <line x1="12" y1="3" x2="12" y2="15" />
@@ -358,15 +356,25 @@ export default function FeedbackPage() {
                                 <p className="feedback-upload-text">
                                     {t('feedback.screenshot.hint')}
                                 </p>
+                                <p className="feedback-upload-subtext">
+                                    JPG, PNG, GIF, WebP (Max 5MB)
+                                </p>
                             </div>
                         )}
 
                         {uploadError && (
-                            <p className="feedback-upload-error">{uploadError}</p>
+                            <p className="feedback-upload-error flex items-center gap-2 mt-2">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                    <circle cx="12" cy="12" r="10" />
+                                    <line x1="12" y1="8" x2="12" y2="12" />
+                                    <line x1="12" y1="16" x2="12.01" y2="16" />
+                                </svg>
+                                {uploadError}
+                            </p>
                         )}
                     </div>
 
-                    {/* Error */}
+                    {/* Form Error */}
                     {error && (
                         <div className="feedback-error">
                             <svg className="feedback-error-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -378,18 +386,37 @@ export default function FeedbackPage() {
                         </div>
                     )}
 
-                    {/* Submit */}
-                    <button
-                        type="submit"
-                        className="feedback-submit"
-                        disabled={submitting || uploading}
-                    >
-                        {submitting ? t('feedback.submitting') : t('feedback.submit')}
-                    </button>
+                    {/* Actions */}
+                    <div className="feedback-actions">
+                        <button
+                            type="submit"
+                            className="btn btn-primary btn-large btn-glow"
+                            disabled={submitting || uploading}
+                            style={{ width: '100%', justifyContent: 'center' }}
+                        >
+                            {submitting ? (
+                                <>
+                                    <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                    </svg>
+                                    {t('feedback.submitting')}
+                                </>
+                            ) : (
+                                <>
+                                    {t('feedback.submit')}
+                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                        <line x1="22" y1="2" x2="11" y2="13" />
+                                        <polygon points="22 2 15 22 11 13 2 9 22 2" />
+                                    </svg>
+                                </>
+                            )}
+                        </button>
+                    </div>
                 </form>
-            </section>
+            </div>
 
             <ToastNotification notification={notification} />
-        </>
+        </main>
     )
 }
