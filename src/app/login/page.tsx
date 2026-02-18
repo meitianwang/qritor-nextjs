@@ -10,6 +10,8 @@ import { apiFetch, buildCallbackUrl } from '@/lib/auth-utils'
 import { syncLanguageFromServer } from '@/i18n/index'
 import { AuthBackground, AuthHeader } from '@/components/auth/AuthSharedComponents'
 import LoginForm from '@/components/auth/LoginForm'
+import { useToast } from '@/hooks/useToast'
+import ToastNotification from '@/components/ToastNotification'
 
 /**
  * Login page
@@ -19,6 +21,7 @@ function LoginPageContent() {
     const searchParams = useSearchParams()
     const { login } = useAuth()
     const { t } = useTranslation('portal')
+    const { notification, showToast } = useToast()
 
     // SEO
     useDocumentMeta({
@@ -33,6 +36,15 @@ function LoginPageContent() {
     const [error, setError] = useState('')
     const [loading, setLoading] = useState(false)
     const [googleLoading, setGoogleLoading] = useState(false)
+
+    // Show toast after account deletion
+    useEffect(() => {
+        if (searchParams.get('deleted') === 'true') {
+            showToast('success', t('login.accountDeleted'))
+            window.history.replaceState({}, '', '/login')
+        }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [])
 
     // Handle desktop login - save callback info
     useEffect(() => {
@@ -210,7 +222,15 @@ function LoginPageContent() {
 
                 handleLoginSuccess(data.data, isDesktopLogin, desktopCallback)
             } else {
-                setError(data.message || t('login.errors.loginFailed'))
+                if (data.code === 404) {
+                    setError(t('login.errors.accountNotFound'))
+                } else if (data.code === 401) {
+                    setError(t('login.errors.passwordIncorrect'))
+                } else if (data.code === 403) {
+                    setError(t('login.errors.adminOnly'))
+                } else {
+                    setError(data.message || t('login.errors.loginFailed'))
+                }
             }
         } catch (err) {
             setError(t('common.networkError'))
@@ -264,6 +284,8 @@ function LoginPageContent() {
                     <Link href="/privacy" target="_blank" rel="noopener noreferrer">{t('auth.privacyLink')}</Link>
                 </div>
             </div>
+
+            <ToastNotification notification={notification} />
         </div>
     )
 }

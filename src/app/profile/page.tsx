@@ -203,7 +203,7 @@ function ProfilePageContent() {
             const data = await response.json()
             if (data.code === 200) {
                 logout()
-                router.push('/login')
+                router.push('/login?deleted=true')
             } else {
                 setDeleteError(data.message || t('profile.errors.deleteFailed'))
             }

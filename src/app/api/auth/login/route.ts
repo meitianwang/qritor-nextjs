@@ -26,12 +26,12 @@ export async function POST(request: NextRequest) {
       where: { email: normalizedEmail },
     })
     if (!user) {
-      return apiError(401, '邮箱或密码错误')
+      return apiError(404, '账号不存在')
     }
 
     const passwordValid = await verifyPassword(password, user.password)
     if (!passwordValid) {
-      return apiError(401, '邮箱或密码错误')
+      return apiError(401, '密码错误')
     }
 
     if (requireAdmin && user.role !== 'ADMIN') {

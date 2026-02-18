@@ -205,11 +205,15 @@
         }
     },
     "login": {
+        "accountDeleted": "Your account has been successfully deleted",
         "errors": {
             "emailRequired": "Please enter your email",
             "emailInvalid": "Please enter a valid email address",
             "passwordRequired": "Please enter your password",
             "loginFailed": "Login failed",
+            "accountNotFound": "Account does not exist",
+            "passwordIncorrect": "Incorrect password",
+            "adminOnly": "Only administrators can access this area",
             "googleFailed": "Google login failed, please try again",
             "googleUnavailable": "Google login is temporarily unavailable",
             "googleConnectFailed": "Unable to connect to Google login service"
