@@ -372,12 +372,14 @@ model skill {
   name         String    @unique(map: "ix_skill_name") @db.VarChar(100)
   description  String    @db.VarChar(500)
   instructions String    @db.LongText
+  novel_creation_method_id BigInt?
   is_active    Boolean   @default(true)
   sort_order   Int       @default(0)
   created_at   DateTime  @db.DateTime(0)
   updated_at   DateTime? @db.DateTime(0)
 
   @@index([is_active], map: "ix_skill_active")
+  @@index([novel_creation_method_id], map: "ix_skill_method_id")
 }
 
 enum users_role {

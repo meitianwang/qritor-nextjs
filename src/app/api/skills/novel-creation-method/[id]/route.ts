@@ -27,20 +27,27 @@ function serializeSkill(skill: {
   }
 }
 
-export async function GET(request: NextRequest) {
+export async function GET(
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
   try {
     await getCurrentUser(request)
-
+    const { id } = await params
     const skills = await prisma.skill.findMany({
-      where: { is_active: true },
+      where: {
+        is_active: true,
+        OR: [
+          { novel_creation_method_id: BigInt(id) },
+          { novel_creation_method_id: null },
+        ],
+      },
       orderBy: [{ sort_order: 'asc' }, { name: 'asc' }],
     })
 
-    const result = skills.map((skill) => serializeSkill(skill))
-
-    return apiSuccess(result)
+    return apiSuccess(skills.map(serializeSkill))
   } catch (error) {
     if (error instanceof Response) return error
-    return apiError(500, '获取技能列表失败')
+    return apiError(500, '获取创作方法技能列表失败')
   }
 }
