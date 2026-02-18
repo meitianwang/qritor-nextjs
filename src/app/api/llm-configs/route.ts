@@ -1,6 +1,9 @@
+import { NextRequest } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { apiSuccess, apiError } from '@/lib/api-response'
 import { parseLlmTags } from '@/lib/llm-tags'
+import { getCurrentUserOptional } from '@/lib/middleware/auth-middleware'
+import { getUserAllowedModelTiers } from '@/lib/services/subscription-service'
 
 const CONTEXT_WINDOW_COLUMN_CANDIDATES = ['context_window', 'max_tokens'] as const
 let cachedContextWindowColumn: string | null | undefined
@@ -69,7 +72,7 @@ async function loadContextWindowByConfigId(
   }
 }
 
-export async function GET() {
+export async function GET(request: NextRequest) {
   try {
     const configs = await prisma.llm_config.findMany({
       where: { enabled: 1 },
@@ -79,10 +82,18 @@ export async function GET() {
     const configIds = configs.map((c) => Number(c.id))
     const contextWindowById = await loadContextWindowByConfigId(configIds)
 
+    // If authenticated, resolve allowed tiers to mark accessibility
+    const user = await getCurrentUserOptional(request)
+    let allowedTiers: string[] | null = null
+    if (user) {
+      allowedTiers = await getUserAllowedModelTiers(user.id)
+    }
+
     return apiSuccess(
       configs.map((c) => {
         const configId = Number(c.id)
         const contextWindow = contextWindowById.get(configId)
+        const modelTier = c.model_tier || 'economy'
 
         return {
           id: configId,
@@ -93,10 +104,13 @@ export async function GET() {
           inputPricePerM: c.input_price_per_m ?? 0.20,
           outputPricePerM: c.output_price_per_m ?? 0.40,
           pricingMultiplier: c.pricing_multiplier ?? 1.0,
-          modelTier: c.model_tier || 'base',
+          modelTier,
           tags: parseLlmTags(c.tags),
           contextWindow,
           maxTokens: contextWindow,
+          ...(allowedTiers !== null
+            ? { accessible: allowedTiers.includes(modelTier) }
+            : {}),
         }
       }),
     )

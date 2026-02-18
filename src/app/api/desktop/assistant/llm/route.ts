@@ -75,6 +75,18 @@ export async function POST(request: NextRequest) {
     const config = await getConfigById(configId)
     if (!config) return jsonError(400, '没有可用的 LLM 配置')
 
+    // Check model tier access
+    const configTier = config.model_tier || 'economy'
+    const { canUserAccessModelTier } = await import(
+      '@/lib/services/subscription-service'
+    )
+    if (!(await canUserAccessModelTier(user.id, configTier))) {
+      return jsonError(
+        403,
+        '当前订阅计划不支持使用该模型，请升级订阅',
+      )
+    }
+
     const modelPolicy = resolveModelRequestPolicy(config.model_name)
     const toolsForModel = modelPolicy.allowTools ? tools : undefined
 

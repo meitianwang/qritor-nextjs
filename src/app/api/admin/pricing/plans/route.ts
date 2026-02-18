@@ -32,6 +32,7 @@ export async function POST(request: NextRequest) {
       maxProjects, max_projects,
       descriptions,
       featuresI18n, features_i18n,
+      allowedModelTiers, allowed_model_tiers,
       isActive, is_active,
     } = body as Record<string, unknown>
 
@@ -39,6 +40,7 @@ export async function POST(request: NextRequest) {
     const mCredits = (monthlyCredits || monthly_credits || 0) as number
     const mProjects = (maxProjects || max_projects || 0) as number
     const fI18n = featuresI18n || features_i18n
+    const aTiers = allowedModelTiers || allowed_model_tiers
     const active = isActive ?? is_active ?? true
 
     if (!name || !dName || price === undefined) {
@@ -54,6 +56,7 @@ export async function POST(request: NextRequest) {
         max_projects: BigInt(mProjects),
         descriptions: descriptions ?? Prisma.DbNull,
         features_i18n: fI18n ?? Prisma.DbNull,
+        allowed_model_tiers: aTiers ?? Prisma.DbNull,
         is_active: active as boolean,
         created_at: new Date(),
       },

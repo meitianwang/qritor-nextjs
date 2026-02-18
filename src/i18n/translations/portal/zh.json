@@ -326,7 +326,14 @@
                 "name": "Ultra",
                 "desc": "创作无限制"
             }
-        }
+        },
+        "modelTiers": {
+            "economy": "经济型",
+            "standard": "标准型",
+            "advanced": "高级型",
+            "flagship": "旗舰型"
+        },
+        "modelTierRestricted": "当前订阅计划不支持使用该模型，请升级订阅"
     },
     "faq": {
         "title": "常见问题",

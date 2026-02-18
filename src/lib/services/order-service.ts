@@ -12,7 +12,6 @@ const STATUS_PAID = 'PAID'
 const STATUS_CANCELLED = 'CANCELLED'
 const STATUS_EXPIRED = 'EXPIRED'
 const STATUS_AWAITING_PAYMENT = 'AWAITING_PAYMENT'
-const PAYMENT_STRIPE = 'STRIPE'
 const PAYABLE_STATUSES = [STATUS_PENDING, STATUS_AWAITING_PAYMENT] as const
 const TERMINAL_STATUSES = [STATUS_CANCELLED, STATUS_EXPIRED] as const
 
@@ -28,7 +27,6 @@ interface OrderInfo {
   planName: string
   amount: number
   status: string
-  paymentMethod: string | null
   createdAt: string | null
   paidAt: string | null
   expiredAt: string | null
@@ -70,7 +68,6 @@ function toOrderInfo(
     planName: order.plan_name,
     amount: Number(order.amount),
     status: order.status,
-    paymentMethod: order.payment_method,
     createdAt: order.created_at?.toISOString() ?? null,
     paidAt: order.paid_at?.toISOString() ?? null,
     expiredAt: order.expired_at?.toISOString() ?? null,
@@ -142,7 +139,6 @@ async function reconcileOrderPaymentIfNeeded(
       if (session.paymentStatus === 'paid') {
         return markOrderPaidAndActivateSubscription(
           order,
-          PAYMENT_STRIPE,
           session.paymentIntentId ?? session.sessionId,
           recoverFromTerminalStatus,
         )
@@ -155,7 +151,6 @@ async function reconcileOrderPaymentIfNeeded(
       if (intent.status === 'succeeded') {
         return markOrderPaidAndActivateSubscription(
           order,
-          PAYMENT_STRIPE,
           intent.paymentIntentId,
           recoverFromTerminalStatus,
         )
@@ -227,7 +222,6 @@ async function activateSubscriptionInTx(
 
 async function markOrderPaidAndActivateSubscription(
   order: orders,
-  paymentMethod: string,
   externalPaymentId?: string,
   allowRecoverFromTerminalStatus: boolean = false,
 ): Promise<OrderInfo> {
@@ -278,7 +272,6 @@ async function markOrderPaidAndActivateSubscription(
             },
             data: {
               status: STATUS_PAID,
-              payment_method: paymentMethod,
               stripe_payment_intent_id: resolvedExternalPaymentId,
               paid_at: now,
               updated_at: now,
@@ -315,7 +308,6 @@ async function markOrderPaidAndActivateSubscription(
             {
               ...current,
               status: STATUS_PAID,
-              payment_method: paymentMethod,
               stripe_payment_intent_id: resolvedExternalPaymentId,
               paid_at: now,
               updated_at: now,
@@ -493,7 +485,6 @@ export async function getOrdersByUserId(
 
 export async function payOrder(
   orderNo: string,
-  paymentMethod: string,
   userId?: bigint,
 ): Promise<OrderInfo> {
   const order = await prisma.orders.findUnique({
@@ -513,10 +504,6 @@ export async function payOrder(
       where: { id: order.plan_id },
     })
     return toOrderInfo(order, paidPlan)
-  }
-
-  if (paymentMethod.toUpperCase() !== PAYMENT_STRIPE) {
-    throw new Error(`暂不支持支付方式: ${paymentMethod}`)
   }
 
   if (!isPayableStatus(order.status)) {
@@ -552,16 +539,12 @@ export async function payOrder(
       if (session.paymentStatus === 'paid') {
         return markOrderPaidAndActivateSubscription(
           order,
-          PAYMENT_STRIPE,
           session.paymentIntentId ?? session.sessionId,
         )
       }
 
       if (session.status === 'open' && session.checkoutUrl) {
-        const orderInfo = toOrderInfo(
-          { ...order, payment_method: PAYMENT_STRIPE },
-          plan,
-        )
+        const orderInfo = toOrderInfo(order, plan)
         orderInfo.requiresAction = true
         orderInfo.checkoutUrl = session.checkoutUrl
         orderInfo.stripeSessionId = session.sessionId
@@ -584,7 +567,6 @@ export async function payOrder(
       if (intent.status === 'succeeded') {
         return markOrderPaidAndActivateSubscription(
           order,
-          PAYMENT_STRIPE,
           intent.paymentIntentId,
         )
       }
@@ -622,14 +604,13 @@ export async function payOrder(
     where: { id: order.id },
     data: {
       status: STATUS_AWAITING_PAYMENT,
-      payment_method: PAYMENT_STRIPE,
       stripe_payment_intent_id: stripeResult.sessionId,
       updated_at: new Date(),
     },
   })
 
   const orderInfo = toOrderInfo(
-    { ...order, status: STATUS_AWAITING_PAYMENT, payment_method: PAYMENT_STRIPE },
+    { ...order, status: STATUS_AWAITING_PAYMENT },
     plan,
   )
   orderInfo.requiresAction = true
@@ -706,16 +687,12 @@ export async function payOrderWithSavedMethod(
       if (existingIntent.status === 'succeeded') {
         return markOrderPaidAndActivateSubscription(
           order,
-          PAYMENT_STRIPE,
           existingIntent.paymentIntentId,
         )
       }
 
       if (existingIntent.status === 'requires_action') {
-        const orderInfo = toOrderInfo(
-          { ...order, payment_method: PAYMENT_STRIPE },
-          plan,
-        )
+        const orderInfo = toOrderInfo(order, plan)
         return {
           ...orderInfo,
           requiresAction: true,
@@ -733,7 +710,6 @@ export async function payOrderWithSavedMethod(
       if (session.paymentStatus === 'paid') {
         return markOrderPaidAndActivateSubscription(
           order,
-          PAYMENT_STRIPE,
           session.paymentIntentId ?? session.sessionId,
         )
       }
@@ -762,7 +738,6 @@ export async function payOrderWithSavedMethod(
   if (chargeResult.status === 'succeeded') {
     return markOrderPaidAndActivateSubscription(
       order,
-      PAYMENT_STRIPE,
       chargeResult.paymentIntentId,
     )
   }
@@ -772,14 +747,13 @@ export async function payOrderWithSavedMethod(
       where: { id: order.id },
       data: {
         status: STATUS_AWAITING_PAYMENT,
-        payment_method: PAYMENT_STRIPE,
         stripe_payment_intent_id: chargeResult.paymentIntentId,
         updated_at: new Date(),
       },
     })
 
     const orderInfo = toOrderInfo(
-      { ...order, status: STATUS_AWAITING_PAYMENT, payment_method: PAYMENT_STRIPE },
+      { ...order, status: STATUS_AWAITING_PAYMENT },
       plan,
     )
     return {
@@ -794,7 +768,6 @@ export async function payOrderWithSavedMethod(
 
 export async function completePaymentViaWebhook(
   orderNo: string,
-  paymentMethod: string = PAYMENT_STRIPE,
   externalPaymentId?: string,
 ): Promise<OrderInfo | null> {
   const order = await prisma.orders.findUnique({
@@ -824,7 +797,6 @@ export async function completePaymentViaWebhook(
 
   return markOrderPaidAndActivateSubscription(
     order,
-    paymentMethod,
     externalPaymentId,
     recoverFromTerminalStatus,
   )

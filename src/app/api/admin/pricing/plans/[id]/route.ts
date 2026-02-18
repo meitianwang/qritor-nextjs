@@ -56,6 +56,8 @@ export async function PUT(
     if (b.descriptions !== undefined) updateData.descriptions = b.descriptions
     const fI18n = b.featuresI18n ?? b.features_i18n
     if (fI18n !== undefined) updateData.features_i18n = fI18n
+    const aTiers = b.allowedModelTiers ?? b.allowed_model_tiers
+    if (aTiers !== undefined) updateData.allowed_model_tiers = aTiers
     const active = b.isActive ?? b.is_active
     if (active !== undefined) updateData.is_active = active
 

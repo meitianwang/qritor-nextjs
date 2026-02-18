@@ -336,7 +336,6 @@ class StripeService {
 
         const completed = await completePaymentViaWebhook(
           orderNo,
-          'STRIPE',
           session.payment_intent as string | undefined,
         )
         if (!completed) {
@@ -365,7 +364,6 @@ class StripeService {
         const { completePaymentViaWebhook } = await import('./order-service')
         const completed = await completePaymentViaWebhook(
           orderNo,
-          'STRIPE',
           session.payment_intent as string | undefined,
         )
         if (!completed) {
@@ -385,7 +383,6 @@ class StripeService {
 
         const completed = await completePaymentViaWebhook(
           orderNo,
-          'STRIPE',
           paymentIntent.id,
         )
         if (!completed) {

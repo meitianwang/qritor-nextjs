@@ -40,11 +40,19 @@ const PRESET_TAGS: PresetTag[] = [
   { key: 'chinese', label: '中文优化' },
 ]
 
+const MODEL_TIER_OPTIONS = [
+  { value: 'economy', label: '经济型' },
+  { value: 'standard', label: '标准型' },
+  { value: 'advanced', label: '高级型' },
+  { value: 'flagship', label: '旗舰型' },
+] as const
+
 interface LlmConfig {
     id: number
     modelName: string
     displayName: string
     platform?: string
+    modelTier?: string
     tags: string[]
     isDefault: boolean
     enabled: boolean
@@ -58,6 +66,7 @@ interface LlmFormData {
     modelName: string
     platform: PlatformKey | ''
     displayName: string
+    modelTier: string
     tags: string[]
     isDefault: boolean
     enabled: boolean
@@ -87,6 +96,7 @@ function LlmConfigModal({ isOpen, onClose, config, onSave, apiBasePath = '/api',
     modelName: '',
     platform: '',
     displayName: '',
+    modelTier: 'economy',
     tags: [],
     isDefault: false,
     enabled: true,
@@ -103,6 +113,7 @@ function LlmConfigModal({ isOpen, onClose, config, onSave, apiBasePath = '/api',
           modelName: '',
           platform: PLATFORMS[0].key,
           displayName: '',
+          modelTier: 'economy',
           tags: [],
           isDefault: false,
           enabled: true,
@@ -116,6 +127,7 @@ function LlmConfigModal({ isOpen, onClose, config, onSave, apiBasePath = '/api',
           modelName: config.modelName,
           platform: (config.platform || '') as PlatformKey | '',
           displayName: config.displayName || '',
+          modelTier: config.modelTier || 'economy',
           tags: config.tags || [],
           isDefault: config.isDefault || false,
           enabled: config.enabled !== false,
@@ -163,6 +175,7 @@ function LlmConfigModal({ isOpen, onClose, config, onSave, apiBasePath = '/api',
             model_name: formData.modelName.trim(),
             owned_by: formData.platform || undefined,
             display_name: formData.displayName.trim() || undefined,
+            model_tier: formData.modelTier || undefined,
             tags: formData.tags,
             is_default: formData.isDefault ? 1 : 0,
             enabled: formData.enabled ? 1 : 0,
@@ -196,6 +209,7 @@ function LlmConfigModal({ isOpen, onClose, config, onSave, apiBasePath = '/api',
           method: 'PUT',
           body: {
             display_name: formData.displayName.trim() || undefined,
+            model_tier: formData.modelTier || undefined,
             tags: formData.tags || [],
             is_default: formData.isDefault ? 1 : 0,
             enabled: formData.enabled ? 1 : 0,
@@ -372,6 +386,36 @@ function LlmConfigModal({ isOpen, onClose, config, onSave, apiBasePath = '/api',
             </svg>
             模型配置
           </h3>
+          <div className="admin-form-group">
+            <label className="admin-form-label">模型等级</label>
+            <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
+              {MODEL_TIER_OPTIONS.map(tier => {
+                const selected = formData.modelTier === tier.value
+                return (
+                  <button
+                    key={tier.value}
+                    type="button"
+                    onClick={() => setFormData(prev => ({ ...prev, modelTier: tier.value }))}
+                    style={{
+                      padding: '6px 14px',
+                      borderRadius: '6px',
+                      fontSize: '0.85rem',
+                      cursor: 'pointer',
+                      border: selected ? '1px solid rgba(139, 92, 246, 0.5)' : '1px solid rgba(255,255,255,0.1)',
+                      background: selected ? 'rgba(139, 92, 246, 0.3)' : 'rgba(255,255,255,0.05)',
+                      color: selected ? '#c4b5fd' : 'rgba(255,255,255,0.6)',
+                      transition: 'all 0.2s'
+                    }}
+                  >
+                    {tier.label}
+                  </button>
+                )
+              })}
+            </div>
+            <p style={{ fontSize: '0.75rem', color: 'rgba(255,255,255,0.4)', marginTop: '8px' }}>
+              决定哪些订阅计划的用户可以使用此模型
+            </p>
+          </div>
           <div className="admin-form-group" style={{ marginBottom: 0 }}>
             <label className="admin-form-label">上下文窗口 (tokens)</label>
             <input

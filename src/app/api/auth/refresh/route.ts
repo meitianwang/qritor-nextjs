@@ -23,6 +23,9 @@ export async function POST(request: NextRequest) {
 
     // Validate and rotate
     const rotateResult = await authService.refreshToken.validateAndRotate(refreshToken)
+
+    // Fire-and-forget: clean up expired/revoked tokens
+    authService.refreshToken.cleanupExpiredTokens().catch(() => {})
     if (!rotateResult) {
       return apiError(401, 'refresh token 无效或已过期')
     }

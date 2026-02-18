@@ -70,7 +70,7 @@ type GenerateEvent =
   | GenerateCompleteEvent
   | GenerateErrorEvent
 
-interface LlmConfigRow {
+export interface LlmConfigRow {
   id: bigint
   model_name: string
   model_tier: string | null
@@ -252,6 +252,30 @@ class AIGenerateService {
         console.log(
           `根据 model_tier=${modelTier} 选择模型配置 ID=${actualConfigId}`,
         )
+      }
+    }
+
+    // Check model tier access
+    if (userId && actualConfigId) {
+      try {
+        const configForTier = await prisma.llm_config.findUnique({
+          where: { id: BigInt(actualConfigId) },
+          select: { model_tier: true, display_name: true },
+        })
+        const tier = configForTier?.model_tier || 'economy'
+        const { canUserAccessModelTier } = await import('./subscription-service')
+        if (!(await canUserAccessModelTier(BigInt(userId), tier))) {
+          yield {
+            event: 'error',
+            data: {
+              error: `当前订阅计划不支持使用${configForTier?.display_name || '该模型'}，请升级订阅`,
+              code: 'MODEL_TIER_RESTRICTED',
+            },
+          }
+          return
+        }
+      } catch (error) {
+        console.error(`模型等级权限检查异常: ${error}`)
       }
     }
 

@@ -10,14 +10,8 @@ export async function POST(
   try {
     const user = await getCurrentUser(request)
     const { order_no } = await params
-    const body = await request.json()
-    const { paymentMethod } = body
 
-    if (!paymentMethod) {
-      return apiError(400, '缺少 paymentMethod 参数')
-    }
-
-    const order = await payOrder(order_no, paymentMethod, user.id)
+    const order = await payOrder(order_no, user.id)
     return apiSuccess(order)
   } catch (e) {
     if (e instanceof Response || (e && typeof e === 'object' && 'status' in e)) {

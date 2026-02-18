@@ -18,6 +18,13 @@ const SUPPORTED_LANGUAGES: SupportedLanguage[] = [
     { code: 'en', name: 'English', flag: '\u{1F1FA}\u{1F1F8}' }
 ]
 
+const ALL_MODEL_TIERS = [
+    { value: 'economy', label: '经济型' },
+    { value: 'standard', label: '标准型' },
+    { value: 'advanced', label: '高级型' },
+    { value: 'flagship', label: '旗舰型' },
+] as const
+
 interface Plan {
     id: number
     name: string
@@ -31,6 +38,7 @@ interface Plan {
     featuresEn?: string
     descriptions: Record<string, string>
     featuresI18n: Record<string, string>
+    allowedModelTiers?: string[]
     isActive: boolean
 }
 
@@ -53,6 +61,7 @@ interface PlanFormData {
     maxProjects: number
     descriptions: Record<string, string>
     featuresI18n: Record<string, string>
+    allowedModelTiers: string[]
     isActive: boolean
     credits?: number
     validDays?: number
@@ -110,6 +119,7 @@ export default function PricingPage() {
             maxProjects: 1,
             descriptions: {},
             featuresI18n: {},
+            allowedModelTiers: ['economy'],
             isActive: true
         })
         setActiveTab('zh')
@@ -130,7 +140,8 @@ export default function PricingPage() {
         setFormData({
             ...plan,
             descriptions,
-            featuresI18n
+            featuresI18n,
+            allowedModelTiers: Array.isArray(plan.allowedModelTiers) ? plan.allowedModelTiers : ['economy']
         })
         setActiveTab('zh')
         setShowModal(true)
@@ -231,6 +242,17 @@ export default function PricingPage() {
         }))
     }
 
+    // 切换模型等级
+    const toggleModelTier = (tier: string) => {
+        setFormData(prev => {
+            const current = prev.allowedModelTiers || []
+            const next = current.includes(tier)
+                ? current.filter(t => t !== tier)
+                : [...current, tier]
+            return { ...prev, allowedModelTiers: next }
+        })
+    }
+
     if (loading) {
         return <div className="admin-loading"><div className="admin-loading-spinner"></div></div>
     }
@@ -258,6 +280,7 @@ export default function PricingPage() {
                             <th>价格</th>
                             <th>月积分</th>
                             <th>最大项目数</th>
+                            <th>模型等级</th>
                             <th>多语言</th>
                             <th>状态</th>
                             <th>操作</th>
@@ -271,6 +294,21 @@ export default function PricingPage() {
                                 <td>${plan.price}</td>
                                 <td>{plan.monthlyCredits}</td>
                                 <td>{plan.maxProjects === -1 ? '无限' : plan.maxProjects}</td>
+                                <td>
+                                    <div style={{ display: 'flex', gap: '4px', flexWrap: 'wrap' }}>
+                                        {(plan.allowedModelTiers || []).map(tier => {
+                                            const label = ALL_MODEL_TIERS.find(t => t.value === tier)?.label || tier
+                                            return (
+                                                <span key={tier} className="admin-badge admin-badge-info" style={{ fontSize: '11px' }}>
+                                                    {label}
+                                                </span>
+                                            )
+                                        })}
+                                        {(!plan.allowedModelTiers || plan.allowedModelTiers.length === 0) && (
+                                            <span style={{ color: '#666', fontSize: '12px' }}>未设置</span>
+                                        )}
+                                    </div>
+                                </td>
                                 <td>
                                     {/* 显示已配置的语言数量 */}
                                     <span className="admin-badge admin-badge-info" style={{ fontSize: '11px' }}>
@@ -515,6 +553,76 @@ export default function PricingPage() {
                                             已配置: {SUPPORTED_LANGUAGES.filter(lang =>
                                                 formData.descriptions?.[lang.code] || formData.featuresI18n?.[lang.code]
                                             ).map(lang => lang.flag).join(' ') || '暂无'}
+                                        </div>
+                                    </div>
+
+                                    {/* 可用模型等级 */}
+                                    <div className="admin-form-group" style={{ marginTop: '24px' }}>
+                                        <label className="admin-form-label" style={{ marginBottom: '12px', display: 'block' }}>
+                                            可用模型等级
+                                        </label>
+                                        <div style={{
+                                            display: 'flex',
+                                            gap: '8px',
+                                            flexWrap: 'wrap',
+                                            padding: '12px',
+                                            background: 'rgba(255,255,255,0.03)',
+                                            borderRadius: '8px',
+                                            border: '1px solid rgba(255,255,255,0.1)'
+                                        }}>
+                                            {ALL_MODEL_TIERS.map(tier => {
+                                                const checked = formData.allowedModelTiers?.includes(tier.value) ?? false
+                                                return (
+                                                    <label
+                                                        key={tier.value}
+                                                        style={{
+                                                            display: 'flex',
+                                                            alignItems: 'center',
+                                                            gap: '6px',
+                                                            padding: '6px 14px',
+                                                            borderRadius: '6px',
+                                                            cursor: 'pointer',
+                                                            fontSize: '13px',
+                                                            background: checked
+                                                                ? 'linear-gradient(135deg, rgba(20,184,166,0.2), rgba(13,148,136,0.2))'
+                                                                : 'rgba(255,255,255,0.05)',
+                                                            border: checked
+                                                                ? '1px solid rgba(20,184,166,0.5)'
+                                                                : '1px solid rgba(255,255,255,0.1)',
+                                                            color: checked ? '#5eead4' : '#888',
+                                                            transition: 'all 0.2s'
+                                                        }}
+                                                    >
+                                                        <input
+                                                            type="checkbox"
+                                                            checked={checked}
+                                                            onChange={() => toggleModelTier(tier.value)}
+                                                            style={{ display: 'none' }}
+                                                        />
+                                                        <span style={{
+                                                            width: '16px',
+                                                            height: '16px',
+                                                            borderRadius: '4px',
+                                                            border: checked ? '2px solid #14b8a6' : '2px solid #555',
+                                                            background: checked ? '#14b8a6' : 'transparent',
+                                                            display: 'flex',
+                                                            alignItems: 'center',
+                                                            justifyContent: 'center',
+                                                            flexShrink: 0
+                                                        }}>
+                                                            {checked && (
+                                                                <svg viewBox="0 0 12 12" fill="none" stroke="#fff" strokeWidth="2" style={{ width: '10px', height: '10px' }}>
+                                                                    <path d="M2 6l3 3 5-5" strokeLinecap="round" strokeLinejoin="round" />
+                                                                </svg>
+                                                            )}
+                                                        </span>
+                                                        {tier.label}
+                                                    </label>
+                                                )
+                                            })}
+                                        </div>
+                                        <div style={{ marginTop: '8px', fontSize: '12px', color: '#888' }}>
+                                            已选 {formData.allowedModelTiers?.length || 0} / {ALL_MODEL_TIERS.length} 个等级
                                         </div>
                                     </div>
                                 </>

@@ -188,7 +188,6 @@ function CheckoutPageContent() {
                 // Use new card — redirect to Stripe Checkout
                 const payResponse = await authFetch(`/api/orders/${orderNo}/pay`, {
                     method: 'POST',
-                    body: { paymentMethod: 'STRIPE' }
                 })
                 const payData = await payResponse.json()
 

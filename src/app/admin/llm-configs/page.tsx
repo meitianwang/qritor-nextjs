@@ -8,11 +8,19 @@ import LlmConfigModal from '@/components/admin/LlmConfigModal'
 import TestResultModal from '@/components/admin/TestResultModal'
 import ConfirmModal from '@/components/admin/ConfirmModal'
 
+const MODEL_TIER_LABELS: Record<string, string> = {
+    economy: '经济型',
+    standard: '标准型',
+    advanced: '高级型',
+    flagship: '旗舰型',
+}
+
 interface LlmConfig {
     id: number
     modelName: string
     displayName: string
     platform?: string
+    modelTier?: string
     pricingMultiplier: number
     enabled: boolean
     isDefault: boolean
@@ -221,6 +229,12 @@ export default function LlmConfigPage() {
                                             <span className="admin-card-value">{config.platform}</span>
                                         </div>
                                     )}
+                                    <div className="admin-card-row">
+                                        <span className="admin-card-label">模型等级</span>
+                                        <span className="admin-card-value">
+                                            {MODEL_TIER_LABELS[config.modelTier || ''] || config.modelTier || '未设置'}
+                                        </span>
+                                    </div>
                                     <div className="admin-card-row">
                                         <span className="admin-card-label">积分倍率</span>
                                         <span className="admin-card-value">{config.pricingMultiplier}x</span>

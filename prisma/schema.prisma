@@ -124,7 +124,6 @@ model orders {
   plan_name                String    @db.VarChar(50)
   amount                   Decimal   @db.Decimal(10, 2)
   status                   String    @db.VarChar(20)
-  payment_method           String?   @db.VarChar(20)
   stripe_payment_intent_id String?   @db.VarChar(255)
   created_at               DateTime  @db.DateTime(0)
   updated_at               DateTime  @db.DateTime(0)
@@ -196,16 +195,17 @@ model refresh_tokens {
 }
 
 model subscription_plans {
-  id              BigInt   @id @default(autoincrement())
-  name            String   @unique(map: "name") @db.VarChar(20)
-  display_name    String   @db.VarChar(50)
-  price           Decimal  @db.Decimal(10, 2)
-  monthly_credits BigInt
-  max_projects    BigInt
-  descriptions    Json?
-  features_i18n   Json?
-  is_active       Boolean
-  created_at      DateTime @db.DateTime(0)
+  id                  BigInt   @id @default(autoincrement())
+  name                String   @unique(map: "name") @db.VarChar(20)
+  display_name        String   @db.VarChar(50)
+  price               Decimal  @db.Decimal(10, 2)
+  monthly_credits     BigInt
+  max_projects        BigInt
+  descriptions        Json?
+  features_i18n       Json?
+  allowed_model_tiers Json?
+  is_active           Boolean
+  created_at          DateTime @db.DateTime(0)
 
   @@index([id], map: "ix_subscription_plans_id")
 }
@@ -344,23 +344,6 @@ model novel_creation_method {
   @@index([user_id], map: "ix_novel_creation_method_user_id")
 }
 
-model prompt_template {
-  id         BigInt    @id @default(autoincrement())
-  slug       String    @unique(map: "ix_prompt_template_slug") @db.VarChar(100)
-  name       String    @db.VarChar(200)
-  category   String    @db.VarChar(50)
-  content    String    @db.Text
-  variables  String?   @db.Text
-  version    Int
-  is_active  Int       @db.SmallInt
-  created_at DateTime  @db.DateTime(0)
-  updated_at DateTime? @db.DateTime(0)
-
-  @@index([is_active], map: "idx_prompt_template_active")
-  @@index([category], map: "idx_prompt_template_category")
-  @@index([category], map: "ix_prompt_template_category")
-  @@index([id], map: "ix_prompt_template_id")
-}
 
 model user_settings {
   id             BigInt   @id @default(autoincrement())

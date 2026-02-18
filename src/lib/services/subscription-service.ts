@@ -24,6 +24,7 @@ interface PlanInfo {
   maxProjects: number
   description: string | null
   features: string[]
+  allowedModelTiers: string[]
 }
 
 interface SubscriptionDTO {
@@ -37,6 +38,7 @@ interface SubscriptionDTO {
   expireAt?: string | null
   autoRenew?: boolean
   features: string[]
+  allowedModelTiers: string[]
 }
 
 type SubscriptionDbClient = Pick<
@@ -73,6 +75,19 @@ function getFeaturesListFromI18n(
   return []
 }
 
+const DEFAULT_ALLOWED_TIERS = ['economy']
+
+function parseAllowedModelTiers(raw: unknown): string[] {
+  if (Array.isArray(raw)) return raw.filter((v) => typeof v === 'string')
+  if (typeof raw === 'string') {
+    try {
+      const parsed = JSON.parse(raw)
+      if (Array.isArray(parsed)) return parsed.filter((v: unknown) => typeof v === 'string')
+    } catch { /* ignore */ }
+  }
+  return DEFAULT_ALLOWED_TIERS
+}
+
 function toPlanInfo(plan: subscription_plans, lang: string = 'zh'): PlanInfo {
   let description: string | null = null
   if (plan.descriptions && typeof plan.descriptions === 'object') {
@@ -94,6 +109,7 @@ function toPlanInfo(plan: subscription_plans, lang: string = 'zh'): PlanInfo {
     maxProjects: Number(plan.max_projects),
     description,
     features,
+    allowedModelTiers: parseAllowedModelTiers(plan.allowed_model_tiers),
   }
 }
 
@@ -186,6 +202,7 @@ export async function getUserSubscription(
         freePlan.features_i18n as Record<string, unknown> | null,
         'zh',
       ),
+      allowedModelTiers: parseAllowedModelTiers(freePlan.allowed_model_tiers),
     }
   }
 
@@ -208,6 +225,7 @@ export async function getUserSubscription(
       plan.features_i18n as Record<string, unknown> | null,
       'zh',
     ),
+    allowedModelTiers: parseAllowedModelTiers(plan.allowed_model_tiers),
   }
 }
 
@@ -216,6 +234,31 @@ export async function initUserDefaultSubscription(
   db: SubscriptionDbClient = prisma,
 ): Promise<void> {
   await ensureActiveDefaultSubscription(userId, db)
+}
+
+export async function getUserAllowedModelTiers(
+  userId: bigint,
+): Promise<string[]> {
+  await ensureActiveDefaultSubscription(userId)
+
+  const sub = await getActiveSubscription(userId)
+  if (!sub) return DEFAULT_ALLOWED_TIERS
+
+  const plan = await prisma.subscription_plans.findFirst({
+    where: { id: sub.plan_id },
+    select: { allowed_model_tiers: true },
+  })
+  if (!plan) return DEFAULT_ALLOWED_TIERS
+
+  return parseAllowedModelTiers(plan.allowed_model_tiers)
+}
+
+export async function canUserAccessModelTier(
+  userId: bigint,
+  modelTier: string,
+): Promise<boolean> {
+  const allowed = await getUserAllowedModelTiers(userId)
+  return allowed.includes(modelTier)
 }
 
 export async function subscribe(

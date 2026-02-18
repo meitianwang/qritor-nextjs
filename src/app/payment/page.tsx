@@ -84,9 +84,6 @@ function PaymentPageContent() {
             setPaying(true)
             const response = await authFetch(`/api/orders/${orderNo}/pay`, {
                 method: 'POST',
-                body: {
-                    paymentMethod: 'STRIPE'
-                }
             })
             const data = await response.json()
 

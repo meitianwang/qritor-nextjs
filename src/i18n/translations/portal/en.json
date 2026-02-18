@@ -278,7 +278,14 @@
                 "name": "Ultra",
                 "desc": "Unlimited creation"
             }
-        }
+        },
+        "modelTiers": {
+            "economy": "Economy",
+            "standard": "Standard",
+            "advanced": "Advanced",
+            "flagship": "Flagship"
+        },
+        "modelTierRestricted": "Your current plan does not support this model. Please upgrade your subscription."
     },
     "faq": {
         "title": "FAQ",
