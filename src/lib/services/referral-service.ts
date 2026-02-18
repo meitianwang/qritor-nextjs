@@ -1,4 +1,5 @@
 import crypto from 'crypto'
+import { Prisma } from '@/generated/prisma/client'
 import { prisma } from '@/lib/prisma'
 
 // ---------------------------------------------------------------------------
@@ -19,10 +20,9 @@ const REFERRAL_REWARD_EXPIRE_DAYS_KEYS = [
   'referral.reward_expire_days',
   'referral_reward_expire_days',
 ]
-const REFERRAL_MAX_REWARDS_KEYS = [
-  'referral.max_rewards',
-  'referral_max_rewards',
-]
+const REFERRAL_MILESTONE_COUNT_KEYS = ['referral.milestone_count']
+const REFERRAL_MILESTONE_REWARD_KEYS = ['referral.milestone_reward']
+const REFERRAL_MONTHLY_LIMIT_KEYS = ['referral.monthly_limit']
 
 // ---------------------------------------------------------------------------
 // Types
@@ -178,96 +178,128 @@ export async function processReferral(
 
   const code = referralCode.toUpperCase()
 
-  const referral = await prisma.referrals.findFirst({
-    where: { referral_code: code },
-  })
-  if (!referral) return
+  const [
+    inviterRewardCredits,
+    inviteeRewardCredits,
+    rewardExpireDays,
+    monthlyLimit,
+    milestoneCount,
+    milestoneReward,
+  ] = await Promise.all([
+    getNumericConfig(REFERRAL_INVITER_REWARD_KEYS, 50),
+    getNumericConfig(REFERRAL_INVITEE_REWARD_KEYS, 30),
+    getNumericConfig(REFERRAL_REWARD_EXPIRE_DAYS_KEYS, 30),
+    getNumericConfig(REFERRAL_MONTHLY_LIMIT_KEYS, 0),
+    getNumericConfig(REFERRAL_MILESTONE_COUNT_KEYS, 0),
+    getNumericConfig(REFERRAL_MILESTONE_REWARD_KEYS, 0),
+  ])
 
-  // Cannot use own code
-  if (referral.inviter_id === inviteeId) return
+  await prisma.$transaction(
+    async (tx) => {
+      const referral = await tx.referrals.findFirst({
+        where: { referral_code: code },
+      })
+      if (!referral) return
 
-  // Check if already processed
-  const existingCompleted = await prisma.referrals.findFirst({
-    where: {
-      inviter_id: referral.inviter_id,
-      invitee_id: inviteeId,
-      status: 'COMPLETED',
-    },
-  })
-  if (existingCompleted) return
+      // Cannot use own code
+      if (referral.inviter_id === inviteeId) return
 
-  // Create completed referral record
-  const now = new Date()
-  const completed = await prisma.referrals.create({
-    data: {
-      inviter_id: referral.inviter_id,
-      invitee_id: inviteeId,
-      referral_code: `${code}_${inviteeId}`,
-      status: 'COMPLETED',
-      created_at: now,
-      completed_at: now,
-    },
-  })
+      // Serialize reward calculation per inviter to avoid duplicate/missed milestones.
+      await tx.$executeRaw`
+        SELECT id FROM referrals WHERE id = ${referral.id} FOR UPDATE
+      `
 
-  // Check if rewards already granted
-  const existingReward = await prisma.referral_rewards.findFirst({
-    where: {
-      referral_id: completed.id,
-      reward_type: 'INVITER',
-    },
-  })
-  if (existingReward) return
+      // Check if already processed
+      const existingCompleted = await tx.referrals.findFirst({
+        where: {
+          inviter_id: referral.inviter_id,
+          invitee_id: inviteeId,
+          status: 'COMPLETED',
+        },
+      })
+      if (existingCompleted) return
 
-  const [inviterRewardCredits, inviteeRewardCredits, rewardExpireDays, maxRewards] =
-    await Promise.all([
-      getNumericConfig(REFERRAL_INVITER_REWARD_KEYS, 50),
-      getNumericConfig(REFERRAL_INVITEE_REWARD_KEYS, 30),
-      getNumericConfig(REFERRAL_REWARD_EXPIRE_DAYS_KEYS, 30),
-      getNumericConfig(REFERRAL_MAX_REWARDS_KEYS, 0),
-    ])
+      // Create completed referral record
+      const now = new Date()
+      const completed = await tx.referrals.create({
+        data: {
+          inviter_id: referral.inviter_id,
+          invitee_id: inviteeId,
+          referral_code: `${code}_${inviteeId}`,
+          status: 'COMPLETED',
+          created_at: now,
+          completed_at: now,
+        },
+      })
 
-  const inviterRewardCount =
-    maxRewards > 0
-      ? await prisma.referral_rewards.count({
-          where: {
-            user_id: referral.inviter_id,
-            reward_type: 'INVITER',
-          },
+      // 月度限制：统计本自然月邀请人已获得的 INVITER 奖励次数
+      const monthStart = new Date(now.getFullYear(), now.getMonth(), 1)
+      const monthlyInviterCount =
+        monthlyLimit > 0
+          ? await tx.referral_rewards.count({
+              where: {
+                user_id: referral.inviter_id,
+                reward_type: 'INVITER',
+                created_at: { gte: monthStart },
+              },
+            })
+          : 0
+
+      const shouldGrantInviterReward =
+        monthlyLimit <= 0 || monthlyInviterCount < monthlyLimit
+
+      const expireAt = new Date(
+        now.getTime() + rewardExpireDays * 24 * 60 * 60 * 1000,
+      )
+
+      const rewardRows = [
+        {
+          user_id: inviteeId,
+          referral_id: completed.id,
+          reward_type: 'INVITEE',
+          credits: BigInt(inviteeRewardCredits),
+          credits_used: BigInt(0),
+          expire_at: expireAt,
+          created_at: now,
+        },
+      ]
+
+      if (shouldGrantInviterReward) {
+        rewardRows.push({
+          user_id: referral.inviter_id,
+          referral_id: completed.id,
+          reward_type: 'INVITER',
+          credits: BigInt(inviterRewardCredits),
+          credits_used: BigInt(0),
+          expire_at: expireAt,
+          created_at: now,
         })
-      : 0
+      }
 
-  const shouldGrantInviterReward =
-    maxRewards <= 0 || inviterRewardCount < maxRewards
+      await tx.referral_rewards.createMany({
+        data: rewardRows,
+      })
 
-  const expireAt = new Date(
-    now.getTime() + rewardExpireDays * 24 * 60 * 60 * 1000,
-  )
-
-  const rewardRows = [
-    {
-      user_id: inviteeId,
-      referral_id: completed.id,
-      reward_type: 'INVITEE',
-      credits: BigInt(inviteeRewardCredits),
-      credits_used: BigInt(0),
-      expire_at: expireAt,
-      created_at: now,
+      // 里程碑奖励与月度邀请奖励独立：达成人数档位即发放额外奖励。
+      if (milestoneCount > 0 && milestoneReward > 0) {
+        const totalCompleted = await tx.referrals.count({
+          where: { inviter_id: referral.inviter_id, status: 'COMPLETED' },
+        })
+        if (totalCompleted % milestoneCount === 0) {
+          await tx.referral_rewards.create({
+            data: {
+              user_id: referral.inviter_id,
+              referral_id: completed.id,
+              reward_type: 'MILESTONE',
+              credits: BigInt(milestoneReward),
+              credits_used: BigInt(0),
+              expire_at: expireAt,
+              created_at: now,
+            },
+          })
+        }
+      }
     },
-  ]
-
-  if (shouldGrantInviterReward) {
-    rewardRows.push({
-      user_id: referral.inviter_id,
-      referral_id: completed.id,
-      reward_type: 'INVITER',
-      credits: BigInt(inviterRewardCredits),
-      credits_used: BigInt(0),
-      expire_at: expireAt,
-      created_at: now,
-    })
-  }
-
-  await prisma.referral_rewards.createMany({
-    data: rewardRows,
-  })
+    { isolationLevel: Prisma.TransactionIsolationLevel.Serializable },
+  )
 }

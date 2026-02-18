@@ -119,7 +119,12 @@ async function getReferralCredits(
   const used = rewards.reduce((sum, r) => sum + Number(r.credits_used ?? 0), 0)
 
   const items: CreditItem[] = rewards.map((r) => ({
-    description: r.reward_type === 'INVITER' ? '邀请好友奖励' : '受邀注册奖励',
+    description:
+      r.reward_type === 'INVITER'
+        ? '邀请好友奖励'
+        : r.reward_type === 'MILESTONE'
+          ? '邀请里程碑奖励'
+          : '受邀注册奖励',
     total: Number(r.credits),
     remaining: Number(r.credits) - Number(r.credits_used ?? 0),
     expireAt: toISOStringOrNull(r.expire_at),
