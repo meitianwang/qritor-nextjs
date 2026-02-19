@@ -147,11 +147,6 @@ export function generateFieldSchema(field: SchemaField, allModuleTypes: ModuleTy
         property['x-rows'] = field.rows
     }
 
-    // 添加 useForAI 标记
-    if (field.useForAI) {
-        property.useForAI = true
-    }
-
     // 添加 defaultCollapsed 标记
     if (field.defaultCollapsed) {
         property['x-defaultCollapsed'] = true

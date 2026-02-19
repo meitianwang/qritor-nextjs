@@ -215,17 +215,6 @@ const FieldCard: React.FC<FieldCardProps> = ({
                     <label className="flex items-center cursor-pointer">
                         <input
                             type="checkbox"
-                            checked={field.useForAI}
-                            onChange={(e) => onUpdateField(field.id, 'useForAI', e.target.checked)}
-                            className="w-4 h-4 text-primary border-border rounded focus:ring-2 focus:ring-primary"
-                        />
-                        <span className="ml-2 text-sm text-text-secondary whitespace-nowrap">
-                            {t('jsonSchemaEditor.useForAi')}
-                        </span>
-                    </label>
-                    <label className="flex items-center cursor-pointer">
-                        <input
-                            type="checkbox"
                             checked={field.defaultCollapsed}
                             onChange={(e) => onUpdateField(field.id, 'defaultCollapsed', e.target.checked)}
                             className="w-4 h-4 text-primary border-border rounded focus:ring-2 focus:ring-primary"

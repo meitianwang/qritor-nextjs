@@ -1,0 +1,249 @@
+-- 全局道具操作 Skill
+-- novel_creation_method_id = NULL 表示全局可用
+-- 执行方式: mysql -u <user> -p <database> < skill-prop-operations.sql
+
+INSERT INTO skill (name, description, instructions, novel_creation_method_id, is_active, sort_order, created_at)
+VALUES (
+  'prop-operations',
+  '道具全生命周期管理：创建、修改、删除道具，同步维护关系图谱，确保与角色持有、场景分布、剧情线索保持一致',
+  '## 道具操作技能
+
+本技能指导你完成道具的创建、修改、删除操作，并确保道具数据与小说的角色持有、场景分布和剧情线索保持一致。
+
+---
+
+### 核心原则
+
+1. **先调研，后执行**：任何道具操作前必须收集充分的上下文信息
+2. **Schema 驱动**：道具属性必须严格遵循当前项目的 JSON Schema 定义
+3. **关系同步**：道具变动必须同步维护知识图谱中的关系（道具与角色、道具与场景、道具与组织等）
+4. **影响评估**：操作完成后评估对剧情线索、角色能力、伏笔设计的连锁影响
+
+---
+
+### 一、操作前：信息收集阶段
+
+在执行任何道具操作之前，根据操作类型收集必要信息：
+
+#### 1.1 必须调用的工具
+
+| 操作 | 必须调用 | 说明 |
+|------|---------|------|
+| **创建道具** | `get_prop_schema` | 获取道具 JSON Schema，了解必填字段和可选字段 |
+| **创建道具** | `list_props` | 查看已有道具，避免重名或功能重叠 |
+| **修改道具** | `get_prop_detail` | 获取道具当前完整数据 |
+| **删除道具** | `get_prop_detail` | 确认道具信息 |
+| **删除道具** | `query_character_relations` | 查看与该道具相关的所有关系（该工具支持查询所有实体类型） |
+
+#### 1.2 上下文收集（按需）
+
+根据操作的复杂度，选择性调用以下工具补充上下文：
+
+- `get_setting_detail`：查看世界观设定，确保道具的设定与世界观一致（如力量体系、科技水平）
+- `get_plot_overview`：了解主线剧情和关键事件，判断道具在故事中承载的功能
+- `get_story_line_events`：查看具体故事线的事件，了解道具参与的情节
+- `list_characters`：浏览角色列表，了解哪些角色可能持有或使用该道具
+- `list_scenes`：浏览场景列表，了解道具可能存放或出现的地点
+- `list_props`：浏览已有道具，评估道具体系的完整性和平衡性
+- `search_across_chapters`：搜索道具在正文中的出现情况
+
+**判断标准**：
+- 简单操作（如修改道具的某个描述属性）：调研可精简
+- 复杂操作（如创建关键剧情道具、删除核心线索道具）：必须充分调研
+
+---
+
+### 二、创建道具
+
+#### 2.1 流程
+
+```
+get_prop_schema → 收集上下文 → 设计道具属性 → create_prop → 创建关系
+```
+
+#### 2.2 步骤
+
+**Step 1**：调用 `get_prop_schema` 获取 Schema 定义
+
+- 确认所有 `required` 字段
+- 了解每个字段的 `type`、`enum` 约束、`title` 含义
+
+**Step 2**：收集上下文
+
+- 调用 `list_props` 了解已有道具体系
+- 调用 `get_setting_detail` 了解世界观设定，确保道具与世界观契合
+- 调用 `get_plot_overview` 理解剧情需求，判断道具应承载的叙事功能
+- 如有需要，查看相关角色和场景信息
+
+**Step 3**：构建道具数据
+
+- `name` 参数：道具名称（不可与已有道具重复）
+- `properties` 参数：严格按照 Schema 定义构建 JSON 对象
+- 必须填写所有 `required` 字段
+- `enum` 类型字段只能使用预定义的选项值
+- 嵌套 `object` 或 `array` 类型字段需递归遵循子 Schema
+
+**Step 4**：调用 `create_prop` 创建道具
+
+**Step 5**：创建道具关系
+
+分析新道具与其他实体之间应该存在的关系，对每条关系调用 `create_relation`：
+
+**道具 ↔ 角色**（持有/使用关系）：
+- 用 `fromCategory: "prop"`, `toCategory: "character"`（或反向）
+
+**道具 ↔ 场景**（存放/出现关系）：
+- 用 `fromCategory: "prop"`, `toCategory: "scene"`（或反向）
+
+**道具 ↔ 组织**（归属关系）：
+- 用 `fromCategory: "prop"`, `toCategory: "organization"`（或反向）
+
+**道具 ↔ 道具**（关联关系）：
+- 用 `fromCategory: "prop"`, `toCategory: "prop"`
+
+**通用参数**：
+- `fromName`：关系起点实体名
+- `toName`：关系终点实体名
+- `relationType`：关系类型
+- `description`：关系的具体描述
+- `strength`：关系强度（1-5，可选）
+
+#### 2.3 注意事项
+
+- 如果用户提供的信息不足以填写必填字段，**主动询问**用户补充
+- 道具的能力设定要考虑与世界观力量体系的平衡
+- 关系描述要具体，说明持有方式、获取途径、存放条件等
+
+---
+
+### 三、修改道具
+
+#### 3.1 流程
+
+```
+get_prop_detail → 收集上下文 → update_prop → 评估关系影响 → 更新关系
+```
+
+#### 3.2 步骤
+
+**Step 1**：调用 `get_prop_detail` 获取道具当前数据
+
+**Step 2**：评估修改范围
+
+- 如果修改涉及道具的核心属性（能力、归属、状态等），需要额外调研：
+  - `query_character_relations`：查看与该道具相关的所有关系（传入道具名称作为 `characterName` 参数）
+  - `search_across_chapters`：搜索道具在正文中的描写
+  - `get_setting_detail`：检查修改后是否仍符合世界观
+
+**Step 3**：调用 `update_prop`
+
+- `properties` 只需传入要修改的字段（增量更新，系统自动合并）
+- 修改后的值仍必须符合 Schema 约束
+
+**Step 4**：同步更新关系图谱
+
+- 如果修改了道具的归属、能力或状态等，检查现有关系是否需要调整
+- 对需要变更的关系调用 `update_relation` 或 `delete_relation` + `create_relation`
+
+#### 3.3 典型修改场景
+
+| 修改内容 | 关系影响 | 处理方式 |
+|---------|---------|---------|
+| 外观描述等表面属性 | 通常无影响 | 直接 `update_prop` |
+| 持有者变更 | 影响道具与角色的关系 | 删除旧持有关系，创建新持有关系 |
+| 存放位置变更 | 影响道具与场景的关系 | 更新道具与场景的关系 |
+| 能力/效果变化 | 影响持有角色的能力对比 | 检查角色间力量关系是否需要调整 |
+| 道具损毁/消耗 | 影响所有与该道具关联的关系 | 全面审查：持有者失去能力加成、相关伏笔是否需要调整 |
+| 归属组织变更 | 影响道具与组织的关系 | 更新组织归属关系 |
+
+---
+
+### 四、删除道具
+
+#### 4.1 流程
+
+```
+get_prop_detail → query_character_relations → 评估影响 → 清理关系 → delete_prop
+```
+
+#### 4.2 步骤
+
+**Step 1**：调用 `get_prop_detail` 确认道具信息
+
+**Step 2**：调用 `query_character_relations` 获取与该道具相关的所有关系（传入道具名称作为 `characterName` 参数）
+
+**Step 3**：影响评估（删除前必须告知用户）
+
+- 该道具涉及多少条关系连接（持有角色、存放场景、归属组织）
+- 该道具在哪些章节中出现（`search_across_chapters`）
+- 该道具是否参与关键剧情事件或伏笔（`get_plot_overview`）
+- 哪些角色依赖该道具的能力
+- 删除后对剧情线索的影响
+
+**Step 4**：清理关系图谱
+
+- 对该道具的每条关系调用 `delete_relation` 清除
+- 如果道具是角色能力的来源，考虑角色是否需要连带调整
+
+**Step 5**：调用 `delete_prop` 删除道具
+
+#### 4.3 警告
+
+- 删除操作不可逆
+- 关键道具（剧情核心道具、伏笔线索道具）的删除务必与用户充分确认
+
+---
+
+### 五、操作后：影响评估阶段
+
+每次道具操作完成后，评估以下维度的连锁影响并汇报给用户：
+
+#### 5.1 评估清单
+
+| 维度 | 评估内容 | 可能需要的操作 |
+|------|---------|--------------|
+| **持有关系** | 道具归属变动对角色的影响 | `create_relation` / `update_relation` / `delete_relation` |
+| **角色能力** | 道具变动是否影响持有角色的能力表现 | 提醒用户调整角色相关设定 |
+| **剧情线索** | 道具是否承载剧情线索或推动情节 | 提醒用户检查相关剧情设计 |
+| **伏笔设计** | 与该道具相关的伏笔是否受影响 | 提醒用户检查伏笔设计 |
+| **场景分布** | 道具的存放/出现地点是否需要调整 | 更新道具与场景的关系 |
+| **世界观一致性** | 道具设定是否与力量体系、科技水平矛盾 | 提醒用户审查世界观设定 |
+
+#### 5.2 汇报格式
+
+操作完成后，向用户简明扼要地汇报：
+
+1. **已完成的操作**：道具创建/修改/删除 + 关系图谱变更
+2. **潜在影响**：列出可能受影响的维度
+3. **建议后续操作**：如果需要额外处理，给出具体建议
+
+---
+
+### 六、工具速查
+
+| 工具名 | 用途 | 关键参数 |
+|--------|------|---------|
+| `get_prop_schema` | 获取道具 JSON Schema | 无参数 |
+| `list_props` | 列出所有道具 | `keyword?`, `limit?` |
+| `get_prop_detail` | 获取道具详情 | `propName` 或 `propId` |
+| `search_props` | 搜索道具 | `keyword` |
+| `create_prop` | 创建道具 | `name`, `properties?` |
+| `update_prop` | 修改道具 | `propName`/`propId`, `properties` |
+| `delete_prop` | 删除道具 | `propName` 或 `propId` |
+| `query_character_relations` | 查询实体关系（支持所有类型） | `characterName?`（传入道具名）, `relationType?` |
+| `create_relation` | 创建关系 | `fromName`, `toName`, `relationType`, `description?`, `fromCategory?`, `toCategory?` |
+| `update_relation` | 更新关系 | `relationId` 或 `fromName`+`toName`+`relationType` |
+| `delete_relation` | 删除关系 | `relationId` 或 `fromName`+`toName`+`relationType` |
+| `get_plot_overview` | 获取剧情概览 | 无参数 |
+| `get_story_line_events` | 获取故事线事件 | `storyLineName` |
+| `search_across_chapters` | 搜索章节内容 | `keyword` |
+| `get_setting_detail` | 获取世界设定 | `settingName` 或 `settingId` |
+| `list_characters` | 列出所有角色 | `keyword?`, `limit?` |
+| `list_scenes` | 列出所有场景 | `keyword?`, `limit?` |
+| `list_organizations` | 列出所有组织 | `keyword?`, `limit?` |',
+
+  NULL,
+  1,
+  3,
+  NOW()
+);
