@@ -1,11 +1,12 @@
--- 全局道具操作 Skill
--- novel_creation_method_id = NULL 表示全局可用
--- 执行方式: mysql -u <user> -p <database> < skill-prop-operations.sql
+-- 全局道具操作 Skill / Global Prop Operations Skill
+-- novel_creation_method_id = NULL 表示全局可用 / NULL means globally available
+-- 执行方式 / Execute: mysql -u <user> -p <database> < skill-prop-operations.sql
 
-INSERT INTO skill (name, description, instructions, novel_creation_method_id, is_active, sort_order, created_at)
+INSERT INTO skill (name, description, description_en, instructions, instructions_en, novel_creation_method_id, is_active, sort_order, created_at)
 VALUES (
   'prop-operations',
   '道具全生命周期管理：创建、修改、删除道具，同步维护关系图谱，确保与角色持有、场景分布、剧情线索保持一致',
+  'Full lifecycle management of props: create, modify, and delete props while synchronizing the knowledge graph to ensure consistency with character ownership, scene distribution, and plot threads',
   '## 道具操作技能
 
 本技能指导你完成道具的创建、修改、删除操作，并确保道具数据与小说的角色持有、场景分布和剧情线索保持一致。
@@ -242,8 +243,250 @@ get_prop_detail → query_character_relations → 评估影响 → 清理关系 
 | `list_scenes` | 列出所有场景 | `keyword?`, `limit?` |
 | `list_organizations` | 列出所有组织 | `keyword?`, `limit?` |',
 
+  '## Prop Operations Skill
+
+This skill guides you through creating, modifying, and deleting props, ensuring that prop data remains consistent with the novel''s character ownership, scene distribution, and plot threads.
+
+---
+
+### Core Principles
+
+1. **Research before action**: Gather sufficient context before any prop operation
+2. **Schema-driven**: Prop attributes must strictly follow the current project''s JSON Schema definition
+3. **Relationship synchronization**: Prop changes must synchronize relationships in the knowledge graph (prop-character, prop-scene, prop-organization, etc.)
+4. **Impact assessment**: After each operation, assess cascading effects on plot threads, character abilities, and foreshadowing
+
+---
+
+### I. Pre-Operation: Information Gathering Phase
+
+Before executing any prop operation, gather necessary information based on the operation type:
+
+#### 1.1 Required Tool Calls
+
+| Operation | Required Call | Description |
+|-----------|--------------|-------------|
+| **Create prop** | `get_prop_schema` | Retrieve the prop JSON Schema to understand required and optional fields |
+| **Create prop** | `list_props` | Review existing props to avoid duplicate names or overlapping functionality |
+| **Modify prop** | `get_prop_detail` | Retrieve the prop''s current complete data |
+| **Delete prop** | `get_prop_detail` | Confirm prop information |
+| **Delete prop** | `query_character_relations` | Review all relationships involving the prop (this tool supports querying all entity types) |
+
+#### 1.2 Context Gathering (As Needed)
+
+Depending on the complexity of the operation, selectively call the following tools to supplement context:
+
+- `get_setting_detail`: Review world-building settings to ensure the prop aligns with the world (e.g., power systems, technology level)
+- `get_plot_overview`: Understand the main plot and key events to determine the prop''s narrative function
+- `get_story_line_events`: Review specific storyline events to understand the prop''s involvement in the plot
+- `list_characters`: Browse the character list to identify which characters might possess or use the prop
+- `list_scenes`: Browse the scene list to identify where the prop might be stored or appear
+- `list_props`: Browse existing props to evaluate the completeness and balance of the prop system
+- `search_across_chapters`: Search for the prop''s appearances in the manuscript text
+
+**Decision criteria**:
+- Simple operations (e.g., modifying a prop''s descriptive attribute): Research can be minimal
+- Complex operations (e.g., creating a key plot prop, deleting a core clue prop): Thorough research is mandatory
+
+---
+
+### II. Creating Props
+
+#### 2.1 Workflow
+
+```
+get_prop_schema -> gather context -> design prop attributes -> create_prop -> create relationships
+```
+
+#### 2.2 Steps
+
+**Step 1**: Call `get_prop_schema` to retrieve the Schema definition
+
+- Confirm all `required` fields
+- Understand each field''s `type`, `enum` constraints, and `title` meaning
+
+**Step 2**: Gather context
+
+- Call `list_props` to understand the existing prop system
+- Call `get_setting_detail` to review world-building settings and ensure the prop fits the world
+- Call `get_plot_overview` to understand plot requirements and determine the prop''s narrative function
+- If needed, review related character and scene information
+
+**Step 3**: Construct prop data
+
+- `name` parameter: Prop name (must not duplicate existing props)
+- `properties` parameter: Build a JSON object strictly following the Schema definition
+- All `required` fields must be populated
+- `enum` type fields can only use predefined option values
+- Nested `object` or `array` type fields must recursively follow sub-Schemas
+
+**Step 4**: Call `create_prop` to create the prop
+
+**Step 5**: Create prop relationships
+
+Analyze the relationships that should exist between the new prop and other entities, and call `create_relation` for each:
+
+**Prop <-> Character** (ownership/usage relationships):
+- Use `fromCategory: "prop"`, `toCategory: "character"` (or reversed)
+
+**Prop <-> Scene** (storage/appearance relationships):
+- Use `fromCategory: "prop"`, `toCategory: "scene"` (or reversed)
+
+**Prop <-> Organization** (affiliation relationships):
+- Use `fromCategory: "prop"`, `toCategory: "organization"` (or reversed)
+
+**Prop <-> Prop** (association relationships):
+- Use `fromCategory: "prop"`, `toCategory: "prop"`
+
+**Common parameters**:
+- `fromName`: Source entity name of the relationship
+- `toName`: Target entity name of the relationship
+- `relationType`: Relationship type
+- `description`: Specific description of the relationship
+- `strength`: Relationship strength (1-5, optional)
+
+#### 2.3 Important Notes
+
+- If the user provides insufficient information to fill required fields, **proactively ask** the user for additional details
+- Prop ability settings should consider balance with the world''s power system
+- Relationship descriptions should be specific, detailing how the prop is held, how it was obtained, storage conditions, etc.
+
+---
+
+### III. Modifying Props
+
+#### 3.1 Workflow
+
+```
+get_prop_detail -> gather context -> update_prop -> assess relationship impact -> update relationships
+```
+
+#### 3.2 Steps
+
+**Step 1**: Call `get_prop_detail` to retrieve the prop''s current data
+
+**Step 2**: Assess the scope of modifications
+
+- If the modification involves core prop attributes (abilities, ownership, status, etc.), additional research is needed:
+  - `query_character_relations`: Review all relationships involving the prop (pass the prop name as the `characterName` parameter)
+  - `search_across_chapters`: Search for the prop''s descriptions in the manuscript text
+  - `get_setting_detail`: Verify the modification still conforms to the world-building
+
+**Step 3**: Call `update_prop`
+
+- `properties` only needs to contain the fields being modified (incremental update; the system auto-merges)
+- Modified values must still comply with Schema constraints
+
+**Step 4**: Synchronize the knowledge graph
+
+- If ownership, abilities, or status were modified, check whether existing relationships need adjustment
+- For relationships that need changes, call `update_relation` or `delete_relation` + `create_relation`
+
+#### 3.3 Typical Modification Scenarios
+
+| Modification | Relationship Impact | Handling Approach |
+|-------------|-------------------|-------------------|
+| Surface attributes like appearance description | Usually no impact | Directly call `update_prop` |
+| Owner change | Affects prop-character relationships | Delete old ownership relationship, create new one |
+| Storage location change | Affects prop-scene relationships | Update prop-scene relationship |
+| Ability/effect change | Affects owning character''s power balance | Check whether inter-character power relationships need adjustment |
+| Prop destruction/consumption | Affects all relationships linked to the prop | Comprehensive review: owner loses ability bonuses, check if related foreshadowing needs adjustment |
+| Affiliated organization change | Affects prop-organization relationships | Update organization affiliation relationship |
+
+---
+
+### IV. Deleting Props
+
+#### 4.1 Workflow
+
+```
+get_prop_detail -> query_character_relations -> assess impact -> clean up relationships -> delete_prop
+```
+
+#### 4.2 Steps
+
+**Step 1**: Call `get_prop_detail` to confirm prop information
+
+**Step 2**: Call `query_character_relations` to retrieve all relationships involving the prop (pass the prop name as the `characterName` parameter)
+
+**Step 3**: Impact assessment (must inform the user before deletion)
+
+- How many relationship connections the prop has (owning characters, storage scenes, affiliated organizations)
+- Which chapters the prop appears in (`search_across_chapters`)
+- Whether the prop participates in key plot events or foreshadowing (`get_plot_overview`)
+- Which characters depend on the prop''s abilities
+- Impact on plot threads after deletion
+
+**Step 4**: Clean up the knowledge graph
+
+- Call `delete_relation` for each of the prop''s relationships to remove them
+- If the prop is the source of a character''s abilities, consider whether the character needs corresponding adjustments
+
+**Step 5**: Call `delete_prop` to delete the prop
+
+#### 4.3 Warnings
+
+- Deletion is irreversible
+- Deletion of key props (core plot props, foreshadowing clue props) must be thoroughly confirmed with the user
+
+---
+
+### V. Post-Operation: Impact Assessment Phase
+
+After each prop operation, assess cascading effects across the following dimensions and report to the user:
+
+#### 5.1 Assessment Checklist
+
+| Dimension | Assessment Content | Possible Actions Needed |
+|-----------|-------------------|------------------------|
+| **Ownership relationships** | Impact of prop ownership changes on characters | `create_relation` / `update_relation` / `delete_relation` |
+| **Character abilities** | Whether prop changes affect the owning character''s ability performance | Remind user to adjust character-related settings |
+| **Plot threads** | Whether the prop carries plot threads or drives the storyline | Remind user to review related plot design |
+| **Foreshadowing** | Whether foreshadowing related to the prop is affected | Remind user to review foreshadowing design |
+| **Scene distribution** | Whether the prop''s storage/appearance locations need adjustment | Update prop-scene relationships |
+| **World-building consistency** | Whether the prop''s settings conflict with the power system or technology level | Remind user to review world-building settings |
+
+#### 5.2 Report Format
+
+After the operation is complete, provide a concise report to the user:
+
+1. **Completed operations**: Prop creation/modification/deletion + knowledge graph changes
+2. **Potential impact**: List dimensions that may be affected
+3. **Recommended follow-up actions**: If additional handling is needed, provide specific suggestions
+
+---
+
+### VI. Tool Quick Reference
+
+| Tool Name | Purpose | Key Parameters |
+|-----------|---------|---------------|
+| `get_prop_schema` | Retrieve prop JSON Schema | No parameters |
+| `list_props` | List all props | `keyword?`, `limit?` |
+| `get_prop_detail` | Get prop details | `propName` or `propId` |
+| `search_props` | Search props | `keyword` |
+| `create_prop` | Create a prop | `name`, `properties?` |
+| `update_prop` | Modify a prop | `propName`/`propId`, `properties` |
+| `delete_prop` | Delete a prop | `propName` or `propId` |
+| `query_character_relations` | Query entity relationships (supports all types) | `characterName?` (pass prop name), `relationType?` |
+| `create_relation` | Create a relationship | `fromName`, `toName`, `relationType`, `description?`, `fromCategory?`, `toCategory?` |
+| `update_relation` | Update a relationship | `relationId` or `fromName`+`toName`+`relationType` |
+| `delete_relation` | Delete a relationship | `relationId` or `fromName`+`toName`+`relationType` |
+| `get_plot_overview` | Get plot overview | No parameters |
+| `get_story_line_events` | Get storyline events | `storyLineName` |
+| `search_across_chapters` | Search chapter content | `keyword` |
+| `get_setting_detail` | Get world-building settings | `settingName` or `settingId` |
+| `list_characters` | List all characters | `keyword?`, `limit?` |
+| `list_scenes` | List all scenes | `keyword?`, `limit?` |
+| `list_organizations` | List all organizations | `keyword?`, `limit?` |',
+
   NULL,
   1,
   3,
   NOW()
-);
+)
+ON DUPLICATE KEY UPDATE
+  description = VALUES(description),
+  description_en = VALUES(description_en),
+  instructions = VALUES(instructions),
+  instructions_en = VALUES(instructions_en),
+  updated_at = NOW();

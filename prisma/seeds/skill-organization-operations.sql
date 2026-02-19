@@ -1,11 +1,12 @@
--- 全局组织操作 Skill
--- novel_creation_method_id = NULL 表示全局可用
--- 执行方式: mysql -u <user> -p <database> < skill-organization-operations.sql
+-- 全局组织操作 Skill / Global Organization Operations Skill
+-- novel_creation_method_id = NULL 表示全局可用 / NULL means globally available
+-- 执行方式 / Usage: mysql -u <user> -p <database> < skill-organization-operations.sql
 
-INSERT INTO skill (name, description, instructions, novel_creation_method_id, is_active, sort_order, created_at)
+INSERT INTO skill (name, description, description_en, instructions, instructions_en, novel_creation_method_id, is_active, sort_order, created_at)
 VALUES (
   'organization-operations',
   '组织全生命周期管理：创建、修改、删除组织，同步维护关系图谱，确保与势力格局、角色归属、场景据点保持一致',
+  'Full lifecycle management of organizations: create, modify, and delete organizations while synchronizing relationship graphs to ensure consistency with power dynamics, character affiliations, and scene strongholds',
   '## 组织操作技能
 
 本技能指导你完成组织的创建、修改、删除操作，并确保组织数据与小说的势力格局、角色归属和场景据点保持一致。
@@ -239,9 +240,247 @@ get_organization_detail → query_character_relations → 评估影响 → 清�
 | `get_setting_detail` | 获取世界设定 | `settingName` 或 `settingId` |
 | `list_characters` | 列出所有角色 | `keyword?`, `limit?` |
 | `list_scenes` | 列出所有场景 | `keyword?`, `limit?` |',
+  '## Organization Operations Skill
 
+This skill guides you through creating, modifying, and deleting organizations, ensuring that organization data remains consistent with the novel''s power dynamics, character affiliations, and scene strongholds.
+
+---
+
+### Core Principles
+
+1. **Research before action**: Gather sufficient context information before any organization operation
+2. **Schema-driven**: Organization properties must strictly follow the current project''s JSON Schema definition
+3. **Relationship synchronization**: Organization changes must synchronize relationships in the knowledge graph (organization-character, organization-scene, organization-organization, etc.)
+4. **Impact assessment**: After completing an operation, assess cascading effects on power dynamics, character affiliations, and plot conflicts
+
+---
+
+### I. Pre-Operation: Information Gathering Phase
+
+Before executing any organization operation, gather necessary information based on the operation type:
+
+#### 1.1 Required Tool Calls
+
+| Operation | Required Call | Description |
+|-----------|--------------|-------------|
+| **Create organization** | `get_organization_schema` | Get the organization JSON Schema to understand required and optional fields |
+| **Create organization** | `list_organizations` | View existing organizations to avoid name duplication or positioning conflicts |
+| **Modify organization** | `get_organization_detail` | Get the organization''s current complete data |
+| **Delete organization** | `get_organization_detail` | Confirm organization information |
+| **Delete organization** | `query_character_relations` | View all relationships related to the organization (this tool supports querying all entity types) |
+
+#### 1.2 Context Gathering (As Needed)
+
+Based on the operation''s complexity, selectively call the following tools to supplement context:
+
+- `get_setting_detail`: View world-building settings to ensure the organization''s background aligns with the world setting
+- `get_plot_overview`: Understand the main plot and key events to determine the organization''s role in story conflicts
+- `get_story_line_events`: View specific storyline events to understand the organization''s involvement in the plot
+- `list_characters`: Browse the character list to see which characters belong to or are associated with the organization
+- `list_scenes`: Browse the scene list to understand the organization''s strongholds and sphere of influence
+- `list_organizations`: Browse the existing organization roster to assess power balance
+- `search_across_chapters`: Search for the organization''s appearances in the text
+
+**Decision criteria**:
+- Simple operations (e.g., modifying a descriptive attribute of an organization): Research can be streamlined
+- Complex operations (e.g., creating a core faction, deleting a key organization): Thorough research is required
+
+---
+
+### II. Creating an Organization
+
+#### 2.1 Workflow
+
+```
+get_organization_schema -> gather context -> design organization attributes -> create_organization -> create relationships
+```
+
+#### 2.2 Steps
+
+**Step 1**: Call `get_organization_schema` to get the Schema definition
+
+- Confirm all `required` fields
+- Understand each field''s `type`, `enum` constraints, and `title` meaning
+
+**Step 2**: Gather context
+
+- Call `list_organizations` to understand existing organizations and power distribution
+- Call `get_setting_detail` to understand world-building settings and ensure the organization fits the world
+- Call `get_plot_overview` to understand the conflict structure and determine the role the new organization should play
+- If needed, review related character and scene information
+
+**Step 3**: Build organization data
+
+- `name` parameter: Organization name (must not duplicate existing organizations)
+- `properties` parameter: Build a JSON object strictly according to the Schema definition
+- All `required` fields must be filled in
+- `enum` type fields can only use predefined option values
+- Nested `object` or `array` type fields must recursively follow the sub-Schema
+
+**Step 4**: Call `create_organization` to create the organization
+
+**Step 5**: Create organization relationships
+
+Analyze the relationships that should exist between the new organization and other entities, and call `create_relation` for each relationship:
+
+**Organization <-> Character** (membership relationships):
+- Use `fromCategory: "organization"`, `toCategory: "character"` (or reverse)
+
+**Organization <-> Scene** (stronghold relationships):
+- Use `fromCategory: "organization"`, `toCategory: "scene"` (or reverse)
+
+**Organization <-> Organization** (power relationships):
+- Use `fromCategory: "organization"`, `toCategory: "organization"`
+
+**Common parameters**:
+- `fromName`: Source entity name of the relationship
+- `toName`: Target entity name of the relationship
+- `relationType`: Relationship type
+- `description`: Specific description of the relationship
+- `strength`: Relationship strength (1-5, optional)
+
+#### 2.3 Notes
+
+- If the user does not provide enough information to fill required fields, **proactively ask** the user for the missing details
+- The new organization''s power positioning should consider balance and conflict tension with existing organizations
+- Relationship descriptions should be specific, explaining the nature of affiliation, cooperation methods, reasons for hostility, etc.
+
+---
+
+### III. Modifying an Organization
+
+#### 3.1 Workflow
+
+```
+get_organization_detail -> gather context -> update_organization -> assess relationship impact -> update relationships
+```
+
+#### 3.2 Steps
+
+**Step 1**: Call `get_organization_detail` to get the organization''s current data
+
+**Step 2**: Assess the scope of modifications
+
+- If the modification involves core organization attributes (mission, faction, leadership, sphere of influence, etc.), additional research is needed:
+  - `query_character_relations`: View all relationships related to the organization (pass the organization name as the `characterName` parameter)
+  - `search_across_chapters`: Search for the organization''s descriptions in the text
+  - `get_setting_detail`: Check whether the modification still aligns with the world setting
+
+**Step 3**: Call `update_organization`
+
+- `properties` only needs to contain the fields being modified (incremental update, the system auto-merges)
+- Modified values must still comply with Schema constraints
+
+**Step 4**: Synchronize relationship graph updates
+
+- If the organization''s faction, mission, or sphere of influence was modified, check whether existing relationships need adjustment
+- Call `update_relation` or `delete_relation` + `create_relation` for relationships that need changes
+
+#### 3.3 Typical Modification Scenarios
+
+| Modification | Relationship Impact | Handling Approach |
+|-------------|-------------------|------------------|
+| Name, slogan, and other surface attributes | Usually no impact | Directly `update_organization` |
+| Mission or objective changes | May affect relationships with other organizations | Check whether alliance/hostile relationships need adjustment |
+| Faction or stance changes | May overturn multiple power relationships | Full review: alliance->hostile, vassal->independent, etc. |
+| Leadership changes | Affects character-organization relationships | Update leader/member relationships; former leader may be demoted or leave |
+| Sphere of influence expansion/contraction | Affects stronghold and scene relationships | Add/remove scene stronghold relationships |
+| Organization split/merger | Large-scale relationship restructuring | Create new organization + reassign member and stronghold relationships |
+
+---
+
+### IV. Deleting an Organization
+
+#### 4.1 Workflow
+
+```
+get_organization_detail -> query_character_relations -> assess impact -> clean up relationships -> delete_organization
+```
+
+#### 4.2 Steps
+
+**Step 1**: Call `get_organization_detail` to confirm organization information
+
+**Step 2**: Call `query_character_relations` to get all relationships related to the organization (pass the organization name as the `characterName` parameter)
+
+**Step 3**: Impact assessment (must inform the user before deletion)
+
+- How many relationship connections the organization has (member characters, stronghold scenes, power relationships)
+- Which chapters the organization appears in (`search_across_chapters`)
+- Whether the organization participates in key plot conflicts (`get_plot_overview`)
+- Which characters belong to the organization, and how their affiliation should be handled after deletion
+- Which scenes are the organization''s strongholds, and how their ownership should be handled after deletion
+- Whether the power balance with other organizations will be disrupted
+
+**Step 4**: Clean up the relationship graph
+
+- Call `delete_relation` for each of the organization''s relationships to remove them
+- If organization A is deleted and characters formerly belonging to A lose their organizational affiliation, consider whether they need to be transferred to another organization
+- Stronghold scenes may need to be marked as "unoccupied" or transferred to another organization
+
+**Step 5**: Call `delete_organization` to delete the organization
+
+#### 4.3 Warnings
+
+- Deletion is irreversible
+- Deletion of core organizations (main factions, protagonist''s organization) must be thoroughly confirmed with the user
+
+---
+
+### V. Post-Operation: Impact Assessment Phase
+
+After each organization operation, assess the cascading effects across the following dimensions and report to the user:
+
+#### 5.1 Assessment Checklist
+
+| Dimension | Assessment Content | Possible Actions Needed |
+|-----------|-------------------|------------------------|
+| **Power dynamics** | Whether the organization change disrupts the current power balance | Remind user to review overall power distribution |
+| **Character affiliations** | Changes in organization member retention and affiliation | `create_relation` / `update_relation` / `delete_relation` |
+| **Stronghold scenes** | Changes in organization stronghold ownership and control | Update scene-organization relationships |
+| **Plot conflicts** | Impact of organization changes on core conflicts | Remind user to adjust conflict design |
+| **Foreshadowing and clues** | Whether foreshadowing related to the organization is affected | Remind user to review foreshadowing design |
+| **World-building consistency** | Whether organization changes cause setting contradictions | Remind user to review world-building settings |
+
+#### 5.2 Report Format
+
+After completing the operation, report concisely to the user:
+
+1. **Completed operations**: Organization creation/modification/deletion + relationship graph changes
+2. **Potential impact**: List dimensions that may be affected
+3. **Recommended follow-up actions**: If additional processing is needed, provide specific suggestions
+
+---
+
+### VI. Tool Quick Reference
+
+| Tool Name | Purpose | Key Parameters |
+|-----------|---------|---------------|
+| `get_organization_schema` | Get organization JSON Schema | No parameters |
+| `list_organizations` | List all organizations | `keyword?`, `limit?` |
+| `get_organization_detail` | Get organization details | `organizationName` or `organizationId` |
+| `search_organizations` | Search organizations | `keyword` |
+| `create_organization` | Create organization | `name`, `properties?` |
+| `update_organization` | Modify organization | `organizationName`/`organizationId`, `properties` |
+| `delete_organization` | Delete organization | `organizationName` or `organizationId` |
+| `query_character_relations` | Query entity relationships (supports all types) | `characterName?` (pass organization name), `relationType?` |
+| `create_relation` | Create relationship | `fromName`, `toName`, `relationType`, `description?`, `fromCategory?`, `toCategory?` |
+| `update_relation` | Update relationship | `relationId` or `fromName`+`toName`+`relationType` |
+| `delete_relation` | Delete relationship | `relationId` or `fromName`+`toName`+`relationType` |
+| `get_plot_overview` | Get plot overview | No parameters |
+| `get_story_line_events` | Get storyline events | `storyLineName` |
+| `search_across_chapters` | Search chapter content | `keyword` |
+| `get_setting_detail` | Get world setting | `settingName` or `settingId` |
+| `list_characters` | List all characters | `keyword?`, `limit?` |
+| `list_scenes` | List all scenes | `keyword?`, `limit?` |',
   NULL,
   1,
   2,
   NOW()
-);
+)
+ON DUPLICATE KEY UPDATE
+  description = VALUES(description),
+  description_en = VALUES(description_en),
+  instructions = VALUES(instructions),
+  instructions_en = VALUES(instructions_en),
+  updated_at = NOW();

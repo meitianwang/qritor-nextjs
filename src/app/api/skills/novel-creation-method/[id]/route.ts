@@ -7,7 +7,9 @@ function serializeSkill(skill: {
   id: bigint
   name: string
   description: string
+  description_en: string | null
   instructions: string
+  instructions_en: string | null
   novel_creation_method_id: bigint | null
   is_active: boolean
   sort_order: number
@@ -18,7 +20,9 @@ function serializeSkill(skill: {
     id: Number(skill.id),
     name: skill.name,
     description: skill.description,
+    description_en: skill.description_en ?? null,
     instructions: skill.instructions,
+    instructions_en: skill.instructions_en ?? null,
     novelCreationMethodId: skill.novel_creation_method_id ? Number(skill.novel_creation_method_id) : null,
     isActive: skill.is_active,
     sortOrder: skill.sort_order,

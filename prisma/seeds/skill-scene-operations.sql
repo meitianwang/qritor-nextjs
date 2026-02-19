@@ -1,11 +1,12 @@
--- 全局场景操作 Skill
--- novel_creation_method_id = NULL 表示全局可用
--- 执行方式: mysql -u <user> -p <database> < skill-scene-operations.sql
+-- 全局场景操作 Skill / Global Scene Operations Skill
+-- novel_creation_method_id = NULL 表示全局可用 / NULL means globally available
+-- 执行方式 / Usage: mysql -u <user> -p <database> < skill-scene-operations.sql
 
-INSERT INTO skill (name, description, instructions, novel_creation_method_id, is_active, sort_order, created_at)
+INSERT INTO skill (name, description, description_en, instructions, instructions_en, novel_creation_method_id, is_active, sort_order, created_at)
 VALUES (
   'scene-operations',
   '场景全生命周期管理：创建、修改、删除场景，同步维护关系图谱，确保与世界观设定、剧情动线、角色活动保持一致',
+  'Full lifecycle scene management: create, modify, and delete scenes, synchronize the relationship graph, and ensure consistency with world-building settings, plot progression, and character activities',
   '## 场景操作技能
 
 本技能指导你完成场景的创建、修改、删除操作，并确保场景数据与小说的世界观、剧情动线和角色活动保持一致。
@@ -239,8 +240,247 @@ get_scene_detail → query_character_relations → 评估影响 → 清理关系
 | `list_characters` | 列出所有角色 | `keyword?`, `limit?` |
 | `list_organizations` | 列出所有组织 | `keyword?`, `limit?` |',
 
+  '## Scene Operations Skill
+
+This skill guides you through creating, modifying, and deleting scenes, ensuring that scene data remains consistent with the novel''s world-building, plot progression, and character activities.
+
+---
+
+### Core Principles
+
+1. **Research first, act second**: Gather sufficient context before any scene operation
+2. **Schema-driven**: Scene properties must strictly follow the current project''s JSON Schema definition
+3. **Relationship synchronization**: Scene changes must synchronize relationships in the knowledge graph (scene-to-character, scene-to-scene, scene-to-organization, etc.)
+4. **Impact assessment**: After each operation, evaluate cascading effects on plot progression, character activities, and event locations
+
+---
+
+### I. Pre-Operation: Information Gathering Phase
+
+Before executing any scene operation, gather the necessary information based on the operation type:
+
+#### 1.1 Required Tool Calls
+
+| Operation | Required Call | Description |
+|-----------|--------------|-------------|
+| **Create scene** | `get_scene_schema` | Retrieve the scene JSON Schema to understand required and optional fields |
+| **Create scene** | `list_scenes` | Review existing scenes to avoid duplicate names or overlapping functions |
+| **Modify scene** | `get_scene_detail` | Retrieve the scene''s current complete data |
+| **Delete scene** | `get_scene_detail` | Confirm scene information |
+| **Delete scene** | `query_character_relations` | Review all relationships associated with the scene (this tool supports querying all entity types) |
+
+#### 1.2 Context Gathering (As Needed)
+
+Depending on the operation''s complexity, selectively call the following tools to supplement context:
+
+- `get_setting_detail`: Review world-building settings to ensure the scene''s geography, culture, and environment align with the world-building
+- `get_plot_overview`: Understand the main plot and key events to determine the scene''s narrative function in the story
+- `get_story_line_events`: Review specific storyline events to identify which events occur at the relevant scene
+- `list_characters`: Browse the character list to understand which characters may be active at the scene
+- `list_scenes`: Browse existing scenes to evaluate spatial relationships and geographic distribution
+- `search_across_chapters`: Search for the scene''s appearances in the manuscript text
+- `list_organizations`: Review the organization list to understand which organizations are stationed at the relevant scene
+
+**Decision criteria**:
+- Simple operations (e.g., modifying a scene''s descriptive attribute): Research can be streamlined
+- Complex operations (e.g., creating a core scene, deleting a key plot scene): Thorough research is required
+
+---
+
+### II. Creating a Scene
+
+#### 2.1 Workflow
+
+```
+get_scene_schema -> gather context -> design scene properties -> create_scene -> create relationships
+```
+
+#### 2.2 Steps
+
+**Step 1**: Call `get_scene_schema` to retrieve the Schema definition
+
+- Confirm all `required` fields
+- Understand each field''s `type`, `enum` constraints, and `title` meaning
+
+**Step 2**: Gather context
+
+- Call `list_scenes` to understand the existing scene layout
+- Call `get_setting_detail` to understand world-building settings and ensure the scene fits the world-building
+- Call `get_plot_overview` to understand plot requirements and determine the narrative function the scene should serve
+- If needed, review related character and organization information
+
+**Step 3**: Construct scene data
+
+- `name` parameter: Scene name (must not duplicate existing scene names)
+- `properties` parameter: Build a JSON object strictly according to the Schema definition
+- All `required` fields must be populated
+- `enum` type fields may only use predefined option values
+- Nested `object` or `array` type fields must recursively follow their sub-Schemas
+
+**Step 4**: Call `create_scene` to create the scene
+
+**Step 5**: Create scene relationships
+
+Analyze the relationships that should exist between the new scene and other entities, and call `create_relation` for each:
+
+**Scene <-> Scene** (spatial relationships):
+- Use `fromCategory: "scene"`, `toCategory: "scene"` to specify the types
+
+**Scene <-> Character** (activity relationships):
+- Use `fromCategory: "scene"`, `toCategory: "character"` (or reverse)
+
+**Scene <-> Organization** (affiliation relationships):
+- Use `fromCategory: "scene"`, `toCategory: "organization"` (or reverse)
+
+**Common parameters**:
+- `fromName`: Source entity name of the relationship
+- `toName`: Target entity name of the relationship
+- `relationType`: Relationship type
+- `description`: Specific description of the relationship
+- `strength`: Relationship strength (1-5, optional)
+
+#### 2.3 Notes
+
+- If the user provides insufficient information to fill required fields, **proactively ask** the user for additional details
+- Spatial relationships of the new scene must be geographically consistent with existing scenes (e.g., a scene cannot be "adjacent" to one that is thousands of miles away)
+- Relationship descriptions should be specific, detailing spatial distance, travel methods, affiliation nature, etc.
+
+---
+
+### III. Modifying a Scene
+
+#### 3.1 Workflow
+
+```
+get_scene_detail -> gather context -> update_scene -> assess relationship impact -> update relationships
+```
+
+#### 3.2 Steps
+
+**Step 1**: Call `get_scene_detail` to retrieve the scene''s current data
+
+**Step 2**: Assess the scope of modifications
+
+- If modifications involve the scene''s core attributes (geographic location, controlling faction, environmental nature, etc.), additional research is needed:
+  - `query_character_relations`: Review all relationships associated with the scene (pass the scene name as the `characterName` parameter)
+  - `search_across_chapters`: Search for descriptions of the scene in the manuscript text
+  - `get_setting_detail`: Verify that the modifications still conform to the world-building
+
+**Step 3**: Call `update_scene`
+
+- `properties` only needs to include the fields being modified (incremental update; the system merges automatically)
+- Modified values must still comply with Schema constraints
+
+**Step 4**: Synchronize the relationship graph
+
+- If the scene''s affiliation, nature, or spatial position was modified, check whether existing relationships need adjustment
+- For relationships that need changes, call `update_relation` or `delete_relation` + `create_relation`
+
+#### 3.3 Typical Modification Scenarios
+
+| Modification | Relationship Impact | Handling Approach |
+|-------------|--------------------|--------------------|
+| Appearance descriptions, atmosphere, and other surface attributes | Usually no impact | Directly call `update_scene` |
+| Geographic location, spatial layout | Affects spatial relationships with adjacent scenes | Check and update relationType and description between scenes |
+| Controlling faction, ownership changes | Affects scene-to-organization relationships | Update scene-to-organization relationships; may require creating or deleting |
+| Environmental nature changes (e.g., destruction, reconstruction) | Affects all relationships associated with the scene | Full review: whether characters need relocation, whether organizations lose their bases |
+| Accessibility changes (blockade, opening) | Affects transit relationships between scenes | Update relationType with related scenes |
+
+---
+
+### IV. Deleting a Scene
+
+#### 4.1 Workflow
+
+```
+get_scene_detail -> query_character_relations -> assess impact -> clean up relationships -> delete_scene
+```
+
+#### 4.2 Steps
+
+**Step 1**: Call `get_scene_detail` to confirm scene information
+
+**Step 2**: Call `query_character_relations` to retrieve all relationships associated with the scene (pass the scene name as the `characterName` parameter)
+
+**Step 3**: Impact assessment (must inform the user before deletion)
+
+- How many relationship connections the scene has (with characters, organizations, other scenes)
+- Which chapters the scene appears in (`search_across_chapters`)
+- Whether the scene is the location of key plot events (`get_plot_overview`)
+- Which characters use the scene as their residence/activity location
+- Which organizations use the scene as their base
+- The impact on the story''s spatial structure after deletion
+
+**Step 4**: Clean up the relationship graph
+
+- Call `delete_relation` for each relationship associated with the scene
+- If deleting scene A causes scenes B and C (previously connected through A) to lose their transit path, consider whether a direct relationship needs to be created
+- Character residence/activity location relationships need to be transferred to other scenes
+
+**Step 5**: Call `delete_scene` to delete the scene
+
+#### 4.3 Warnings
+
+- Deletion is irreversible
+- Deletion of key scenes (main plot event locations, character gathering places) must be thoroughly confirmed with the user
+
+---
+
+### V. Post-Operation: Impact Assessment Phase
+
+After each scene operation, evaluate cascading effects across the following dimensions and report to the user:
+
+#### 5.1 Assessment Checklist
+
+| Dimension | Assessment Content | Possible Actions Needed |
+|-----------|-------------------|------------------------|
+| **Spatial relationships** | Whether connectivity with adjacent scenes is affected | `create_relation` / `update_relation` / `delete_relation` |
+| **Character activities** | Whether characters active at the scene are affected (residence, workplace) | Remind the user to adjust character scene assignments |
+| **Organization bases** | Whether organizations based at the scene are affected | Remind the user to adjust organization base settings |
+| **Plot events** | Whether events taking place at the scene are affected | Remind the user to check event location settings |
+| **Foreshadowing and clues** | Whether foreshadowing related to the scene is affected (e.g., clues hidden at a location) | Remind the user to review foreshadowing design |
+| **World-building consistency** | Whether scene changes cause geographic or spatial logic contradictions | Remind the user to review world-building settings |
+
+#### 5.2 Report Format
+
+After completing the operation, provide a concise report to the user:
+
+1. **Completed operations**: Scene creation/modification/deletion + relationship graph changes
+2. **Potential impacts**: List the dimensions that may be affected
+3. **Recommended follow-up actions**: If additional handling is needed, provide specific suggestions
+
+---
+
+### VI. Tool Quick Reference
+
+| Tool Name | Purpose | Key Parameters |
+|-----------|---------|----------------|
+| `get_scene_schema` | Retrieve scene JSON Schema | No parameters |
+| `list_scenes` | List all scenes | `keyword?`, `limit?` |
+| `get_scene_detail` | Get scene details | `sceneName` or `sceneId` |
+| `search_scenes` | Search scenes | `keyword` |
+| `create_scene` | Create a scene | `name`, `properties?` |
+| `update_scene` | Modify a scene | `sceneName`/`sceneId`, `properties` |
+| `delete_scene` | Delete a scene | `sceneName` or `sceneId` |
+| `query_character_relations` | Query entity relationships (supports all types) | `characterName?` (pass scene name), `relationType?` |
+| `create_relation` | Create a relationship | `fromName`, `toName`, `relationType`, `description?`, `fromCategory?`, `toCategory?` |
+| `update_relation` | Update a relationship | `relationId` or `fromName`+`toName`+`relationType` |
+| `delete_relation` | Delete a relationship | `relationId` or `fromName`+`toName`+`relationType` |
+| `get_plot_overview` | Get plot overview | No parameters |
+| `get_story_line_events` | Get storyline events | `storyLineName` |
+| `search_across_chapters` | Search chapter content | `keyword` |
+| `get_setting_detail` | Get world-building settings | `settingName` or `settingId` |
+| `list_characters` | List all characters | `keyword?`, `limit?` |
+| `list_organizations` | List all organizations | `keyword?`, `limit?` |',
+
   NULL,
   1,
   1,
   NOW()
-);
+)
+ON DUPLICATE KEY UPDATE
+  description = VALUES(description),
+  description_en = VALUES(description_en),
+  instructions = VALUES(instructions),
+  instructions_en = VALUES(instructions_en),
+  updated_at = NOW();
