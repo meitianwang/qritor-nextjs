@@ -2,7 +2,6 @@
 
 import React, { useState, forwardRef, useImperativeHandle } from 'react'
 import { authFetch } from '@/lib/auth-utils'
-import { useTranslation } from '@/hooks/useTranslation'
 
 interface ModuleTypeData {
   id?: number
@@ -38,7 +37,6 @@ export interface ModuleTypeEditModalRef {
 }
 
 const ModuleTypeEditModal = forwardRef<ModuleTypeEditModalRef, ModuleTypeEditModalProps>(({ onSuccess, showToast }, ref) => {
-  const { t } = useTranslation('studio')
   const [isOpen, setIsOpen] = useState(false)
   const [moduleType, setModuleType] = useState<ModuleTypeData | null>(null)
   const [loading, setLoading] = useState(false)
@@ -170,7 +168,7 @@ const ModuleTypeEditModal = forwardRef<ModuleTypeEditModalRef, ModuleTypeEditMod
 
       if (result.code === 200) {
         if (showToast) {
-          showToast('success', moduleType ? t('moduleTypeModal.updateSuccess') : t('moduleTypeModal.createSuccess'))
+          showToast('success', moduleType ? '更新成功' : '创建成功')
         }
         setIsOpen(false)
         setModuleType(null)
@@ -179,13 +177,13 @@ const ModuleTypeEditModal = forwardRef<ModuleTypeEditModalRef, ModuleTypeEditMod
         }
       } else {
         if (showToast) {
-          showToast('error', result.message || t('moduleTypeModal.operationFailed'))
+          showToast('error', result.message || '操作失败')
         }
       }
     } catch (error) {
       console.error('\u4fdd\u5b58\u6a21\u5757\u7c7b\u578b\u5931\u8d25:', error)
       if (showToast) {
-        showToast('error', t('moduleTypeModal.saveFailed'))
+        showToast('error', '保存失败')
       }
     } finally {
       setLoading(false)
@@ -209,7 +207,7 @@ const ModuleTypeEditModal = forwardRef<ModuleTypeEditModalRef, ModuleTypeEditMod
             <svg style={{ width: '24px', height: '24px', color: '#14b8a6' }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01" />
             </svg>
-            {moduleType ? t('moduleTypeModal.editTitle') : t('moduleTypeModal.createTitle')}
+            {moduleType ? '编辑模块类型' : '新建模块类型'}
           </h3>
           <button className="admin-modal-close" onClick={handleClose} disabled={loading}>&times;</button>
         </div>
@@ -217,26 +215,26 @@ const ModuleTypeEditModal = forwardRef<ModuleTypeEditModalRef, ModuleTypeEditMod
         <form onSubmit={handleSubmit}>
           <div className="admin-form-group">
             <label className="admin-form-label">
-              {t('moduleTypeModal.typeName')} <span style={{ color: '#ef4444' }}>*</span>
+              类型名称 <span style={{ color: '#ef4444' }}>*</span>
             </label>
             <input
               type="text"
               value={formData.name}
               onChange={(e) => setFormData({ ...formData, name: e.target.value })}
               className="admin-form-input"
-              placeholder={t('moduleTypeModal.typeNamePlaceholder')}
+              placeholder="请输入模块类型名称"
               required
               disabled={loading}
             />
           </div>
 
           <div className="admin-form-group">
-            <label className="admin-form-label">{t('moduleTypeModal.description')}</label>
+            <label className="admin-form-label">描述</label>
             <textarea
               value={formData.description}
               onChange={(e) => setFormData({ ...formData, description: e.target.value })}
               className="admin-form-input"
-              placeholder={t('moduleTypeModal.descriptionPlaceholder')}
+              placeholder="请输入模块类型描述"
               rows={3}
               disabled={loading}
               style={{ resize: 'vertical' }}
@@ -244,7 +242,7 @@ const ModuleTypeEditModal = forwardRef<ModuleTypeEditModalRef, ModuleTypeEditMod
           </div>
 
           <div className="admin-form-group">
-            <label className="admin-form-label">{t('moduleTypeModal.entityCategory', { defaultValue: '\u5b9e\u4f53\u5206\u7c7b' })}</label>
+            <label className="admin-form-label">实体分类</label>
             <select
               value={formData.entityCategory || 'other'}
               onChange={(e) => setFormData({ ...formData, entityCategory: e.target.value })}
@@ -259,7 +257,7 @@ const ModuleTypeEditModal = forwardRef<ModuleTypeEditModalRef, ModuleTypeEditMod
               ))}
             </select>
             <p style={{ marginTop: '8px', fontSize: '12px', color: '#888' }}>
-              {t('moduleTypeModal.entityCategoryHelp', { defaultValue: '\u8bbe\u7f6e\u5b9e\u4f53\u5206\u7c7b\u540e\uff0c\u53ef\u7528\u4e8e\u77e5\u8bc6\u56fe\u8c31\u63d0\u53d6\u548c\u5de5\u5177\u9762\u677f\u529f\u80fd' })}
+              设置实体分类后，可用于知识图谱提取和工具面板功能
             </p>
           </div>
 
@@ -274,7 +272,7 @@ const ModuleTypeEditModal = forwardRef<ModuleTypeEditModalRef, ModuleTypeEditMod
                   disabled={loading}
                   style={{ width: '16px', height: '16px' }}
                 />
-                {t('moduleTypeModal.enableAi')}
+                启用 AI
               </label>
               <label style={{ display: 'flex', alignItems: 'center', gap: '8px', color: 'rgba(255,255,255,0.8)', fontSize: '14px', cursor: 'pointer' }}>
                 <input
@@ -284,7 +282,7 @@ const ModuleTypeEditModal = forwardRef<ModuleTypeEditModalRef, ModuleTypeEditMod
                   disabled={loading}
                   style={{ width: '16px', height: '16px' }}
                 />
-                {t('moduleTypeModal.singleton')}
+                单例模式
               </label>
               <label style={{ display: 'flex', alignItems: 'center', gap: '8px', color: 'rgba(255,255,255,0.8)', fontSize: '14px', cursor: 'pointer' }}>
                 <input
@@ -294,7 +292,7 @@ const ModuleTypeEditModal = forwardRef<ModuleTypeEditModalRef, ModuleTypeEditMod
                   disabled={loading}
                   style={{ width: '16px', height: '16px' }}
                 />
-                {t('moduleTypeModal.builtIn')}
+                内置
               </label>
             </div>
           </div>
@@ -306,14 +304,14 @@ const ModuleTypeEditModal = forwardRef<ModuleTypeEditModalRef, ModuleTypeEditMod
               onClick={handleClose}
               disabled={loading}
             >
-              {t('common.cancel')}
+              取消
             </button>
             <button
               type="submit"
               className="admin-btn admin-btn-primary"
               disabled={loading}
             >
-              {loading ? '\u4fdd\u5b58\u4e2d...' : (moduleType ? t('moduleTypeModal.saveChanges') : t('moduleTypeModal.createNow'))}
+              {loading ? '保存中...' : (moduleType ? '保存修改' : '立即创建')}
             </button>
           </div>
         </form>

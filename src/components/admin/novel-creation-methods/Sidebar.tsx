@@ -3,7 +3,6 @@
 import React, { useMemo, useRef, useState } from 'react'
 import ModuleTypeEditModal from '@/components/admin/ModuleTypeEditModal'
 import JsonSchemaEditor from '@/components/admin/JsonSchemaEditor'
-import AiContextEditor from '@/components/admin/AiContextEditor'
 
 interface Category {
     id: string
@@ -30,6 +29,7 @@ interface SectionHeaderProps {
     icon: React.ReactNode
     onAdd?: () => void
     addTitle?: string
+    count?: number
 }
 
 interface ListItemProps {
@@ -75,8 +75,8 @@ const Sidebar: React.FC<SidebarProps> = ({
     onToggleCollapse,
     onUpdateVisibleCategories
 }) => {
-    const [isModuleTypesOpen, setIsModuleTypesOpen] = useState(false)
-    const [isCategoriesOpen, setIsCategoriesOpen] = useState(false)
+    const [isModuleTypesOpen, setIsModuleTypesOpen] = useState(true)
+    const [isCategoriesOpen, setIsCategoriesOpen] = useState(true)
 
     const plotConfig = useMemo(() => {
         if (!method?.plotConfig) return null
@@ -101,29 +101,42 @@ const Sidebar: React.FC<SidebarProps> = ({
     ]
 
 
+    const CATEGORY_STYLES: Record<string, { bg: string; text: string; label: string }> = {
+        character: { bg: 'bg-teal-500/15', text: 'text-teal-400', label: '角色' },
+        scene: { bg: 'bg-cyan-500/15', text: 'text-cyan-400', label: '场景' },
+        organization: { bg: 'bg-amber-500/15', text: 'text-amber-400', label: '组织' },
+        prop: { bg: 'bg-emerald-500/15', text: 'text-emerald-400', label: '道具' },
+        chapter: { bg: 'bg-blue-500/15', text: 'text-blue-400', label: '章节' },
+        setting: { bg: 'bg-rose-500/15', text: 'text-rose-400', label: '设定' },
+    }
+
     // Modals refs
     const moduleTypeModalRef = useRef<any>(null)
     const jsonSchemaEditorRef = useRef<any>(null)
-    const aiContextEditorRef = useRef<any>(null)
 
 
     // Section Toggle Component
-    const SectionHeader: React.FC<SectionHeaderProps> = ({ isOpen, onToggle, title, icon, onAdd, addTitle }) => (
+    const SectionHeader: React.FC<SectionHeaderProps> = ({ isOpen, onToggle, title, icon, onAdd, addTitle, count }) => (
         <div
             className="flex items-center justify-between mb-3 cursor-pointer group"
             onClick={onToggle}
         >
             <div className="flex items-center gap-2">
                 <svg
-                    className={`w-4 h-4 text-white/40 transition-transform duration-200 ${isOpen ? 'rotate-90' : ''}`}
+                    className={`w-3.5 h-3.5 text-white/30 transition-transform duration-200 ${isOpen ? 'rotate-90' : ''}`}
                     fill="none"
                     stroke="currentColor"
                     viewBox="0 0 24 24"
                 >
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7" />
                 </svg>
-                <span className="text-white/60">{icon}</span>
-                <h3 className="text-sm font-semibold text-white/90 group-hover:text-white transition-colors">{title}</h3>
+                <span className="text-white/50">{icon}</span>
+                <h3 className="text-sm font-semibold text-white/80 group-hover:text-white transition-colors">{title}</h3>
+                {count !== undefined && (
+                    <span className="text-[10px] px-1.5 py-0.5 bg-white/[0.06] text-white/40 rounded-full min-w-[20px] text-center">
+                        {count}
+                    </span>
+                )}
             </div>
             {onAdd && (
                 <button
@@ -189,27 +202,26 @@ const Sidebar: React.FC<SidebarProps> = ({
     return (
         <div className="w-80 flex flex-col border-r border-white/[0.04] bg-[#0a0a0a]">
             {/* Method Header */}
-            <div className="relative p-4">
+            <div className="relative p-5 border-b border-white/[0.06]">
                 {/* 折叠按钮 - 右上角 */}
                 <button
                     onClick={onToggleCollapse}
-                    className="absolute top-3 right-3 p-2 text-white/30 hover:text-white/60 hover:bg-white/[0.04] rounded-lg transition-all"
+                    className="absolute top-4 right-4 p-2 text-white/30 hover:text-white/60 hover:bg-white/[0.06] rounded-lg transition-all"
                     title="收起侧边栏"
                 >
                     <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        {/* 面板图标 */}
                         <rect x="3" y="3" width="18" height="18" rx="2" strokeWidth="1.5" />
                         <path strokeLinecap="round" strokeWidth="1.5" d="M9 3v18" />
                     </svg>
                 </button>
 
-                {/* 标题 */}
-                <h1 className="text-base font-medium text-white/90 truncate pr-10 mb-2" title={method?.name}>
+                {/* 标题 - 渐变色 */}
+                <h1 className="text-lg font-semibold truncate pr-10 mb-2 bg-clip-text text-transparent bg-gradient-to-r from-teal-400 to-cyan-400" title={method?.name}>
                     {method ? method.name : '加载中...'}
                 </h1>
 
                 {/* 描述 */}
-                <p className="text-xs text-white/40 line-clamp-2 leading-relaxed">
+                <p className="text-xs text-white/50 line-clamp-2 leading-relaxed">
                     {method?.description || '暂无描述'}
                 </p>
 
@@ -282,6 +294,7 @@ const Sidebar: React.FC<SidebarProps> = ({
                         isOpen={isModuleTypesOpen}
                         onToggle={() => setIsModuleTypesOpen(!isModuleTypesOpen)}
                         title="模块类型"
+                        count={moduleTypes.length}
                         icon={
                             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
@@ -296,23 +309,21 @@ const Sidebar: React.FC<SidebarProps> = ({
                                 <div key={mt.id}>
                                     <div className="group p-2.5 bg-white/[0.02] border border-white/[0.04] rounded-lg text-sm hover:bg-white/[0.04] hover:border-white/[0.08] transition-all mb-1">
                                         <div className="flex items-center justify-between">
-                                            <div className="flex items-center gap-2 min-w-0">
+                                            <div className="flex items-center gap-1.5 min-w-0">
                                                 <span className="font-medium text-white/80 truncate">{mt.name}</span>
+                                                {mt.entityCategory && CATEGORY_STYLES[mt.entityCategory] && (
+                                                    <span className={`text-[10px] px-1.5 py-0.5 rounded ${CATEGORY_STYLES[mt.entityCategory].bg} ${CATEGORY_STYLES[mt.entityCategory].text} flex-shrink-0`}>
+                                                        {CATEGORY_STYLES[mt.entityCategory].label}
+                                                    </span>
+                                                )}
                                                 {mt.singleton && (
-                                                    <span className="text-[10px] px-1.5 py-0.5 bg-cyan-500/15 text-cyan-400 rounded border border-cyan-500/20">单例</span>
+                                                    <span className="text-[10px] px-1.5 py-0.5 bg-cyan-500/15 text-cyan-400 rounded border border-cyan-500/20 flex-shrink-0">单例</span>
                                                 )}
                                             </div>
                                             <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0">
                                                 <ActionButton onClick={() => { onOpenModal?.(); jsonSchemaEditorRef.current?.open(mt) }} color="blue" title="编辑 JSON 定义">
                                                     <span className="text-[10px] font-mono font-bold">&lt;/&gt;</span>
                                                 </ActionButton>
-                                                {mt.enableAi && (
-                                                    <ActionButton onClick={() => { onOpenModal?.(); aiContextEditorRef.current?.open(mt) }} color="orange" title="AI 配置">
-                                                        <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
-                                                        </svg>
-                                                    </ActionButton>
-                                                )}
                                                 <ActionButton onClick={() => { onOpenModal?.(); moduleTypeModalRef.current?.open(mt) }} color="gray" title="编辑基本信息">
                                                     <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
@@ -402,7 +413,6 @@ const Sidebar: React.FC<SidebarProps> = ({
             {/* Modals */}
             <ModuleTypeEditModal ref={moduleTypeModalRef} onSuccess={fetchResources} showToast={showToast} />
             <JsonSchemaEditor ref={jsonSchemaEditorRef} onSave={fetchResources} showToast={showToast} />
-            <AiContextEditor ref={aiContextEditorRef} onSave={fetchResources} showToast={showToast} />
 
         </div>
     )

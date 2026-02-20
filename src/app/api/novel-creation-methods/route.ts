@@ -159,7 +159,6 @@ export async function POST(request: NextRequest) {
               enable_ai: mt.enable_ai,
               singleton: mt.singleton,
               built_in: 0,
-              ai_context_template: mt.ai_context_template,
               entity_category: mt.entity_category,
               created_at: new Date(),
             },

@@ -1,7 +1,6 @@
 'use client'
 
 import React from 'react'
-import { useTranslation } from '@/hooks/useTranslation'
 import type { SchemaField } from '../constants'
 
 interface EditorSettingsProps {
@@ -19,13 +18,11 @@ const EditorSettings: React.FC<EditorSettingsProps> = ({
     setTitleField,
     fields
 }) => {
-    const { t } = useTranslation('studio')
-
     return (
         <details className="mb-4 border border-border rounded-lg bg-bg-secondary overflow-hidden group">
             <summary className="flex items-center justify-between p-4 cursor-pointer bg-bg-tertiary hover:bg-gray-100 dark:hover:bg-dark-bg-active transition-colors list-none select-none">
                 <span className="text-sm font-medium text-text-primary">
-                    {t('jsonSchemaEditor.advancedConfig')}
+                    高级配置
                 </span>
                 <div className="text-text-secondary transition-transform duration-200 group-open:rotate-180">
                     <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -37,14 +34,14 @@ const EditorSettings: React.FC<EditorSettingsProps> = ({
                 {/* 标题字段选择 */}
                 <div>
                     <label className="block text-sm font-medium text-text-primary mb-2">
-                        {t('jsonSchemaEditor.titleField')}
+                        标题字段
                     </label>
                     <select
                         value={titleField}
                         onChange={(e) => setTitleField(e.target.value)}
                         className="admin-form-select"
                     >
-                        <option value="">{t('jsonSchemaEditor.noSet')}</option>
+                        <option value="">未设置</option>
                         {fields.filter(f => f.type === 'string').map(f => (
                             <option key={f.id} value={f.name}>
                                 {f.name}

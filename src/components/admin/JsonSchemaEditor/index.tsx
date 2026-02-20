@@ -12,7 +12,6 @@ import FormPreview from './components/FormPreview'
 import FieldEditor from './components/FieldEditor'
 import EditorSettings from './components/EditorSettings'
 import { authFetch } from '@/lib/auth-utils'
-import { useTranslation } from '@/hooks/useTranslation'
 
 interface JsonSchemaEditorProps {
     onSave?: () => void
@@ -30,7 +29,6 @@ export interface JsonSchemaEditorRef {
  * 提供可视化的 JSON Schema 编辑功能
  */
 const JsonSchemaEditor = forwardRef<JsonSchemaEditorRef, JsonSchemaEditorProps>(({ onSave, onClose, showToast }, ref) => {
-    const { t } = useTranslation('studio')
     const [isOpen, setIsOpen] = useState(false)
     const [moduleType, setModuleType] = useState<Record<string, unknown> | null>(null)
     const [loading, setLoading] = useState(false)
@@ -153,7 +151,7 @@ const JsonSchemaEditor = forwardRef<JsonSchemaEditorRef, JsonSchemaEditorProps>(
         // 验证字段名不能为空
         const emptyNames = fields.filter(f => !f.name.trim())
         if (emptyNames.length > 0) {
-            if (showToast) showToast('warning', t('jsonSchemaEditor.fieldNameRequired'))
+            if (showToast) showToast('warning', '字段名称不能为空')
             return
         }
 
@@ -161,7 +159,7 @@ const JsonSchemaEditor = forwardRef<JsonSchemaEditorRef, JsonSchemaEditorProps>(
         const names = fields.map(f => f.name)
         const duplicates = names.filter((name, index) => names.indexOf(name) !== index)
         if (duplicates.length > 0) {
-            if (showToast) showToast('warning', `${t('jsonSchemaEditor.fieldNameDuplicate')}: ${duplicates.join(', ')}`)
+            if (showToast) showToast('warning', `字段名称重复: ${duplicates.join(', ')}`)
             return
         }
 
@@ -178,7 +176,7 @@ const JsonSchemaEditor = forwardRef<JsonSchemaEditorRef, JsonSchemaEditorProps>(
         try {
             JSON.parse(finalJsonSchemaStr)
         } catch {
-            if (showToast) showToast('error', t('jsonSchemaEditor.jsonFormatError'))
+            if (showToast) showToast('error', 'JSON 格式错误')
             return
         }
 
@@ -196,17 +194,17 @@ const JsonSchemaEditor = forwardRef<JsonSchemaEditorRef, JsonSchemaEditorProps>(
             const result = await response.json()
 
             if (result.code === 200) {
-                if (showToast) showToast('success', t('jsonSchemaEditor.saveSuccess'))
+                if (showToast) showToast('success', '保存成功')
                 setIsOpen(false)
                 if (onSave) {
                     onSave()
                 }
             } else {
-                if (showToast) showToast('error', result.message || t('jsonSchemaEditor.saveFailed'))
+                if (showToast) showToast('error', result.message || '保存失败')
             }
         } catch (error) {
             console.error('保存 JSON Schema 失败:', error)
-            if (showToast) showToast('error', t('jsonSchemaEditor.saveFailedRetry'))
+            if (showToast) showToast('error', '保存失败，请重试')
         } finally {
             setLoading(false)
         }
@@ -224,7 +222,7 @@ const JsonSchemaEditor = forwardRef<JsonSchemaEditorRef, JsonSchemaEditorProps>(
     // 应用 Schema
     const handleApplySchema = () => {
         if (!schemaText.trim()) {
-            setSchemaError(t('jsonSchemaEditor.pleaseEnterSchema'))
+            setSchemaError('请输入 Schema')
             return
         }
         handleParseJsonSchema(schemaText)
@@ -233,7 +231,7 @@ const JsonSchemaEditor = forwardRef<JsonSchemaEditorRef, JsonSchemaEditorProps>(
     const handleCopySchema = async () => {
         const text = schemaText || ''
         if (!text.trim()) {
-            setSchemaError(t('jsonSchemaEditor.pleaseEnterSchema'))
+            setSchemaError('请输入 Schema')
             return
         }
 
@@ -266,9 +264,9 @@ const JsonSchemaEditor = forwardRef<JsonSchemaEditorRef, JsonSchemaEditorProps>(
 
         if (showToast) {
             if (copied) {
-                showToast('success', t('jsonSchemaEditor.copySuccess', '已复制'))
+                showToast('success', '已复制')
             } else {
-                showToast('error', t('jsonSchemaEditor.copyFailed', '复制失败，请手动选中复制'))
+                showToast('error', '复制失败，请手动选中复制')
             }
         }
     }
@@ -285,7 +283,7 @@ const JsonSchemaEditor = forwardRef<JsonSchemaEditorRef, JsonSchemaEditorProps>(
                         <svg style={{ width: '24px', height: '24px', color: '#14b8a6' }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" />
                         </svg>
-                        {t('jsonSchemaEditor.editTitle', { name: moduleType?.name as string })}
+                        编辑 {moduleType?.name as string}
                     </h3>
                     <button className="admin-modal-close" onClick={handleClose}>&times;</button>
                 </div>
@@ -295,7 +293,7 @@ const JsonSchemaEditor = forwardRef<JsonSchemaEditorRef, JsonSchemaEditorProps>(
                     {/* 左侧：基础设置 */}
                     <div className="flex-1 flex flex-col overflow-hidden">
                         <h3 className="text-lg font-semibold text-text-primary mb-3 pb-3 border-b border-border">
-                            {t('jsonSchemaEditor.basicSettings')}
+                            基础设置
                         </h3>
 
                         {/* 编辑器设置面板 */}
@@ -320,7 +318,7 @@ const JsonSchemaEditor = forwardRef<JsonSchemaEditorRef, JsonSchemaEditorProps>(
                     {/* 中间：表单预览 */}
                     <div className="flex-1 flex flex-col overflow-hidden border-l border-r border-border px-4">
                         <h3 className="text-lg font-semibold text-text-primary mb-3 pb-3 border-b border-border">
-                            {t('jsonSchemaEditor.formPreview')}
+                            表单预览
                         </h3>
 
                         <div className="flex-1 overflow-y-auto pr-2">
@@ -344,7 +342,7 @@ const JsonSchemaEditor = forwardRef<JsonSchemaEditorRef, JsonSchemaEditorProps>(
                                             </div>
                                         ) : (
                                             <div className="text-text-secondary">
-                                                {t('jsonSchemaEditor.unsupportedPreview')}: {editorComponent}
+                                                不支持预览: {editorComponent}
                                             </div>
                                         )}
                                     </div>
@@ -364,13 +362,13 @@ const JsonSchemaEditor = forwardRef<JsonSchemaEditorRef, JsonSchemaEditorProps>(
                                     onClick={handleApplySchema}
                                     className="px-3 py-1 text-xs bg-green-600 text-white rounded hover:bg-green-700 transition-colors"
                                 >
-                                    {t('jsonSchemaEditor.apply')}
+                                    应用
                                 </button>
                                 <button
                                     onClick={handleCopySchema}
                                     className="px-3 py-1 text-xs bg-primary text-white rounded hover:bg-primary-hover transition-colors"
                                 >
-                                    {t('jsonSchemaEditor.copy')}
+                                    复制
                                 </button>
                             </div>
                         </div>
@@ -398,7 +396,7 @@ const JsonSchemaEditor = forwardRef<JsonSchemaEditorRef, JsonSchemaEditorProps>(
                             disabled={loading}
                             className="admin-btn admin-btn-secondary"
                         >
-                            {t('common.cancel')}
+                            取消
                         </button>
                         <button
                             onClick={handleSave}
@@ -410,7 +408,7 @@ const JsonSchemaEditor = forwardRef<JsonSchemaEditorRef, JsonSchemaEditorProps>(
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
                                 </svg>
                             )}
-                            {t('common.save')}
+                            保存
                         </button>
                     </div>
                 </div>

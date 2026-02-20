@@ -15,7 +15,6 @@ function serializeModuleType(mt: any) {
     enableAi: mt.enable_ai === 1,
     singleton: mt.singleton === 1,
     builtIn: mt.built_in === 1,
-    aiContextTemplate: mt.ai_context_template,
     entityCategory: mt.entity_category,
     createdAt: mt.created_at.toISOString(),
     updatedAt: mt.updated_at?.toISOString() || null,
@@ -71,8 +70,6 @@ export async function PUT(
     if (body.enableAi !== undefined) updateData.enable_ai = body.enableAi ? 1 : 0
     if (body.singleton !== undefined) updateData.singleton = body.singleton ? 1 : 0
     if (body.builtIn !== undefined) updateData.built_in = body.builtIn ? 1 : 0
-    if (body.aiContextTemplate !== undefined)
-      updateData.ai_context_template = body.aiContextTemplate
     if (body.entityCategory !== undefined)
       updateData.entity_category = body.entityCategory
 

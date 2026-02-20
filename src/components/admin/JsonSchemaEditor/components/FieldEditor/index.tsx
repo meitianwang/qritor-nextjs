@@ -2,7 +2,6 @@
 
 import React from 'react'
 import FieldCard from './FieldCard'
-import { useTranslation } from '@/hooks/useTranslation'
 import type { SchemaField } from '../../constants'
 import type { ModuleType } from '../../utils/schemaGenerator'
 
@@ -29,8 +28,6 @@ const FieldEditor: React.FC<FieldEditorProps> = ({
     onMoveFieldUp,
     onMoveFieldDown
 }) => {
-    const { t } = useTranslation('studio')
-
     return (
         <div className="flex-1 overflow-y-auto pr-2 space-y-4">
             {fields.map((field, index) => (
@@ -55,7 +52,7 @@ const FieldEditor: React.FC<FieldEditorProps> = ({
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
                 </svg>
-                {t('jsonSchemaEditor.addField')}
+                添加字段
             </button>
         </div>
     )

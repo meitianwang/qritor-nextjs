@@ -15,7 +15,6 @@ function serializeModuleType(mt: any) {
     enableAi: mt.enable_ai === 1,
     singleton: mt.singleton === 1,
     builtIn: mt.built_in === 1,
-    aiContextTemplate: mt.ai_context_template,
     entityCategory: mt.entity_category,
     createdAt: mt.created_at.toISOString(),
     updatedAt: mt.updated_at?.toISOString() || null,
