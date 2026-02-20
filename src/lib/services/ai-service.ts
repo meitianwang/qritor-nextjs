@@ -167,23 +167,29 @@ const anthropic = createAnthropic({
 })
 
 const google = createGoogleGenerativeAI({
-  baseURL: 'https://api.aicodemirror.com/api/gemini',
+  baseURL: 'https://api.aicodemirror.com/api/gemini/v1beta',
   apiKey: process.env.GOOGLE_GENERATIVE_AI_API_KEY ?? '',
 })
 
 export function resolveModel(modelName: string, platform?: string | null) {
-  if (!platform || platform === 'vercel') {
-    return gateway(modelName)
-  }
-
-  switch (platform) {
-    case 'anthropic':
-      return anthropic(modelName)
-    case 'google':
-      return google(modelName)
-    default:
+  const resolved = (() => {
+    if (!platform || platform === 'vercel') {
       return gateway(modelName)
-  }
+    }
+    switch (platform) {
+      case 'anthropic':
+        return anthropic(modelName)
+      case 'google':
+        return google(modelName)
+      default:
+        return gateway(modelName)
+    }
+  })()
+
+  console.log(
+    `[resolveModel] model=${modelName}, platform=${platform ?? 'vercel'}, provider=${resolved.provider}, modelId=${resolved.modelId}`,
+  )
+  return resolved
 }
 
 // ---------------------------------------------------------------------------

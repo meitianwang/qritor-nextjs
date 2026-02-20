@@ -155,15 +155,21 @@ export async function POST(request: NextRequest) {
         : {}),
       ...(modelPolicy.maxTokens ? { maxTokens: modelPolicy.maxTokens } : {}),
       ...(modelPolicy.allowTemperature ? { temperature } : {}),
-      onFinish: async ({ totalUsage }) => {
+      onFinish: async ({ totalUsage, steps }) => {
         const inputTokens = totalUsage.inputTokens ?? 0
         const outputTokens = totalUsage.outputTokens ?? 0
         const reasoningTokens =
           totalUsage.outputTokenDetails?.reasoningTokens ??
           totalUsage.reasoningTokens ??
           0
+        // 记录工具调用名（用于排查 mcp_ 前缀问题）
+        const toolCallNames = steps
+          ?.flatMap((s) => s.toolCalls?.map((tc) => tc.toolName) ?? [])
+          .filter(Boolean)
         console.log(
-          `[LLM] Finish: in=${inputTokens}, out=${outputTokens}, reasoning=${reasoningTokens}`,
+          `[LLM] Finish: in=${inputTokens}, out=${outputTokens}, reasoning=${reasoningTokens}${
+            toolCallNames?.length ? `, tools=[${toolCallNames.join(',')}]` : ''
+          }`,
         )
         const {
           inputPricePerM: ip,
