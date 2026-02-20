@@ -42,13 +42,6 @@ interface Workflow {
     [key: string]: any
 }
 
-interface Prompt {
-    id: number
-    name: string
-    novelCreationMethodId: number
-    [key: string]: any
-}
-
 interface ModuleType {
     id: number
     name: string
@@ -88,7 +81,6 @@ function NovelCreationMethodDetailPageContent() {
     const [newWorkflowType, setNewWorkflowType] = useState('save') // 'save' or 'create'
 
     // Data states
-    const [prompts, setPrompts] = useState<Prompt[]>([])
     const [moduleTypes, setModuleTypes] = useState<ModuleType[]>([])
     const [nodeActions, setNodeActions] = useState<NodeAction[]>([])
 
@@ -170,13 +162,11 @@ function NovelCreationMethodDetailPageContent() {
 
     const fetchResources = async () => {
         try {
-            const [promptsRes, moduleTypesRes, workflowsRes] = await Promise.all([
-                authFetch(`/api/prompts/novel-creation-method/${id}`),
+            const [moduleTypesRes, workflowsRes] = await Promise.all([
                 authFetch(`/api/module-types/novel-creation-method/${id}`),
                 authFetch(`/api/workflows/novel-creation-method/${id}/all`)
             ])
 
-            if (promptsRes.ok) setPrompts((await promptsRes.json()).data || [])
             if (moduleTypesRes.ok) setModuleTypes((await moduleTypesRes.json()).data || [])
 
             if (workflowsRes.ok) {
@@ -389,7 +379,6 @@ function NovelCreationMethodDetailPageContent() {
 
         let url = ''
         switch (type) {
-            case 'prompt': url = `/api/prompts/${itemId}`; break
             case 'moduleType': url = `/api/module-types/${itemId}`; break
         }
         try {
@@ -592,7 +581,6 @@ function NovelCreationMethodDetailPageContent() {
                         method={method}
                         nodeActions={nodeActions}
                         moduleTypes={moduleTypes}
-                        prompts={prompts}
                         fetchResources={fetchResources}
                         deletingItem={deletingItem}
                         handleDelete={handleDelete}

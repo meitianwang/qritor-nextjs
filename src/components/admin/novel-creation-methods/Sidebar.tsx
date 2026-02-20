@@ -1,12 +1,9 @@
 'use client'
 
 import React, { useMemo, useRef, useState } from 'react'
-import PromptEditModal from '@/components/admin/PromptEditModal'
 import ModuleTypeEditModal from '@/components/admin/ModuleTypeEditModal'
 import JsonSchemaEditor from '@/components/admin/JsonSchemaEditor'
 import AiContextEditor from '@/components/admin/AiContextEditor'
-import MarkdownPreviewModal from '@/components/admin/MarkdownPreviewModal'
-import { authFetch } from '@/lib/auth-utils'
 
 interface Category {
     id: string
@@ -34,23 +31,10 @@ interface ModuleType {
     [key: string]: any
 }
 
-interface Prompt {
-    id: number
-    name: string
-    [key: string]: any
-}
-
 interface NodeAction {
     action: string
     title: string
     [key: string]: any
-}
-
-interface PreviewModalState {
-    isOpen: boolean
-    title: string
-    content: string
-    loading: boolean
 }
 
 interface SectionHeaderProps {
@@ -80,7 +64,6 @@ interface SidebarProps {
     method: Record<string, any> | null
     nodeActions: NodeAction[]
     moduleTypes: ModuleType[]
-    prompts: Prompt[]
     fetchResources: () => Promise<void>
     deletingItem: DeletingItem | null
     handleDelete: (type: string, id: number) => void
@@ -102,7 +85,6 @@ const Sidebar: React.FC<SidebarProps> = ({
     method,
     nodeActions,
     moduleTypes,
-    prompts,
     fetchResources,
     deletingItem,
     handleDelete,
@@ -122,7 +104,6 @@ const Sidebar: React.FC<SidebarProps> = ({
 }) => {
     const [isWorkflowsOpen, setIsWorkflowsOpen] = useState(false)
     const [isModuleTypesOpen, setIsModuleTypesOpen] = useState(false)
-    const [isPromptsOpen, setIsPromptsOpen] = useState(false)
     const [isCategoriesOpen, setIsCategoriesOpen] = useState(false)
 
     const plotConfig = useMemo(() => {
@@ -149,56 +130,9 @@ const Sidebar: React.FC<SidebarProps> = ({
 
 
     // Modals refs
-    const promptModalRef = useRef<any>(null)
     const moduleTypeModalRef = useRef<any>(null)
     const jsonSchemaEditorRef = useRef<any>(null)
     const aiContextEditorRef = useRef<any>(null)
-
-
-    // Preview Modal State
-    const [previewModal, setPreviewModal] = useState<PreviewModalState>({
-        isOpen: false,
-        title: '',
-        content: '',
-        loading: false
-    })
-
-
-
-    const handleViewPrompt = async (prompt: Prompt) => {
-        onOpenModal?.()
-        setPreviewModal({
-            isOpen: true,
-            title: prompt.name,
-            content: '',
-            loading: true
-        })
-
-        try {
-            const response = await authFetch(`/api/prompts/${prompt.id}/markdown`)
-            const result = await response.json()
-            if (result.code === 200) {
-                setPreviewModal(prev => ({
-                    ...prev,
-                    content: result.data,
-                    loading: false
-                }))
-            } else {
-                setPreviewModal(prev => ({
-                    ...prev,
-                    content: '加载失败' + ': ' + result.message,
-                    loading: false
-                }))
-            }
-        } catch (error) {
-            setPreviewModal(prev => ({
-                ...prev,
-                content: '加载失败' + ': ' + (error as Error).message,
-                loading: false
-            }))
-        }
-    }
-
 
 
     const handleDragStart = (event: React.DragEvent, nodeAction: NodeAction) => {
@@ -526,56 +460,6 @@ const Sidebar: React.FC<SidebarProps> = ({
                     )}
                 </div>
 
-                {/* Prompts Section */}
-                <div>
-                    <SectionHeader
-                        isOpen={isPromptsOpen}
-                        onToggle={() => setIsPromptsOpen(!isPromptsOpen)}
-                        title="提示词"
-                        icon={
-                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />
-                            </svg>
-                        }
-                        onAdd={() => { onOpenModal?.(); promptModalRef.current?.open({ novelCreationMethodId: method?.id }); }}
-                        addTitle="新建提示词"
-                    />
-                    {isPromptsOpen && (
-                        <div className="space-y-2">
-                            {prompts.map(p => (
-                                <ListItem key={p.id} onClick={() => { }}>
-                                    <div className="flex items-center justify-between">
-                                        <span className="font-medium text-white/80 truncate">{p.name}</span>
-                                        <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
-                                            <ActionButton onClick={() => handleViewPrompt(p)} color="gray" title="查看内容">
-                                                <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                                                </svg>
-                                            </ActionButton>
-                                            <ActionButton onClick={() => { onOpenModal?.(); promptModalRef.current?.open(p) }} color="blue" title="编辑">
-                                                <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
-                                                </svg>
-                                            </ActionButton>
-                                            {deletingItem?.type === 'prompt' && deletingItem?.id === p.id ? (
-                                                <span className="text-xs text-white/40 px-1 animate-pulse">删除中...</span>
-                                            ) : (
-                                                <ActionButton onClick={() => handleDelete('prompt', p.id)} color="red" title="删除">
-                                                    <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                                                    </svg>
-                                                </ActionButton>
-                                            )}
-                                        </div>
-                                    </div>
-                                </ListItem>
-                            ))}
-                            {prompts.length === 0 && <div className="text-xs text-white/30 text-center py-4">暂无提示词</div>}
-                        </div>
-                    )}
-                </div>
-
                 {/* Categories Config Section */}
                 <div>
                     <SectionHeader
@@ -638,16 +522,7 @@ const Sidebar: React.FC<SidebarProps> = ({
                 </div>
             </div>
 
-            <MarkdownPreviewModal
-                isOpen={previewModal.isOpen}
-                onClose={() => setPreviewModal(prev => ({ ...prev, isOpen: false }))}
-                title={previewModal.title}
-                content={previewModal.content}
-                loading={previewModal.loading}
-            />
-
             {/* Modals */}
-            <PromptEditModal ref={promptModalRef} onSuccess={fetchResources} showToast={showToast} />
             <ModuleTypeEditModal ref={moduleTypeModalRef} onSuccess={fetchResources} showToast={showToast} />
             <JsonSchemaEditor ref={jsonSchemaEditorRef} onSave={fetchResources} showToast={showToast} />
             <AiContextEditor ref={aiContextEditorRef} onSave={fetchResources} showToast={showToast} />

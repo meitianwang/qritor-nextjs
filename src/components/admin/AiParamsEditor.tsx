@@ -7,14 +7,8 @@ import { useTranslation } from '@/hooks/useTranslation'
 interface ModuleTypeData {
   id: number
   name?: string
-  promptId?: number | null
   temperature?: number
   [key: string]: unknown
-}
-
-interface Prompt {
-  id: number
-  name: string
 }
 
 interface LlmConfig {
@@ -25,7 +19,6 @@ interface LlmConfig {
 }
 
 interface FormData {
-  promptId: string
   temperature: number | string
   maxTokens: string
   timeout: string
@@ -49,9 +42,7 @@ const AiParamsEditor = forwardRef<AiParamsEditorRef, AiParamsEditorProps>(({ onS
   const [moduleType, setModuleType] = useState<ModuleTypeData | null>(null)
   const [loading, setLoading] = useState(false)
   const [llmConfigs, setLlmConfigs] = useState<LlmConfig[]>([])
-  const [prompts, setPrompts] = useState<Prompt[]>([])
   const [formData, setFormData] = useState<FormData>({
-    promptId: '',
     temperature: 0.7,
     maxTokens: '',
     timeout: '',
@@ -63,7 +54,6 @@ const AiParamsEditor = forwardRef<AiParamsEditorRef, AiParamsEditorProps>(({ onS
       setModuleType(data)
       if (data) {
         setFormData({
-          promptId: data.promptId ? String(data.promptId) : '',
           temperature: data.temperature !== undefined ? data.temperature : 0.7,
           maxTokens: '',
           timeout: '',
@@ -71,7 +61,6 @@ const AiParamsEditor = forwardRef<AiParamsEditorRef, AiParamsEditorProps>(({ onS
         })
       } else {
         setFormData({
-          promptId: '',
           temperature: 0.7,
           maxTokens: '',
           timeout: '',
@@ -80,7 +69,6 @@ const AiParamsEditor = forwardRef<AiParamsEditorRef, AiParamsEditorProps>(({ onS
       }
       setIsOpen(true)
       fetchLlmConfigs()
-      fetchPrompts()
     },
     close: () => {
       setIsOpen(false)
@@ -100,18 +88,6 @@ const AiParamsEditor = forwardRef<AiParamsEditorRef, AiParamsEditorProps>(({ onS
     }
   }
 
-  const fetchPrompts = async () => {
-    try {
-      const response = await authFetch('/api/prompts')
-      const data = await response.json()
-      if (data.code === 200) {
-        setPrompts(data.data || [])
-      }
-    } catch (error) {
-      console.error('\u83b7\u53d6\u63d0\u793a\u8bcd\u5217\u8868\u5931\u8d25:', error)
-    }
-  }
-
   const handleSave = async () => {
     if (!moduleType) return
     setLoading(true)
@@ -121,8 +97,7 @@ const AiParamsEditor = forwardRef<AiParamsEditorRef, AiParamsEditorProps>(({ onS
         method: 'PUT',
         body: {
           ...moduleType,
-          temperature: parseFloat(String(formData.temperature)),
-          promptId: formData.promptId ? parseInt(formData.promptId) : null
+          temperature: parseFloat(String(formData.temperature))
         }
       })
 
@@ -173,26 +148,6 @@ const AiParamsEditor = forwardRef<AiParamsEditorRef, AiParamsEditorProps>(({ onS
         <p style={{ color: 'rgba(255,255,255,0.5)', fontSize: '0.9rem', marginBottom: '24px' }}>
           {t('aiParamsEditor.description')}
         </p>
-
-        <div className="admin-form-group">
-          <label className="admin-form-label">{t('aiParamsEditor.promptTemplate')}</label>
-          <select
-            value={formData.promptId}
-            onChange={(e) => setFormData({ ...formData, promptId: e.target.value })}
-            className="admin-form-input"
-            style={{ cursor: 'pointer' }}
-          >
-            <option value="">{t('aiParamsEditor.selectPromptTemplate')}</option>
-            {prompts.map((prompt) => (
-              <option key={prompt.id} value={prompt.id}>
-                {prompt.name}
-              </option>
-            ))}
-          </select>
-          <p style={{ marginTop: '8px', fontSize: '12px', color: '#888' }}>
-            {t('aiParamsEditor.promptTemplateDesc')}
-          </p>
-        </div>
 
         <div className="admin-form-group">
           <label className="admin-form-label">{t('aiParamsEditor.temperature')}</label>

@@ -9,7 +9,6 @@ interface ModuleTypeData {
   name?: string
   description?: string
   temperature?: number
-  promptId?: number | null
   enableAi?: boolean
   singleton?: boolean
   builtIn?: boolean
@@ -17,16 +16,10 @@ interface ModuleTypeData {
   entityCategory?: string | null
 }
 
-interface Prompt {
-  id: number
-  name: string
-}
-
 interface FormData {
   name: string
   description: string
   temperature: number
-  promptId: number | null
   enableAi: boolean
   singleton: boolean
   builtIn: boolean
@@ -49,13 +42,11 @@ const ModuleTypeEditModal = forwardRef<ModuleTypeEditModalRef, ModuleTypeEditMod
   const [isOpen, setIsOpen] = useState(false)
   const [moduleType, setModuleType] = useState<ModuleTypeData | null>(null)
   const [loading, setLoading] = useState(false)
-  const [prompts, setPrompts] = useState<Prompt[]>([])
   const [entityCategories, setEntityCategories] = useState<string[]>([])
   const [formData, setFormData] = useState<FormData>({
     name: '',
     description: '',
     temperature: 0.7,
-    promptId: null,
     enableAi: true,
     singleton: false,
     builtIn: false,
@@ -81,22 +72,6 @@ const ModuleTypeEditModal = forwardRef<ModuleTypeEditModalRef, ModuleTypeEditMod
         return '\u8bbe\u5b9a'
       default:
         return value
-    }
-  }
-
-  // 获取提示词列表
-  const fetchPrompts = async (methodId: number | null) => {
-    try {
-      const url = methodId
-        ? `/api/prompts/novel-creation-method/${methodId}`
-        : '/api/prompts'
-      const response = await authFetch(url)
-      const data = await response.json()
-      if (data.code === 200) {
-        setPrompts(data.data || [])
-      }
-    } catch (error) {
-      console.error('\u83b7\u53d6\u63d0\u793a\u8bcd\u5217\u8868\u5931\u8d25:', error)
     }
   }
 
@@ -142,7 +117,6 @@ const ModuleTypeEditModal = forwardRef<ModuleTypeEditModalRef, ModuleTypeEditMod
         methodId = data.novelCreationMethodId || null
       }
 
-      fetchPrompts(methodId)
       fetchEntityCategories(methodId)
 
       if (isEdit && data) {
@@ -151,7 +125,6 @@ const ModuleTypeEditModal = forwardRef<ModuleTypeEditModalRef, ModuleTypeEditMod
           name: data.name || '',
           description: data.description || '',
           temperature: data.temperature !== undefined ? data.temperature : 0.7,
-          promptId: data.promptId || null,
           enableAi: data.enableAi !== undefined ? data.enableAi : true,
           singleton: data.singleton || false,
           builtIn: data.builtIn || false,
@@ -164,7 +137,6 @@ const ModuleTypeEditModal = forwardRef<ModuleTypeEditModalRef, ModuleTypeEditMod
           name: '',
           description: '',
           temperature: 0.7,
-          promptId: null,
           enableAi: true,
           singleton: false,
           builtIn: false,
@@ -326,26 +298,6 @@ const ModuleTypeEditModal = forwardRef<ModuleTypeEditModalRef, ModuleTypeEditMod
               </label>
             </div>
           </div>
-
-          {formData.enableAi && (
-            <div className="admin-form-group">
-              <label className="admin-form-label">{t('moduleTypeModal.defaultPromptTemplate')}</label>
-              <select
-                value={formData.promptId || ''}
-                onChange={(e) => setFormData({ ...formData, promptId: e.target.value ? parseInt(e.target.value) : null })}
-                className="admin-form-input"
-                disabled={loading}
-                style={{ cursor: 'pointer' }}
-              >
-                <option value="">{t('moduleTypeModal.selectPromptTemplate')}</option>
-                {prompts.map((prompt) => (
-                  <option key={prompt.id} value={prompt.id}>
-                    {prompt.name}
-                  </option>
-                ))}
-              </select>
-            </div>
-          )}
 
           <div style={{ display: 'flex', gap: '12px', justifyContent: 'flex-end', marginTop: '24px' }}>
             <button

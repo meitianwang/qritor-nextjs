@@ -9,7 +9,6 @@ function serializeModuleType(mt: any) {
     description: mt.description,
     jsonSchema: mt.json_schema,
     temperature: mt.temperature,
-    promptId: mt.prompt_id ? Number(mt.prompt_id) : null,
     novelCreationMethodId: mt.novel_creation_method_id
       ? Number(mt.novel_creation_method_id)
       : null,
@@ -53,7 +52,6 @@ export async function POST(request: NextRequest) {
         description: body.description || null,
         json_schema: body.jsonSchema || null,
         temperature: body.temperature ?? null,
-        prompt_id: body.promptId ? BigInt(body.promptId) : null,
         novel_creation_method_id: body.novelCreationMethodId
           ? BigInt(body.novelCreationMethodId)
           : null,

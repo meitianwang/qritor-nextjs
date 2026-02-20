@@ -177,39 +177,11 @@ export async function POST(request: NextRequest) {
           }
         }
 
-        // Copy prompts
-        const templatePrompts = await tx.prompt.findMany({
-          where: { novel_creation_method_id: template.id },
-        })
-        const promptIdMap: Record<string, bigint> = {}
-        for (const p of templatePrompts) {
-          const newP = await tx.prompt.create({
-            data: {
-              name: p.name,
-              role: p.role,
-              context: p.context,
-              workflow: p.workflow,
-              constraints: p.constraints,
-              format: p.format,
-              goal: p.goal,
-              positive_example: p.positive_example,
-              negative_example: p.negative_example,
-              novel_creation_method_id: newMethod.id,
-              built_in: 0,
-              created_at: new Date(),
-            },
-          })
-          promptIdMap[p.id.toString()] = newP.id
-        }
-
         // Copy module_types
         const templateModuleTypes = await tx.module_type.findMany({
           where: { novel_creation_method_id: template.id },
         })
         for (const mt of templateModuleTypes) {
-          const newPromptId = mt.prompt_id
-            ? promptIdMap[mt.prompt_id.toString()] || null
-            : null
           const newSaveWorkflowId = mt.save_workflow_id
             ? workflowIdMap[mt.save_workflow_id.toString()] || null
             : null
@@ -223,7 +195,6 @@ export async function POST(request: NextRequest) {
               description: mt.description,
               json_schema: mt.json_schema,
               temperature: mt.temperature,
-              prompt_id: newPromptId,
               novel_creation_method_id: newMethod.id,
               save_workflow_id: newSaveWorkflowId,
               create_workflow_id: newCreateWorkflowId,

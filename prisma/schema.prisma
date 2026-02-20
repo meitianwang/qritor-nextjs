@@ -87,7 +87,6 @@ model module_type {
   description              String?   @db.VarChar(1000)
   json_schema              String?   @db.Text
   temperature              Float?    @db.Float
-  prompt_id                BigInt?
   novel_creation_method_id BigInt?
   save_workflow_id         BigInt?
   create_workflow_id       BigInt?
@@ -118,26 +117,6 @@ model orders {
   expired_at               DateTime  @db.DateTime(0)
 
   @@index([id], map: "ix_orders_id")
-}
-
-model prompt {
-  id                       BigInt    @id @default(autoincrement())
-  name                     String    @db.VarChar(200)
-  role                     String?   @db.Text
-  context                  String?   @db.Text
-  workflow                 String?   @db.Text
-  constraints              String?   @db.Text
-  format                   String?   @db.Text
-  goal                     String?   @db.Text
-  positive_example         String?   @db.Text
-  negative_example         String?   @db.Text
-  novel_creation_method_id BigInt?
-  built_in                 Int       @db.SmallInt
-  created_at               DateTime  @db.DateTime(0)
-  updated_at               DateTime? @db.DateTime(0)
-
-  @@index([name], map: "idx_prompt_name")
-  @@index([id], map: "ix_prompt_id")
 }
 
 model referral_rewards {

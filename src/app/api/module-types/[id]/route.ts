@@ -9,7 +9,6 @@ function serializeModuleType(mt: any) {
     description: mt.description,
     jsonSchema: mt.json_schema,
     temperature: mt.temperature,
-    promptId: mt.prompt_id ? Number(mt.prompt_id) : null,
     novelCreationMethodId: mt.novel_creation_method_id
       ? Number(mt.novel_creation_method_id)
       : null,
@@ -69,8 +68,6 @@ export async function PUT(
     if (body.description !== undefined) updateData.description = body.description
     if (body.jsonSchema !== undefined) updateData.json_schema = body.jsonSchema
     if (body.temperature !== undefined) updateData.temperature = body.temperature
-    if (body.promptId !== undefined)
-      updateData.prompt_id = body.promptId ? BigInt(body.promptId) : null
     if (body.novelCreationMethodId !== undefined)
       updateData.novel_creation_method_id = body.novelCreationMethodId
         ? BigInt(body.novelCreationMethodId)

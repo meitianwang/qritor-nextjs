@@ -71,14 +71,6 @@ export async function GET(request: NextRequest) {
             defaultValue: null,
             options: llmOptions,
           },
-          {
-            name: 'promptName',
-            label: 'Prompt名称',
-            type: 'text',
-            required: false,
-            defaultValue: null,
-            options: null,
-          },
         ],
       },
       {
