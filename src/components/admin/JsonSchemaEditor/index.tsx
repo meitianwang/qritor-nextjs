@@ -54,7 +54,7 @@ const JsonSchemaEditor = forwardRef<JsonSchemaEditorRef, JsonSchemaEditorProps>(
     const fetchAllModuleTypes = async (novelCreationMethodId?: string) => {
         try {
             const url = novelCreationMethodId
-                ? `/api/module-types/creation-method/${novelCreationMethodId}`
+                ? `/api/module-types/novel-creation-method/${novelCreationMethodId}`
                 : '/api/module-types'
 
             const response = await authFetch(url)
