@@ -3,7 +3,7 @@
 import { useState, useEffect, ChangeEvent } from 'react'
 import { adminFetch } from '@/lib/admin-utils'
 
-// 平台枚举
+// 平台枚举（决定使用哪个 SDK）
 const PLATFORMS = [
   { key: 'vercel', label: 'Vercel AI Gateway' },
   { key: 'anthropic', label: 'Anthropic' },
@@ -11,6 +11,18 @@ const PLATFORMS = [
 ] as const
 
 type PlatformKey = typeof PLATFORMS[number]['key']
+
+// Provider 枚举（AI 提供商，用于匹配 reasoning 策略）
+const PROVIDERS = [
+  { key: 'anthropic', label: 'Anthropic' },
+  { key: 'google', label: 'Google' },
+  { key: 'openai', label: 'OpenAI' },
+  { key: 'deepseek', label: 'DeepSeek' },
+  { key: 'xai', label: 'xAI' },
+  { key: 'moonshotai', label: 'Moonshot AI' },
+  { key: 'minimax', label: 'MiniMax' },
+  { key: 'zai', label: 'ZAI (智谱)' },
+] as const
 
 interface PresetTag {
     key: string
@@ -49,6 +61,7 @@ interface LlmConfig {
     id: number
     modelName: string
     displayName: string
+    provider?: string
     platform?: string
     modelTier?: string
     tags: string[]
@@ -62,6 +75,7 @@ interface LlmConfig {
 
 interface LlmFormData {
     modelName: string
+    provider: string
     platform: PlatformKey | ''
     displayName: string
     modelTier: string
@@ -92,6 +106,7 @@ function LlmConfigModal({ isOpen, onClose, config, onSave, apiBasePath = '/api',
   const [loading, setLoading] = useState(false)
   const [formData, setFormData] = useState<LlmFormData>({
     modelName: '',
+    provider: '',
     platform: '',
     displayName: '',
     modelTier: 'economy',
@@ -109,6 +124,7 @@ function LlmConfigModal({ isOpen, onClose, config, onSave, apiBasePath = '/api',
       if (isCreate) {
         setFormData({
           modelName: '',
+          provider: '',
           platform: PLATFORMS[0].key,
           displayName: '',
           modelTier: 'economy',
@@ -123,6 +139,7 @@ function LlmConfigModal({ isOpen, onClose, config, onSave, apiBasePath = '/api',
       } else if (config) {
         setFormData({
           modelName: config.modelName,
+          provider: config.provider || '',
           platform: (config.platform || '') as PlatformKey | '',
           displayName: config.displayName || '',
           modelTier: config.modelTier || 'economy',
@@ -171,7 +188,8 @@ function LlmConfigModal({ isOpen, onClose, config, onSave, apiBasePath = '/api',
           method: 'POST',
           body: {
             model_name: formData.modelName.trim(),
-            owned_by: formData.platform || undefined,
+            provider: formData.provider || undefined,
+            platform: formData.platform || undefined,
             display_name: formData.displayName.trim() || undefined,
             model_tier: formData.modelTier || undefined,
             tags: formData.tags,
@@ -207,7 +225,8 @@ function LlmConfigModal({ isOpen, onClose, config, onSave, apiBasePath = '/api',
           method: 'PUT',
           body: {
             model_name: formData.modelName.trim() || undefined,
-            owned_by: formData.platform || undefined,
+            provider: formData.provider || undefined,
+            platform: formData.platform || undefined,
             display_name: formData.displayName.trim() || undefined,
             model_tier: formData.modelTier || undefined,
             tags: formData.tags || [],
@@ -253,63 +272,47 @@ function LlmConfigModal({ isOpen, onClose, config, onSave, apiBasePath = '/api',
           <button className="admin-modal-close" onClick={onClose}>&times;</button>
         </div>
 
-        {isCreate ? (
-          /* 创建模式：模型名称可编辑 */
-          <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: '16px', marginBottom: '24px' }}>
-            <div className="admin-form-group" style={{ marginBottom: 0 }}>
-              <label className="admin-form-label">模型名称 <span style={{ color: '#ef4444' }}>*</span></label>
-              <input
-                type="text"
-                name="modelName"
-                value={formData.modelName}
-                onChange={handleInputChange}
-                className="admin-form-input"
-                placeholder="例如: gpt-4o, claude-sonnet-4-5-20250929"
-              />
-            </div>
-            <div className="admin-form-group" style={{ marginBottom: 0 }}>
-              <label className="admin-form-label">平台 <span style={{ color: '#ef4444' }}>*</span></label>
-              <select
-                name="platform"
-                value={formData.platform}
-                onChange={handleInputChange}
-                className="admin-form-input"
-              >
-                {PLATFORMS.map(p => (
-                  <option key={p.key} value={p.key}>{p.label}</option>
-                ))}
-              </select>
-            </div>
+        {/* 模型名称 / Provider / Platform */}
+        <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr 1fr', gap: '16px', marginBottom: '24px' }}>
+          <div className="admin-form-group" style={{ marginBottom: 0 }}>
+            <label className="admin-form-label">模型名称 {isCreate && <span style={{ color: '#ef4444' }}>*</span>}</label>
+            <input
+              type="text"
+              name="modelName"
+              value={formData.modelName}
+              onChange={handleInputChange}
+              className="admin-form-input"
+              placeholder="例如: claude-sonnet-4.5"
+            />
           </div>
-        ) : (
-          /* 编辑模式 */
-          <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: '16px', marginBottom: '24px' }}>
-            <div className="admin-form-group" style={{ marginBottom: 0 }}>
-              <label className="admin-form-label">模型名称</label>
-              <input
-                type="text"
-                name="modelName"
-                value={formData.modelName}
-                onChange={handleInputChange}
-                className="admin-form-input"
-                placeholder="例如: google/gemini-3-pro-preview"
-              />
-            </div>
-            <div className="admin-form-group" style={{ marginBottom: 0 }}>
-              <label className="admin-form-label">平台</label>
-              <select
-                name="platform"
-                value={formData.platform}
-                onChange={handleInputChange}
-                className="admin-form-input"
-              >
-                {PLATFORMS.map(p => (
-                  <option key={p.key} value={p.key}>{p.label}</option>
-                ))}
-              </select>
-            </div>
+          <div className="admin-form-group" style={{ marginBottom: 0 }}>
+            <label className="admin-form-label">Provider</label>
+            <select
+              name="provider"
+              value={formData.provider}
+              onChange={handleInputChange}
+              className="admin-form-input"
+            >
+              <option value="">--</option>
+              {PROVIDERS.map(p => (
+                <option key={p.key} value={p.key}>{p.label}</option>
+              ))}
+            </select>
           </div>
-        )}
+          <div className="admin-form-group" style={{ marginBottom: 0 }}>
+            <label className="admin-form-label">Platform {isCreate && <span style={{ color: '#ef4444' }}>*</span>}</label>
+            <select
+              name="platform"
+              value={formData.platform}
+              onChange={handleInputChange}
+              className="admin-form-input"
+            >
+              {PLATFORMS.map(p => (
+                <option key={p.key} value={p.key}>{p.label}</option>
+              ))}
+            </select>
+          </div>
+        </div>
 
         {/* 表单内容 */}
         <div className="admin-form-group">

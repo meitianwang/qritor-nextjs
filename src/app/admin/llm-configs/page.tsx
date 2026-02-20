@@ -19,6 +19,7 @@ interface LlmConfig {
     id: number
     modelName: string
     displayName: string
+    provider?: string
     platform?: string
     modelTier?: string
     pricingMultiplier: number
@@ -27,6 +28,8 @@ interface LlmConfig {
     tags: string[]
     normalizationFactor: number
     contextWindow?: number
+    inputPricePerM: number
+    outputPricePerM: number
 }
 
 interface TestResult {
@@ -70,12 +73,7 @@ export default function LlmConfigPage() {
             const response = await adminFetch('/api/admin/llm-configs')
             const data = await response.json()
             if (data.code === 200) {
-                // API 返回 ownedBy (from owned_by)，映射为 platform
-                const items = (data.data || []).map((item: Record<string, unknown>) => ({
-                    ...item,
-                    platform: item.ownedBy || item.platform,
-                }))
-                setConfigs(items)
+                setConfigs(data.data || [])
             }
         } catch (error) {
             console.error('获取 LLM 配置失败:', error)
@@ -223,9 +221,15 @@ export default function LlmConfigPage() {
                                     </div>
                                 </div>
                                 <div className="admin-card-body">
+                                    {config.provider && (
+                                        <div className="admin-card-row">
+                                            <span className="admin-card-label">Provider</span>
+                                            <span className="admin-card-value">{config.provider}</span>
+                                        </div>
+                                    )}
                                     {config.platform && (
                                         <div className="admin-card-row">
-                                            <span className="admin-card-label">平台</span>
+                                            <span className="admin-card-label">Platform</span>
                                             <span className="admin-card-value">{config.platform}</span>
                                         </div>
                                     )}

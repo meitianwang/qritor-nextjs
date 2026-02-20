@@ -2,6 +2,7 @@ import { NextRequest } from 'next/server'
 import { getCurrentUser } from '@/lib/middleware/auth-middleware'
 import { apiError } from '@/lib/api-response'
 import { aiGenerateService } from '@/lib/services/ai-service'
+import { classifyAIError } from '@/lib/services/ai-error-classifier'
 
 export const dynamic = 'force-dynamic'
 
@@ -39,9 +40,11 @@ export async function POST(request: NextRequest) {
             controller.enqueue(sseEvent(event.event, event.data))
           }
         } catch (error) {
+          const classified = classifyAIError(error)
           controller.enqueue(sseEvent('error', {
-            error: String(error),
-            code: 'STREAM_ERROR',
+            error: classified.message,
+            code: classified.code,
+            retryable: classified.retryable,
           }))
         } finally {
           controller.close()

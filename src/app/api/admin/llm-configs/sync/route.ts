@@ -7,7 +7,8 @@ interface ModelEntry {
   model_name: string
   display_name?: string
   model_tier?: string
-  owned_by?: string
+  provider?: string
+  platform?: string
 }
 
 /**
@@ -28,7 +29,7 @@ export async function POST(request: NextRequest) {
     if (!models || !Array.isArray(models) || models.length === 0) {
       return apiError(
         400,
-        '请提供 models 数组，格式: [{ model_name: "provider/model", display_name?: "...", model_tier?: "...", owned_by?: "..." }]',
+        '请提供 models 数组，格式: [{ model_name: "...", provider?: "...", platform?: "...", display_name?: "...", model_tier?: "..." }]',
       )
     }
 
@@ -55,8 +56,11 @@ export async function POST(request: NextRequest) {
         if (model.model_tier && model.model_tier !== existing.model_tier) {
           updates.model_tier = model.model_tier
         }
-        if (model.owned_by && model.owned_by !== existing.owned_by) {
-          updates.owned_by = model.owned_by
+        if (model.provider && model.provider !== existing.provider) {
+          updates.provider = model.provider
+        }
+        if (model.platform && model.platform !== existing.platform) {
+          updates.platform = model.platform
         }
 
         if (Object.keys(updates).length > 0) {
@@ -75,7 +79,8 @@ export async function POST(request: NextRequest) {
             model_name: modelName,
             display_name: model.display_name || modelName,
             model_tier: model.model_tier || null,
-            owned_by: model.owned_by ?? '',
+            provider: model.provider ?? '',
+            platform: model.platform ?? '',
             enabled: 0,
             is_default: 0,
             input_price_per_m: 0.20,

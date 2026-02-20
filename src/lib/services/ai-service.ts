@@ -10,6 +10,8 @@ import {
 import {
   resolveModelRequestPolicy,
 } from './reasoning-options'
+import { AI_ERROR_CODE, type AIErrorCode } from './ai-error-codes'
+import { classifyAIError } from './ai-error-classifier'
 
 // ---------------------------------------------------------------------------
 // Types
@@ -31,7 +33,14 @@ interface StreamUsageEvent {
   outputTokens: number
 }
 
-type StreamEvent = StreamChunkEvent | StreamReasoningEvent | StreamUsageEvent
+interface StreamErrorEvent {
+  type: 'error'
+  code: AIErrorCode
+  message: string
+  retryable: boolean
+}
+
+type StreamEvent = StreamChunkEvent | StreamReasoningEvent | StreamUsageEvent | StreamErrorEvent
 
 interface GenerateChunkEvent {
   event: 'chunk'
@@ -62,7 +71,7 @@ interface GenerateCompleteEvent {
 
 interface GenerateErrorEvent {
   event: 'error'
-  data: { error: string; code: string }
+  data: { error: string; code: string; retryable?: boolean }
 }
 
 type GenerateEvent =
@@ -75,7 +84,8 @@ type GenerateEvent =
 export interface LlmConfigRow {
   id: bigint
   model_name: string
-  owned_by: string | null
+  provider: string
+  platform: string | null
   model_tier: string | null
   is_default: number | null
   enabled: number | null
@@ -152,7 +162,7 @@ export const gateway = createGateway({
 })
 
 const anthropic = createAnthropic({
-  baseURL: 'https://api.aicodemirror.com/api/claudecode',
+  baseURL: 'https://api.aicodemirror.com/api/claudecode/v1',
   apiKey: process.env.ANTHROPIC_API_KEY ?? '',
 })
 
@@ -188,12 +198,17 @@ class GatewayAIService {
   ): AsyncGenerator<StreamEvent> {
     const config = await getConfigById(configId)
     if (!config) {
-      yield { type: 'chunk', content: '[错误] 没有可用的 LLM 配置' }
+      yield {
+        type: 'error',
+        code: AI_ERROR_CODE.NO_LLM_CONFIG,
+        message: 'No LLM config available',
+        retryable: false,
+      }
       return
     }
 
     // model_name should be in "provider/model" format, e.g. "deepseek/deepseek-chat"
-    const modelPolicy = resolveModelRequestPolicy(config.model_name)
+    const modelPolicy = resolveModelRequestPolicy(config.model_name, config.provider)
 
     const messages: Array<{ role: 'system' | 'user'; content: string }> = []
     if (systemPrompt) {
@@ -207,11 +222,12 @@ class GatewayAIService {
 
     try {
       const result = streamText({
-        model: resolveModel(modelPolicy.resolvedModelName, config.owned_by),
+        model: resolveModel(config.model_name, config.platform),
         messages,
         ...(modelPolicy.providerOptions
           ? { providerOptions: modelPolicy.providerOptions }
           : {}),
+        ...(modelPolicy.maxTokens ? { maxTokens: modelPolicy.maxTokens } : {}),
       })
 
       for await (const part of result.fullStream) {
@@ -224,19 +240,16 @@ class GatewayAIService {
           usageInputTokens = part.totalUsage.inputTokens
           usageOutputTokens = part.totalUsage.outputTokens
         } else if (part.type === 'error') {
-          yield {
-            type: 'chunk',
-            content: '[错误] 生成过程中出现异常，请稍后重试',
-          }
+          const classified = classifyAIError(part.error)
+          console.error('AI stream error:', part.error)
+          yield { type: 'error', ...classified }
           return
         }
       }
     } catch (error) {
       console.error('AI service error:', error)
-      yield {
-        type: 'chunk',
-        content: '[错误] 内容生成失败，请稍后重试',
-      }
+      const classified = classifyAIError(error)
+      yield { type: 'error', ...classified }
       return
     }
 
@@ -354,6 +367,16 @@ class AIGenerateService {
       } else if (item.type === 'usage') {
         inputTokens = item.inputTokens
         outputTokens = item.outputTokens
+      } else if (item.type === 'error') {
+        yield {
+          event: 'error',
+          data: {
+            error: item.message,
+            code: item.code,
+            retryable: item.retryable,
+          },
+        }
+        return
       }
     }
 

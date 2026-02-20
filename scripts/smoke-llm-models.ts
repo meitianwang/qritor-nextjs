@@ -5,7 +5,7 @@ import { PrismaMariaDb } from '@prisma/adapter-mariadb'
 import { createGateway, generateText, jsonSchema, streamText } from 'ai'
 import { createAnthropic } from '@ai-sdk/anthropic'
 import { createGoogleGenerativeAI } from '@ai-sdk/google'
-import { resolveModelRequestPolicy } from '../src/lib/services/reasoning-options'
+import { resolveModelRequestPolicy, type ReasoningProviderOptions } from '../src/lib/services/reasoning-options'
 
 interface CliOptions {
   noTools: boolean
@@ -34,7 +34,6 @@ interface ToolSmokeResult {
 interface ModelSmokeResult {
   modelId: bigint
   modelName: string
-  resolvedModelName: string
   provider: string
   allowTools: boolean
   allowTemperature: boolean
@@ -169,9 +168,9 @@ async function runStreamSmoke(
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   modelResolver: (name: string, platform?: string | null) => any,
   modelName: string,
-  resolvedModelName: string,
   platform: string | null,
-  providerOptions: Record<string, Record<string, unknown>> | undefined,
+  providerOptions: ReasoningProviderOptions | undefined,
+  maxTokens: number | undefined,
   allowTemperature: boolean,
 ): Promise<StreamSmokeResult> {
   const startedAt = Date.now()
@@ -181,7 +180,7 @@ async function runStreamSmoke(
       `${modelName} stream`,
       async () => {
         const result = streamText({
-          model: modelResolver(resolvedModelName, platform),
+          model: modelResolver(modelName, platform),
           messages: [
             {
               role: 'user',
@@ -190,8 +189,8 @@ async function runStreamSmoke(
             },
           ],
           ...(providerOptions ? { providerOptions } : {}),
+          ...(maxTokens ? { maxTokens } : {}),
           ...(allowTemperature ? { temperature: 0.2 } : {}),
-          maxOutputTokens: 120,
         })
 
         let textChars = 0
@@ -204,11 +203,7 @@ async function runStreamSmoke(
             textChars += part.text.length
           } else if (part.type === 'reasoning-delta') {
             reasoningChars += part.text.length
-          } else if (
-            part.type === 'source-url' ||
-            part.type === 'source-document' ||
-            part.type === 'file'
-          ) {
+          } else if (part.type === 'source') {
             sourceParts += 1
           } else if (part.type === 'finish') {
             reasoningTokens =
@@ -260,9 +255,10 @@ async function runStreamSmoke(
 async function runToolSmoke(
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   modelResolver: (name: string, platform?: string | null) => any,
-  resolvedModelName: string,
+  modelName: string,
   platform: string | null,
-  providerOptions: Record<string, Record<string, unknown>> | undefined,
+  providerOptions: ReasoningProviderOptions | undefined,
+  maxTokens: number | undefined,
   allowTemperature: boolean,
   allowTools: boolean,
   noTools: boolean,
@@ -282,10 +278,10 @@ async function runToolSmoke(
     toolCallCount: number
   }> => {
     const toolOutput = await withRetry(
-      `${resolvedModelName} tool`,
+      `${modelName} tool`,
       async () =>
         generateText({
-          model: modelResolver(resolvedModelName, platform),
+          model: modelResolver(modelName, platform),
           messages: [
             {
               role: 'user',
@@ -310,7 +306,6 @@ async function runToolSmoke(
             },
           },
           ...(required ? { toolChoice: 'required' as const } : {}),
-          maxSteps: 2,
           maxOutputTokens: 40,
           ...(providerOptions ? { providerOptions } : {}),
           ...(allowTemperature ? { temperature: 0.2 } : {}),
@@ -412,7 +407,6 @@ function printResults(results: ModelSmokeResult[]): void {
     return {
       id: String(item.modelId),
       model: item.modelName,
-      resolved: item.resolvedModelName,
       stream: streamState,
       tool: toolState,
       reasoning: reasoningState,
@@ -429,7 +423,6 @@ function printResults(results: ModelSmokeResult[]): void {
   const headers = [
     'id',
     'model',
-    'resolved',
     'stream',
     'tool',
     'reasoning',
@@ -505,7 +498,8 @@ async function main(): Promise<void> {
       select: {
         id: true,
         model_name: true,
-        owned_by: true,
+        provider: true,
+        platform: true,
       },
       orderBy: { id: 'asc' },
     })
@@ -536,28 +530,29 @@ async function main(): Promise<void> {
 
     for (let i = 0; i < picked.length; i += 1) {
       const item = picked[i]
-      const modelPolicy = resolveModelRequestPolicy(item.model_name)
-      const provider = getProvider(item.model_name)
+      const modelPolicy = resolveModelRequestPolicy(item.model_name, item.provider)
+      const provider = item.provider || getProvider(item.model_name)
       const step = `[${i + 1}/${picked.length}]`
 
       console.log(
-        `[${nowClock()}] ${step} ${item.model_name} -> ${modelPolicy.resolvedModelName}`,
+        `[${nowClock()}] ${step} ${item.model_name}`,
       )
 
       const stream = await runStreamSmoke(
         resolveModel,
         item.model_name,
-        modelPolicy.resolvedModelName,
-        item.owned_by,
+        item.platform,
         modelPolicy.providerOptions,
+        modelPolicy.maxTokens,
         modelPolicy.allowTemperature,
       )
 
       const tool = await runToolSmoke(
         resolveModel,
-        modelPolicy.resolvedModelName,
-        item.owned_by,
+        item.model_name,
+        item.platform,
         modelPolicy.providerOptions,
+        modelPolicy.maxTokens,
         modelPolicy.allowTemperature,
         modelPolicy.allowTools,
         options.noTools,
@@ -566,7 +561,6 @@ async function main(): Promise<void> {
       results.push({
         modelId: item.id,
         modelName: item.model_name,
-        resolvedModelName: modelPolicy.resolvedModelName,
         provider,
         allowTools: modelPolicy.allowTools,
         allowTemperature: modelPolicy.allowTemperature,

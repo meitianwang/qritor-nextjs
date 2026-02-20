@@ -22,16 +22,16 @@ export async function POST(
       return apiNotFound('LLM 配置不存在')
     }
 
-    const modelPolicy = resolveModelRequestPolicy(config.model_name)
+    const modelPolicy = resolveModelRequestPolicy(config.model_name, config.provider)
     const startTime = Date.now()
 
     const { text } = await generateText({
-      model: resolveModel(modelPolicy.resolvedModelName, config.owned_by),
+      model: resolveModel(config.model_name, config.platform),
       messages: [{ role: 'user', content: 'Say "hello" in one word.' }],
       ...(modelPolicy.providerOptions
         ? { providerOptions: modelPolicy.providerOptions }
         : {}),
-      maxOutputTokens: 10,
+      ...(modelPolicy.maxTokens ? { maxTokens: modelPolicy.maxTokens } : {}),
     })
 
     const latencyMs = Date.now() - startTime
@@ -39,7 +39,6 @@ export async function POST(
     return apiSuccess({
       success: true,
       modelName: config.model_name,
-      resolvedModelName: modelPolicy.resolvedModelName,
       latencyMs,
       reply: text.slice(0, 100),
     })

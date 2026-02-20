@@ -15,6 +15,7 @@ import {
   hasEnoughCredits,
   recordCreditDebt,
 } from '@/lib/services/credit-service'
+import { classifyAIError } from '@/lib/services/ai-error-classifier'
 
 export const dynamic = 'force-dynamic'
 
@@ -87,11 +88,27 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    const modelPolicy = resolveModelRequestPolicy(config.model_name)
+    const modelPolicy = resolveModelRequestPolicy(config.model_name, config.provider)
     const toolsForModel = modelPolicy.allowTools ? tools : undefined
 
+    // Anthropic prompt caching: 在最后一个 tool 上标记 cacheControl 断点，
+    // 使 Anthropic API 缓存所有 tool 定义（~55k tokens），后续请求只计 cache read 费用（10%）
+    const isAnthropic = config.provider?.toLowerCase() === 'anthropic'
+    if (isAnthropic && toolsForModel) {
+      const toolNames = Object.keys(toolsForModel)
+      if (toolNames.length > 0) {
+        const lastToolName = toolNames[toolNames.length - 1]
+        toolsForModel[lastToolName] = {
+          ...toolsForModel[lastToolName],
+          providerOptions: {
+            anthropic: { cacheControl: { type: 'ephemeral' } },
+          },
+        }
+      }
+    }
+
     console.log(
-      `[LLM] Request: model=${config.model_name}, resolved=${modelPolicy.resolvedModelName}, messages=${messages.length}, toolsIn=${tools ? Object.keys(tools).length : 0}, toolsForwarded=${toolsForModel ? Object.keys(toolsForModel).length : 0}`,
+      `[LLM] Request: model=${config.model_name}, messages=${messages.length}, toolsIn=${tools ? Object.keys(tools).length : 0}, toolsForwarded=${toolsForModel ? Object.keys(toolsForModel).length : 0}`,
     )
 
     // 积分预检
@@ -112,14 +129,31 @@ export async function POST(request: NextRequest) {
 
     // 透传给 AI Gateway，积分在 onFinish 回调中扣减
     const systemPrompt: string | undefined = body.systemPrompt || body.system
+
+    // Anthropic: 将 system prompt 标记为可缓存
+    const systemOption = systemPrompt
+      ? isAnthropic
+        ? {
+            system: {
+              role: 'system' as const,
+              content: systemPrompt,
+              providerOptions: {
+                anthropic: { cacheControl: { type: 'ephemeral' } },
+              },
+            },
+          }
+        : { system: systemPrompt }
+      : {}
+
     const result = streamText({
-      model: resolveModel(modelPolicy.resolvedModelName, config.owned_by),
-      ...(systemPrompt ? { system: systemPrompt } : {}),
+      model: resolveModel(config.model_name, config.platform),
+      ...systemOption,
       messages,
       ...(toolsForModel ? { tools: toolsForModel } : {}),
       ...(modelPolicy.providerOptions
         ? { providerOptions: modelPolicy.providerOptions }
         : {}),
+      ...(modelPolicy.maxTokens ? { maxTokens: modelPolicy.maxTokens } : {}),
       ...(modelPolicy.allowTemperature ? { temperature } : {}),
       onFinish: async ({ totalUsage }) => {
         const inputTokens = totalUsage.inputTokens ?? 0
@@ -195,6 +229,17 @@ export async function POST(request: NextRequest) {
     })
   } catch (error) {
     if (error instanceof Response) return error
-    return jsonError(500, `桌面端助手请求失败: ${String(error)}`)
+    const classified = classifyAIError(error)
+    const httpStatus = classified.code === 'PROVIDER_AUTH_FAILED' ? 502 : 500
+    return NextResponse.json(
+      {
+        code: httpStatus,
+        data: null,
+        message: classified.message,
+        errorCode: classified.code,
+        retryable: classified.retryable,
+      },
+      { status: httpStatus },
+    )
   }
 }

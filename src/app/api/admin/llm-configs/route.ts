@@ -13,7 +13,7 @@ export async function GET(request: NextRequest) {
       orderBy: { created_at: 'desc' },
     })
 
-    const serialized = serializeCamel(configs) as Record<string, unknown>[]
+    const serialized = serializeCamel(configs) as unknown as Record<string, unknown>[]
     const normalized = serialized.map((item, index) => ({
       ...item,
       tags: parseLlmTags(configs[index]?.tags ?? null),
@@ -32,7 +32,8 @@ export async function POST(request: NextRequest) {
     const body = await request.json()
     const {
       model_name,
-      owned_by,
+      provider,
+      platform,
       display_name,
       tags,
       is_default,
@@ -44,7 +45,8 @@ export async function POST(request: NextRequest) {
       context_window,
     } = body as {
       model_name: string
-      owned_by?: string
+      provider?: string
+      platform?: string
       display_name?: string
       tags?: unknown
       is_default?: unknown
@@ -89,7 +91,8 @@ export async function POST(request: NextRequest) {
     }
 
     const normalizedDisplayName = String(display_name ?? normalizedModelName).trim()
-    const normalizedOwnedBy = String(owned_by ?? '').trim()
+    const normalizedProvider = String(provider ?? '').trim()
+    const normalizedPlatform = String(platform ?? '').trim()
     const normalizedIsDefault = toTinyInt(is_default, 0)
     const normalizedEnabled = toTinyInt(enabled, 1)
     const normalizedInputPricePerM = toNumber(input_price_per_m, 0.20)
@@ -102,7 +105,8 @@ export async function POST(request: NextRequest) {
     const config = await prisma.llm_config.create({
       data: {
         model_name: normalizedModelName,
-        owned_by: normalizedOwnedBy,
+        provider: normalizedProvider,
+        platform: normalizedPlatform,
         display_name: normalizedDisplayName || normalizedModelName,
         tags: serializeLlmTags(tags),
         is_default: normalizedIsDefault,

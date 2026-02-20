@@ -65,7 +65,8 @@ model credit_transactions {
 model llm_config {
   id                  BigInt    @id @default(autoincrement())
   model_name          String    @unique(map: "model_name") @db.VarChar(200)
-  owned_by            String?   @db.VarChar(100)
+  provider            String    @default("") @db.VarChar(100)
+  platform            String?   @db.VarChar(100)
   display_name        String?   @db.VarChar(200)
   tags                String?   @db.Text
   is_default          Int?      @db.SmallInt
