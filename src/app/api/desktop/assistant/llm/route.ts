@@ -107,6 +107,52 @@ export async function POST(request: NextRequest) {
       }
     }
 
+    // Anthropic 消息预处理
+    if (isAnthropic) {
+      for (let i = 0; i < messages.length; i++) {
+        const m = messages[i]
+
+        // 1) 过滤空内容（Anthropic 会拒绝空 content）
+        if (typeof m.content === 'string' && m.content === '') {
+          m.content = ' '
+        } else if (Array.isArray(m.content)) {
+          m.content = m.content.filter(
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            (p: any) => {
+              if (p.type === 'text' || p.type === 'reasoning') return p.text !== ''
+              return true
+            },
+          )
+          if (m.content.length === 0) m.content = ' '
+        }
+
+        // 2) 清洗 tool call ID（Anthropic 只接受 [a-zA-Z0-9_-]）
+        if (Array.isArray(m.content)) {
+          for (const part of m.content) {
+            if ((part.type === 'tool-call' || part.type === 'tool-result') && part.toolCallId) {
+              part.toolCallId = part.toolCallId.replace(/[^a-zA-Z0-9_-]/g, '_')
+            }
+          }
+        }
+      }
+
+      // 3) 在最后 2 条非 system 消息上标记 cacheControl
+      const nonSystemMsgs = messages.filter(
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (m: any) => m.role !== 'system',
+      )
+      const lastTwo = nonSystemMsgs.slice(-2)
+      for (const msg of lastTwo) {
+        msg.providerOptions = {
+          ...(msg.providerOptions || {}),
+          anthropic: {
+            ...(msg.providerOptions?.anthropic || {}),
+            cacheControl: { type: 'ephemeral' },
+          },
+        }
+      }
+    }
+
     console.log(
       `[LLM] Request: model=${config.model_name}, messages=${messages.length}, toolsIn=${tools ? Object.keys(tools).length : 0}, toolsForwarded=${toolsForModel ? Object.keys(toolsForModel).length : 0}`,
     )

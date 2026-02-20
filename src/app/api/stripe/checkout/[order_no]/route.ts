@@ -11,7 +11,7 @@ export async function POST(
     const user = await getCurrentUser(request)
     const { order_no } = await params
 
-    const order = await payOrder(order_no, 'STRIPE', user.id)
+    const order = await payOrder(order_no, user.id)
     return apiSuccess(order)
   } catch (e) {
     if (e instanceof Response || (e && typeof e === 'object' && 'status' in e)) {
