@@ -164,23 +164,6 @@ export default function LandingPage() {
                         </div>
                     </div>
 
-                    {/* Workflow Engine */}
-                    <div className="feature-section">
-                        <div className="feature-grid">
-                            <div className="feature-content">
-                                <span className="feature-tag">{t('landing.features.workflow.tag')}</span>
-                                <h2 className="feature-title">{t('landing.features.workflow.title')}</h2>
-                                <p className="feature-description">
-                                    {t('landing.features.workflow.description')}
-                                </p>
-                            </div>
-                            <div className="feature-visual hover-lift">
-                                <div className="feature-visual-inner">
-                                    <span className="feature-visual-placeholder">⚙️</span>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
 
                     {/* Comic Generation */}
                     <div className="feature-section">

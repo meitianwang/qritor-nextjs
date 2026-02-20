@@ -12,10 +12,6 @@ function serializeModuleType(mt: any) {
     novelCreationMethodId: mt.novel_creation_method_id
       ? Number(mt.novel_creation_method_id)
       : null,
-    saveWorkflowId: mt.save_workflow_id ? Number(mt.save_workflow_id) : null,
-    createWorkflowId: mt.create_workflow_id
-      ? Number(mt.create_workflow_id)
-      : null,
     enableAi: mt.enable_ai === 1,
     singleton: mt.singleton === 1,
     builtIn: mt.built_in === 1,
@@ -54,12 +50,6 @@ export async function POST(request: NextRequest) {
         temperature: body.temperature ?? null,
         novel_creation_method_id: body.novelCreationMethodId
           ? BigInt(body.novelCreationMethodId)
-          : null,
-        save_workflow_id: body.saveWorkflowId
-          ? BigInt(body.saveWorkflowId)
-          : null,
-        create_workflow_id: body.createWorkflowId
-          ? BigInt(body.createWorkflowId)
           : null,
         enable_ai: body.enableAi ? 1 : 0,
         singleton: body.singleton ? 1 : 0,

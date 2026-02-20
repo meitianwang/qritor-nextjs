@@ -89,8 +89,6 @@ model module_type {
   json_schema              String?   @db.Text
   temperature              Float?    @db.Float
   novel_creation_method_id BigInt?
-  save_workflow_id         BigInt?
-  create_workflow_id       BigInt?
   enable_ai                Int       @db.SmallInt
   singleton                Int       @db.SmallInt
   built_in                 Int       @db.SmallInt
@@ -234,19 +232,6 @@ model users {
   @@index([stripe_customer_id], map: "ix_users_stripe_customer_id")
 }
 
-model workflow {
-  id                       BigInt    @id @default(autoincrement())
-  name                     String    @db.VarChar(200)
-  description              String?   @db.VarChar(1000)
-  novel_creation_method_id BigInt?
-  nodes_json               String?   @db.Text
-  edges_json               String?   @db.Text
-  created_at               DateTime  @db.DateTime(0)
-  updated_at               DateTime? @db.DateTime(0)
-
-  @@index([id], map: "ix_workflow_id")
-}
-
 model image_gen_config {
   id              BigInt    @id @default(autoincrement())
   provider        String    @db.VarChar(100)
@@ -296,7 +281,6 @@ model image_generation_task {
 model novel_creation_method {
   id                 BigInt    @id @default(autoincrement())
   name               String    @db.VarChar(100)
-  workflow_id        BigInt?
   description        String?   @db.Text
   novel_type         String?   @db.VarChar(50)
   language           String?   @db.VarChar(20)

@@ -2,7 +2,7 @@
     "seo": {
         "landing": {
             "title": "AI Novel Writing Platform",
-            "description": "Qritor is a next-generation AI-powered creative platform offering AI writing assistant, modular creation, workflow engine and more. Make writing easier and more efficient."
+            "description": "Qritor is a next-generation AI-powered creative platform offering AI writing assistant, modular creation and more. Make writing easier and more efficient."
         },
         "pricing": {
             "title": "Pricing Plans",
@@ -130,11 +130,6 @@
                 "tag": "Structured Management",
                 "title": "Modular Creation",
                 "description": "Character profiles, world-building, plot outlines, chapter content - everything organized. Let AI understand your complete creative blueprint, generating more coherent and in-depth content."
-            },
-            "workflow": {
-                "tag": "Automation",
-                "title": "Workflow Engine",
-                "description": "Define your creative process, let AI execute automatically. From outline generation to chapter splitting, from content creation to format optimization, fully automated, efficiency doubled."
             },
             "comic": {
                 "tag": "Coming Soon",
@@ -664,8 +659,8 @@
                 "item1Desc": "Uses artificial intelligence technology to assist users in novel creation, including smart continuation, plot generation, dialogue generation, and other features;",
                 "item2": "Modular Creation",
                 "item2Desc": "Provides structured creation management tools such as character profiles, world-building, plot outlines, etc.;",
-                "item3": "Workflow Engine",
-                "item3Desc": "Supports custom creation processes and automated task execution;",
+                "item3": "Knowledge Base",
+                "item3Desc": "Visualize character relationships and story structure through knowledge graphs;",
                 "item4": "Comic Generation",
                 "item4Desc": "(Coming Soon) Creative tools to transform text content into comic form;",
                 "item5": "Other Services",
@@ -954,7 +949,7 @@
                 "new": {
                     "item1": "AI Writing Assistant: Smart continuation, plot generation, dialogue generation",
                     "item2": "Modular Creation: Character profiles, world-building, plot outlines",
-                    "item3": "Workflow Engine: Custom creative processes, automated task execution",
+                    "item3": "Knowledge Base: Visual character relationships and story structure",
                     "item4": "Multi-platform Support: macOS and Windows desktop apps",
                     "item5": "Multi-language Support: 12 languages including Chinese and English"
                 }

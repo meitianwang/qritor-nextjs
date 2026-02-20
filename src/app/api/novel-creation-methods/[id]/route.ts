@@ -9,7 +9,6 @@ function serializeMethod(
     id: bigint
     name: string
     description: string | null
-    workflow_id: bigint | null
     novel_type: string | null
     language: string | null
     is_preset: number
@@ -35,7 +34,6 @@ function serializeMethod(
     id: Number(method.id),
     name: method.name,
     description: method.description,
-    workflowId: method.workflow_id ? Number(method.workflow_id) : null,
     novelType: method.novel_type,
     language: method.language,
     isPreset: method.is_preset === 1,
@@ -119,8 +117,6 @@ export async function PUT(
     if (body.description !== undefined) updateData.description = body.description
     if (body.novelType !== undefined) updateData.novel_type = body.novelType
     if (body.language !== undefined) updateData.language = body.language
-    if (body.workflowId !== undefined)
-      updateData.workflow_id = body.workflowId ? BigInt(body.workflowId) : null
     if (body.visibleCategories !== undefined)
       updateData.visible_categories = body.visibleCategories
         ? JSON.stringify(body.visibleCategories)
@@ -175,7 +171,6 @@ export async function DELETE(
     await prisma.$transaction(async (tx) => {
       const methodId = BigInt(id)
       await tx.module_type.deleteMany({ where: { novel_creation_method_id: methodId } })
-      await tx.workflow.deleteMany({ where: { novel_creation_method_id: methodId } })
       await tx.novel_creation_method.delete({ where: { id: methodId } })
     })
 

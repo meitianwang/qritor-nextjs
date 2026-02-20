@@ -110,14 +110,6 @@ export const docsNavigation: Record<string, DocsNavigation> = {
                     ]
                 },
                 {
-                    id: 'workflow',
-                    title: '工作流引擎',
-                    path: '/docs/zh/user-guide/workflow',
-                    children: [
-                        { id: 'workflow-actions', title: '内置动作详解', path: '/docs/zh/user-guide/workflow/workflow-actions' }
-                    ]
-                },
-                {
                     id: 'knowledge-base',
                     title: '知识库',
                     path: '/docs/zh/user-guide/knowledge-base',
@@ -178,14 +170,6 @@ export const docsNavigation: Record<string, DocsNavigation> = {
                         { id: 'ai-mention', title: '@Mention Modules', path: '/docs/en/user-guide/ai-assistant/ai-mention' },
                         { id: 'chat-history', title: 'Chat History', path: '/docs/en/user-guide/ai-assistant/chat-history' },
                         { id: 'smart-write', title: 'Smart Writing Tools', path: '/docs/en/user-guide/ai-assistant/smart-write' }
-                    ]
-                },
-                {
-                    id: 'workflow',
-                    title: 'Workflow Engine',
-                    path: '/docs/en/user-guide/workflow',
-                    children: [
-                        { id: 'workflow-actions', title: 'Built-in Actions Guide', path: '/docs/en/user-guide/workflow/workflow-actions' }
                     ]
                 },
                 {
@@ -458,53 +442,6 @@ AI 助手会保存您的对话历史，方便随时回顾和继续。
 ## 扩写 (Expand)
 - **触发方式**：选中简短的描述，点击"扩写"按钮。
 - **效果**：AI 会将简短描述扩展为详细段落。
-            `
-        },
-        workflow: {
-            title: '工作流引擎',
-            body: `
-工作流引擎是 Qritor 实现 "工程化" 的幕后功臣，通过 **节点化设计** 实现创作流程的自动化。
-
-## 核心价值
-- **自动化繁琐操作**：如自动重命名章节、自动提取信息。
-- **标准化创作流程**：确保每个角色卡都包含必要的属性字段。
-- **保持数据一致性**：自动维护知识库，确保图谱与正文一致。
-
-## 自动化场景
-- **后置触发**：当您创建一个新模块（例如"角色卡"）时，可以自动触发一个工作流，让 AI 根据名字自动填充性格描述。
-- **信息提取**：使用 \`EXTRACT_CHILD_MODULE\` 节点，可以从大段的设定文档中，自动提取出多个子条目。
-- **图谱更新**：通过 \`KG_UPDATE\` 节点，AI 在分析正文后，会自动将新的人物关系写入知识库。
-            `
-        },
-        'workflow-actions': {
-            title: '内置动作详解',
-            body: `
-## 动作类型
-
-### CREATE_MODULE
-创建一个新模块。
-- **参数**：\`moduleTypeId\`（模块类型）、\`title\`（标题）、\`content\`（内容）、\`parentId\`（父模块）
-- **用途**：自动生成章节、角色卡等。
-
-### UPDATE_MODULE
-更新现有模块的内容。
-- **参数**：\`moduleId\`、\`title\`、\`content\`
-- **用途**：AI 分析后自动填充模块内容。
-
-### EXTRACT_CHILD_MODULE
-从源模块的某个字段提取数据，创建子模块。
-- **参数**：\`sourceField\`（源字段路径）、\`targetModuleTypeName\`（目标类型名）
-- **用途**：从世界观设定中自动提取人物列表。
-
-### KG_UPDATE
-更新知识图谱。
-- **参数**：\`triples\`（三元组数组：主语、谓语、宾语）
-- **用途**：AI 分析正文后自动构建人物关系网。
-
-### BUILD_MODULE_TITLE
-根据模板构建模块标题。
-- **参数**：\`titleTemplate\`（标题模板，如 "第{chapter_number}章"）
-- **用途**：自动为章节编号。
             `
         },
         'knowledge-base': {
@@ -813,7 +750,7 @@ Qritor 支持自动更新功能：
             title: 'Product Overview',
             description: 'Qritor is a professional desktop AI-assisted creative writing platform. Combining minimalist aesthetics with deep context engineering, it supports the entire writing process from inspiration to completion.',
             body: `
-Qritor is more than just a writing tool; it is your 24/7 AI creative partner. It deeply understands your world-building, visualizes plot structures through relationship graphs, and manages complex creative tasks with modular workflows.
+Qritor is more than just a writing tool; it is your 24/7 AI creative partner. It deeply understands your world-building, visualizes plot structures through relationship graphs, and manages complex creative tasks with modular systems.
 
 ## Core Features
 
@@ -1034,53 +971,6 @@ Smart Writing Tools are the core capability of the AI Assistant, helping you ove
 - **Effect**: AI will expand the short description into a detailed paragraph.
             `
         },
-        workflow: {
-            title: 'Workflow Engine',
-            body: `
-The Workflow Engine is the power behind Qritor's "Engineering" approach. It is a node-based automation system.
-
-## Core Value
-- **Automate Tedious Tasks**: Auto-rename chapters, bulk extract info.
-- **Standardize Process**: Ensure every character sheet has required fields.
-- **Data Consistency**: Maintain the Knowledge Graph in sync with your text.
-
-## Automation Scenarios
-- **Post-Creation Trigger**: When you create a new module (e.g., "Character Sheet"), a workflow can automatically trigger AI to fill in personality descriptions based on the name.
-- **Information Extraction**: Use the \`EXTRACT_CHILD_MODULE\` node to automatically extract multiple sub-entries from a large setting document.
-- **Graph Update**: Using the \`KG_UPDATE\` node, AI analyzes text and automatically writes new character relationships into the Knowledge Base.
-            `
-        },
-        'workflow-actions': {
-            title: 'Built-in Actions Guide',
-            body: `
-## Action Types
-
-### CREATE_MODULE
-Creates a new module.
-- **Parameters**: \`moduleTypeId\` (type), \`title\`, \`content\`, \`parentId\`
-- **Use Case**: Auto-generate chapters, character sheets, etc.
-
-### UPDATE_MODULE
-Updates an existing module's content.
-- **Parameters**: \`moduleId\`, \`title\`, \`content\`
-- **Use Case**: AI fills in module content after analysis.
-
-### EXTRACT_CHILD_MODULE
-Extracts data from a source module's field to create child modules.
-- **Parameters**: \`sourceField\` (path), \`targetModuleTypeName\`
-- **Use Case**: Auto-extract character list from world-building settings.
-
-### KG_UPDATE
-Updates the Knowledge Graph.
-- **Parameters**: \`triples\` (array of Subject, Predicate, Object)
-- **Use Case**: AI builds character relationship network after analyzing text.
-
-### BUILD_MODULE_TITLE
-Builds module title based on a template.
-- **Parameters**: \`titleTemplate\` (e.g., "Chapter {chapter_number}")
-- **Use Case**: Auto-number chapters.
-            `
-        },
         'knowledge-base': {
             title: 'Knowledge Base & Graph',
             body: `
@@ -1106,7 +996,7 @@ Color-coded relationships for intuitive understanding:
 The most powerful feature is **Zero Manual Drawing**.
 1. **AI Extraction**: AI reads your settings and story text.
 2. **Triple Generation**: Identifies \`(Subject, Predicate, Object)\` triples.
-3. **Graph Sync**: \`KG_UPDATE\` workflow action automatically writes new relations to the DB.
+3. **Graph Sync**: AI automatically writes new relations to the DB.
 
 Your Knowledge Base stays perfectly in sync with your latest writing.
             `

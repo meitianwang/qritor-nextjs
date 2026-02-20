@@ -15,25 +15,11 @@ interface DeletingItem {
     id: number
 }
 
-interface Workflow {
-    id: number
-    name: string
-    [key: string]: any
-}
-
 interface ModuleType {
     id: number
     name: string
     singleton: boolean
     enableAi: boolean
-    saveWorkflowId: number | null
-    createWorkflowId: number | null
-    [key: string]: any
-}
-
-interface NodeAction {
-    action: string
-    title: string
     [key: string]: any
 }
 
@@ -62,17 +48,11 @@ interface ActionButtonProps {
 
 interface SidebarProps {
     method: Record<string, any> | null
-    nodeActions: NodeAction[]
     moduleTypes: ModuleType[]
     fetchResources: () => Promise<void>
     deletingItem: DeletingItem | null
     handleDelete: (type: string, id: number) => void
     onOpenModal?: () => void
-    workflows: Workflow[]
-    activeWorkflow: Workflow | null
-    setActiveWorkflow: (wf: any) => void
-    onCreateWorkflow: () => void
-    onDeleteWorkflow: () => void
     onPublish: () => void
     publishing: boolean
     showToast: (type: string, message: string) => void
@@ -83,18 +63,11 @@ interface SidebarProps {
 
 const Sidebar: React.FC<SidebarProps> = ({
     method,
-    nodeActions,
     moduleTypes,
     fetchResources,
     deletingItem,
     handleDelete,
-
     onOpenModal,
-    workflows,
-    activeWorkflow,
-    setActiveWorkflow,
-    onCreateWorkflow,
-    onDeleteWorkflow,
     onPublish,
     publishing,
     showToast,
@@ -102,7 +75,6 @@ const Sidebar: React.FC<SidebarProps> = ({
     onToggleCollapse,
     onUpdateVisibleCategories
 }) => {
-    const [isWorkflowsOpen, setIsWorkflowsOpen] = useState(false)
     const [isModuleTypesOpen, setIsModuleTypesOpen] = useState(false)
     const [isCategoriesOpen, setIsCategoriesOpen] = useState(false)
 
@@ -134,11 +106,6 @@ const Sidebar: React.FC<SidebarProps> = ({
     const jsonSchemaEditorRef = useRef<any>(null)
     const aiContextEditorRef = useRef<any>(null)
 
-
-    const handleDragStart = (event: React.DragEvent, nodeAction: NodeAction) => {
-        event.dataTransfer.setData('application/reactflow', JSON.stringify(nodeAction))
-        event.dataTransfer.effectAllowed = 'move'
-    }
 
     // Section Toggle Component
     const SectionHeader: React.FC<SectionHeaderProps> = ({ isOpen, onToggle, title, icon, onAdd, addTitle }) => (
@@ -308,96 +275,6 @@ const Sidebar: React.FC<SidebarProps> = ({
 
             {/* Resources List */}
             <div className="flex-1 overflow-y-auto p-4 space-y-6">
-
-                {/* Node Types Section */}
-                <div>
-                    <div className="flex items-center gap-2 mb-3">
-                        <svg className="w-4 h-4 text-white/60" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
-                        </svg>
-                        <h3 className="text-sm font-semibold text-white/90">节点类型</h3>
-                    </div>
-                    <div className="space-y-2">
-                        {nodeActions.map((action) => (
-                            <div
-                                key={action.action}
-                                draggable
-                                onDragStart={(e) => handleDragStart(e, action)}
-                                className="group p-3 bg-white/[0.02] border border-white/[0.04] rounded-xl text-sm cursor-grab active:cursor-grabbing hover:bg-white/[0.04] hover:border-teal-500/20 transition-all select-none"
-                            >
-                                <div className="flex items-center gap-3">
-                                    <div
-                                        className="w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0"
-                                        style={{
-                                            background: 'rgba(13, 148, 136, 0.1)',
-                                            border: '1px solid rgba(20, 184, 166, 0.15)'
-                                        }}
-                                    >
-                                        <svg className="w-4 h-4 text-teal-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M7 11.5V14m0-2.5v-6a1.5 1.5 0 113 0m-3 6a1.5 1.5 0 00-3 0v2a7.5 7.5 0 0015 0v-5a1.5 1.5 0 00-3 0m-6-3V11m0-5.5v-1a1.5 1.5 0 013 0v1m0 0V11m0-5.5a1.5 1.5 0 013 0v3m0 0V11" />
-                                        </svg>
-                                    </div>
-                                    <div className="flex-1 min-w-0">
-                                        <div className="font-medium text-white/80 truncate group-hover:text-white transition-colors">{action.title}</div>
-                                    </div>
-                                    <svg className="w-4 h-4 text-white/20 group-hover:text-white/40 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4" />
-                                    </svg>
-                                </div>
-                            </div>
-                        ))}
-                        {nodeActions.length === 0 && (
-                            <div className="text-xs text-white/30 text-center py-4">暂无节点类型</div>
-                        )}
-                    </div>
-                </div>
-
-                {/* Workflows Section */}
-                <div>
-                    <SectionHeader
-                        isOpen={isWorkflowsOpen}
-                        onToggle={() => setIsWorkflowsOpen(!isWorkflowsOpen)}
-                        title="工作流"
-                        icon={
-                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
-                            </svg>
-                        }
-                        onAdd={onCreateWorkflow}
-                        addTitle="新建工作流"
-                    />
-                    {isWorkflowsOpen && (
-                        <div className="space-y-2">
-                            {workflows?.map(wf => (
-                                <ListItem
-                                    key={wf.id}
-                                    isActive={activeWorkflow?.id === wf.id}
-                                    onClick={() => setActiveWorkflow(wf)}
-                                    actions={
-                                        activeWorkflow && method && wf.id !== method.workflowId && (
-                                            <ActionButton
-                                                onClick={onDeleteWorkflow}
-                                                color="red"
-                                                title="删除"
-                                            >
-                                                <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                                                </svg>
-                                            </ActionButton>
-                                        )
-                                    }
-                                >
-                                    <span className={`font-medium truncate ${activeWorkflow?.id === wf.id ? 'text-teal-300' : 'text-white/80'}`}>
-                                        {wf.name}
-                                    </span>
-                                </ListItem>
-                            ))}
-                            {workflows?.length === 0 && (
-                                <div className="text-xs text-white/30 text-center py-4">暂无工作流</div>
-                            )}
-                        </div>
-                    )}
-                </div>
 
                 {/* Module Types Section */}
                 <div>

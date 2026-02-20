@@ -9,7 +9,6 @@ function serializeMethod(
     id: bigint
     name: string
     description: string | null
-    workflow_id: bigint | null
     novel_type: string | null
     language: string | null
     is_preset: number
@@ -35,7 +34,6 @@ function serializeMethod(
     id: Number(method.id),
     name: method.name,
     description: method.description,
-    workflowId: method.workflow_id ? Number(method.workflow_id) : null,
     novelType: method.novel_type,
     language: method.language,
     isPreset: method.is_preset === 1,
@@ -146,49 +144,11 @@ export async function POST(request: NextRequest) {
           },
         })
 
-        // Copy workflows
-        const templateWorkflows = await tx.workflow.findMany({
-          where: { novel_creation_method_id: template.id },
-        })
-        const workflowIdMap: Record<string, bigint> = {}
-        for (const wf of templateWorkflows) {
-          const newWf = await tx.workflow.create({
-            data: {
-              name: wf.name,
-              description: wf.description,
-              novel_creation_method_id: newMethod.id,
-              nodes_json: wf.nodes_json,
-              edges_json: wf.edges_json,
-              created_at: new Date(),
-            },
-          })
-          workflowIdMap[wf.id.toString()] = newWf.id
-        }
-
-        // Update workflow_id if template had one
-        if (template.workflow_id) {
-          const newWorkflowId =
-            workflowIdMap[template.workflow_id.toString()]
-          if (newWorkflowId) {
-            await tx.novel_creation_method.update({
-              where: { id: newMethod.id },
-              data: { workflow_id: newWorkflowId },
-            })
-          }
-        }
-
         // Copy module_types
         const templateModuleTypes = await tx.module_type.findMany({
           where: { novel_creation_method_id: template.id },
         })
         for (const mt of templateModuleTypes) {
-          const newSaveWorkflowId = mt.save_workflow_id
-            ? workflowIdMap[mt.save_workflow_id.toString()] || null
-            : null
-          const newCreateWorkflowId = mt.create_workflow_id
-            ? workflowIdMap[mt.create_workflow_id.toString()] || null
-            : null
-
           await tx.module_type.create({
             data: {
               name: mt.name,
@@ -196,8 +156,6 @@ export async function POST(request: NextRequest) {
               json_schema: mt.json_schema,
               temperature: mt.temperature,
               novel_creation_method_id: newMethod.id,
-              save_workflow_id: newSaveWorkflowId,
-              create_workflow_id: newCreateWorkflowId,
               enable_ai: mt.enable_ai,
               singleton: mt.singleton,
               built_in: 0,
@@ -210,17 +168,6 @@ export async function POST(request: NextRequest) {
 
         return newMethod
       } else {
-        // Create new method with init workflow
-        const initWorkflow = await tx.workflow.create({
-          data: {
-            name: '默认工作流',
-            description: '初始化工作流',
-            nodes_json: '[]',
-            edges_json: '[]',
-            created_at: new Date(),
-          },
-        })
-
         const newMethod = await tx.novel_creation_method.create({
           data: {
             name: body.name,
@@ -233,15 +180,8 @@ export async function POST(request: NextRequest) {
             is_preset: 0,
             user_id: user.id,
             status: 'draft',
-            workflow_id: initWorkflow.id,
             created_at: new Date(),
           },
-        })
-
-        // Update workflow's novel_creation_method_id
-        await tx.workflow.update({
-          where: { id: initWorkflow.id },
-          data: { novel_creation_method_id: newMethod.id },
         })
 
         return newMethod

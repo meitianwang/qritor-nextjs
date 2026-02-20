@@ -12,10 +12,6 @@ function serializeModuleType(mt: any) {
     novelCreationMethodId: mt.novel_creation_method_id
       ? Number(mt.novel_creation_method_id)
       : null,
-    saveWorkflowId: mt.save_workflow_id ? Number(mt.save_workflow_id) : null,
-    createWorkflowId: mt.create_workflow_id
-      ? Number(mt.create_workflow_id)
-      : null,
     enableAi: mt.enable_ai === 1,
     singleton: mt.singleton === 1,
     builtIn: mt.built_in === 1,
@@ -71,14 +67,6 @@ export async function PUT(
     if (body.novelCreationMethodId !== undefined)
       updateData.novel_creation_method_id = body.novelCreationMethodId
         ? BigInt(body.novelCreationMethodId)
-        : null
-    if (body.saveWorkflowId !== undefined)
-      updateData.save_workflow_id = body.saveWorkflowId
-        ? BigInt(body.saveWorkflowId)
-        : null
-    if (body.createWorkflowId !== undefined)
-      updateData.create_workflow_id = body.createWorkflowId
-        ? BigInt(body.createWorkflowId)
         : null
     if (body.enableAi !== undefined) updateData.enable_ai = body.enableAi ? 1 : 0
     if (body.singleton !== undefined) updateData.singleton = body.singleton ? 1 : 0

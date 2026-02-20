@@ -12,10 +12,6 @@ function serializeModuleType(mt: any) {
     novelCreationMethodId: mt.novel_creation_method_id
       ? Number(mt.novel_creation_method_id)
       : null,
-    saveWorkflowId: mt.save_workflow_id ? Number(mt.save_workflow_id) : null,
-    createWorkflowId: mt.create_workflow_id
-      ? Number(mt.create_workflow_id)
-      : null,
     enableAi: mt.enable_ai === 1,
     singleton: mt.singleton === 1,
     builtIn: mt.built_in === 1,
