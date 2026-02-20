@@ -2,7 +2,8 @@ import { NextRequest } from 'next/server'
 import { apiSuccess, apiError, apiNotFound } from '@/lib/api-response'
 import { getCurrentAdminUser } from '@/lib/middleware/auth-middleware'
 import { prisma } from '@/lib/prisma'
-import { generateText, createGateway } from 'ai'
+import { generateText } from 'ai'
+import { resolveModel } from '@/lib/services/ai-service'
 import { resolveModelRequestPolicy } from '@/lib/services/reasoning-options'
 
 export async function POST(
@@ -21,17 +22,11 @@ export async function POST(
       return apiNotFound('LLM 配置不存在')
     }
 
-    const gatewayApiKey = process.env.AI_GATEWAY_API_KEY || ''
-    if (!gatewayApiKey) {
-      return apiError(400, 'AI Gateway 未配置，请设置 AI_GATEWAY_API_KEY')
-    }
-
-    const gateway = createGateway({ apiKey: gatewayApiKey })
     const modelPolicy = resolveModelRequestPolicy(config.model_name)
     const startTime = Date.now()
 
     const { text } = await generateText({
-      model: gateway(modelPolicy.resolvedModelName),
+      model: resolveModel(modelPolicy.resolvedModelName, config.owned_by),
       messages: [{ role: 'user', content: 'Say "hello" in one word.' }],
       ...(modelPolicy.providerOptions
         ? { providerOptions: modelPolicy.providerOptions }

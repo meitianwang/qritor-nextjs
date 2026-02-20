@@ -5,14 +5,12 @@ import { adminFetch } from '@/lib/admin-utils'
 
 // 平台枚举
 const PLATFORMS = [
-  { key: 'vercel', label: 'Vercel' },
+  { key: 'vercel', label: 'Vercel AI Gateway' },
+  { key: 'anthropic', label: 'Anthropic' },
+  { key: 'google', label: 'Google' },
 ] as const
 
 type PlatformKey = typeof PLATFORMS[number]['key']
-
-const PLATFORM_LABEL_MAP: Record<string, string> = Object.fromEntries(
-  PLATFORMS.map(p => [p.key, p.label])
-)
 
 interface PresetTag {
     key: string
@@ -208,6 +206,8 @@ function LlmConfigModal({ isOpen, onClose, config, onSave, apiBasePath = '/api',
         const response = await adminFetch(`${apiBasePath}/llm-configs/${config.id}`, {
           method: 'PUT',
           body: {
+            model_name: formData.modelName.trim() || undefined,
+            owned_by: formData.platform || undefined,
             display_name: formData.displayName.trim() || undefined,
             model_tier: formData.modelTier || undefined,
             tags: formData.tags || [],
@@ -282,19 +282,32 @@ function LlmConfigModal({ isOpen, onClose, config, onSave, apiBasePath = '/api',
             </div>
           </div>
         ) : (
-          /* 编辑模式：模型信息只读 */
-          <div style={{ background: 'rgba(139, 92, 246, 0.1)', borderRadius: '8px', padding: '16px', marginBottom: '24px' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '8px' }}>
-              <span style={{ color: '#a855f7', fontWeight: '600', fontSize: '1.1rem' }}>{config!.modelName}</span>
-              {config!.platform && (
-                <span style={{ fontSize: '0.75rem', color: 'rgba(255,255,255,0.5)', background: 'rgba(255,255,255,0.1)', padding: '2px 8px', borderRadius: '4px' }}>
-                  {PLATFORM_LABEL_MAP[config!.platform] || config!.platform}
-                </span>
-              )}
+          /* 编辑模式 */
+          <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: '16px', marginBottom: '24px' }}>
+            <div className="admin-form-group" style={{ marginBottom: 0 }}>
+              <label className="admin-form-label">模型名称</label>
+              <input
+                type="text"
+                name="modelName"
+                value={formData.modelName}
+                onChange={handleInputChange}
+                className="admin-form-input"
+                placeholder="例如: google/gemini-3-pro-preview"
+              />
             </div>
-            <p style={{ fontSize: '0.8rem', color: 'rgba(255,255,255,0.4)', margin: 0 }}>
-              模型名称不可修改，可编辑展示名称和计费参数。
-            </p>
+            <div className="admin-form-group" style={{ marginBottom: 0 }}>
+              <label className="admin-form-label">平台</label>
+              <select
+                name="platform"
+                value={formData.platform}
+                onChange={handleInputChange}
+                className="admin-form-input"
+              >
+                {PLATFORMS.map(p => (
+                  <option key={p.key} value={p.key}>{p.label}</option>
+                ))}
+              </select>
+            </div>
           </div>
         )}
 

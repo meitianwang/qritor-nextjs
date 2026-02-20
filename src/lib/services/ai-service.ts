@@ -1,4 +1,6 @@
 import { streamText, createGateway } from 'ai'
+import { createAnthropic } from '@ai-sdk/anthropic'
+import { createGoogleGenerativeAI } from '@ai-sdk/google'
 import { prisma } from '@/lib/prisma'
 import {
   calculateCredits,
@@ -73,6 +75,7 @@ type GenerateEvent =
 export interface LlmConfigRow {
   id: bigint
   model_name: string
+  owned_by: string | null
   model_tier: string | null
   is_default: number | null
   enabled: number | null
@@ -148,6 +151,31 @@ export const gateway = createGateway({
   apiKey: process.env.AI_GATEWAY_API_KEY ?? '',
 })
 
+const anthropic = createAnthropic({
+  baseURL: 'https://api.aicodemirror.com/api/claudecode',
+  apiKey: process.env.ANTHROPIC_API_KEY ?? '',
+})
+
+const google = createGoogleGenerativeAI({
+  baseURL: 'https://api.aicodemirror.com/api/gemini',
+  apiKey: process.env.GOOGLE_GENERATIVE_AI_API_KEY ?? '',
+})
+
+export function resolveModel(modelName: string, platform?: string | null) {
+  if (!platform || platform === 'vercel') {
+    return gateway(modelName)
+  }
+
+  switch (platform) {
+    case 'anthropic':
+      return anthropic(modelName)
+    case 'google':
+      return google(modelName)
+    default:
+      return gateway(modelName)
+  }
+}
+
 // ---------------------------------------------------------------------------
 // GatewayAIService -- streams text via Vercel AI Gateway
 // ---------------------------------------------------------------------------
@@ -179,7 +207,7 @@ class GatewayAIService {
 
     try {
       const result = streamText({
-        model: gateway(modelPolicy.resolvedModelName),
+        model: resolveModel(modelPolicy.resolvedModelName, config.owned_by),
         messages,
         ...(modelPolicy.providerOptions
           ? { providerOptions: modelPolicy.providerOptions }

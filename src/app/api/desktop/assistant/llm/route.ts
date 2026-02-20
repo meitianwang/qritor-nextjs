@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { streamText, jsonSchema } from 'ai'
 import { getCurrentUser } from '@/lib/middleware/auth-middleware'
-import { gateway, getConfigById } from '@/lib/services/ai-service'
+import { resolveModel, getConfigById } from '@/lib/services/ai-service'
 import {
   resolveModelRequestPolicy,
 } from '@/lib/services/reasoning-options'
@@ -113,7 +113,7 @@ export async function POST(request: NextRequest) {
     // 透传给 AI Gateway，积分在 onFinish 回调中扣减
     const systemPrompt: string | undefined = body.systemPrompt || body.system
     const result = streamText({
-      model: gateway(modelPolicy.resolvedModelName),
+      model: resolveModel(modelPolicy.resolvedModelName, config.owned_by),
       ...(systemPrompt ? { system: systemPrompt } : {}),
       messages,
       ...(toolsForModel ? { tools: toolsForModel } : {}),

@@ -3,6 +3,8 @@ import 'dotenv/config'
 import { PrismaClient } from '../src/generated/prisma/client'
 import { PrismaMariaDb } from '@prisma/adapter-mariadb'
 import { createGateway, generateText, jsonSchema, streamText } from 'ai'
+import { createAnthropic } from '@ai-sdk/anthropic'
+import { createGoogleGenerativeAI } from '@ai-sdk/google'
 import { resolveModelRequestPolicy } from '../src/lib/services/reasoning-options'
 
 interface CliOptions {
@@ -164,9 +166,11 @@ function parseToolCallCount(output: unknown): number {
 }
 
 async function runStreamSmoke(
-  gateway: ReturnType<typeof createGateway>,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  modelResolver: (name: string, platform?: string | null) => any,
   modelName: string,
   resolvedModelName: string,
+  platform: string | null,
   providerOptions: Record<string, Record<string, unknown>> | undefined,
   allowTemperature: boolean,
 ): Promise<StreamSmokeResult> {
@@ -177,12 +181,12 @@ async function runStreamSmoke(
       `${modelName} stream`,
       async () => {
         const result = streamText({
-          model: gateway(resolvedModelName),
+          model: modelResolver(resolvedModelName, platform),
           messages: [
             {
               role: 'user',
               content:
-                '请先进行必要推理，然后用一句中文回答“冒烟测试通过”，并补 1 个 10 字以内短句。',
+                '请先进行必要推理，然后用一句中文回答”冒烟测试通过”，并补 1 个 10 字以内短句。',
             },
           ],
           ...(providerOptions ? { providerOptions } : {}),
@@ -254,8 +258,10 @@ async function runStreamSmoke(
 }
 
 async function runToolSmoke(
-  gateway: ReturnType<typeof createGateway>,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  modelResolver: (name: string, platform?: string | null) => any,
   resolvedModelName: string,
+  platform: string | null,
   providerOptions: Record<string, Record<string, unknown>> | undefined,
   allowTemperature: boolean,
   allowTools: boolean,
@@ -279,7 +285,7 @@ async function runToolSmoke(
       `${resolvedModelName} tool`,
       async () =>
         generateText({
-          model: gateway(resolvedModelName),
+          model: modelResolver(resolvedModelName, platform),
           messages: [
             {
               role: 'user',
@@ -469,6 +475,29 @@ async function main(): Promise<void> {
   const prisma = new PrismaClient({ adapter })
   const gateway = createGateway({ apiKey: process.env.AI_GATEWAY_API_KEY })
 
+  const anthropic = createAnthropic({
+    baseURL: 'https://api.aicodemirror.com/api/claudecode',
+    apiKey: process.env.ANTHROPIC_API_KEY ?? '',
+  })
+  const googleAI = createGoogleGenerativeAI({
+    baseURL: 'https://api.aicodemirror.com/api/gemini',
+    apiKey: process.env.GOOGLE_GENERATIVE_AI_API_KEY ?? '',
+  })
+
+  const resolveModel = (modelName: string, platform?: string | null) => {
+    if (!platform || platform === 'vercel') {
+      return gateway(modelName)
+    }
+    switch (platform) {
+      case 'anthropic':
+        return anthropic(modelName)
+      case 'google':
+        return googleAI(modelName)
+      default:
+        return gateway(modelName)
+    }
+  }
+
   try {
     const where = options.includeDisabled ? {} : { enabled: 1 }
     const all = await prisma.llm_config.findMany({
@@ -476,6 +505,7 @@ async function main(): Promise<void> {
       select: {
         id: true,
         model_name: true,
+        owned_by: true,
       },
       orderBy: { id: 'asc' },
     })
@@ -515,16 +545,18 @@ async function main(): Promise<void> {
       )
 
       const stream = await runStreamSmoke(
-        gateway,
+        resolveModel,
         item.model_name,
         modelPolicy.resolvedModelName,
+        item.owned_by,
         modelPolicy.providerOptions,
         modelPolicy.allowTemperature,
       )
 
       const tool = await runToolSmoke(
-        gateway,
+        resolveModel,
         modelPolicy.resolvedModelName,
+        item.owned_by,
         modelPolicy.providerOptions,
         modelPolicy.allowTemperature,
         modelPolicy.allowTools,
