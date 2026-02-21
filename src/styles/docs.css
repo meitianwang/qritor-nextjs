@@ -571,6 +571,70 @@
     text-decoration: underline;
 }
 
+/* ========================================
+   Stepper 布局 — 带编号圆圈和连接线的步骤样式
+   用于 quick-start 等教程页面
+   ======================================== */
+
+.docs-stepper {
+    counter-reset: docs-step;
+    padding-left: 48px;
+    position: relative;
+    overflow: hidden;
+}
+
+/* h2 作为步骤标题 */
+.docs-stepper h2 {
+    counter-increment: docs-step;
+    position: relative;
+    border-bottom: none;
+    padding-bottom: 0;
+    margin-top: 40px;
+    margin-bottom: var(--spacing-md);
+    margin-left: -48px;
+    padding-left: 48px;
+}
+
+/* 编号圆圈 */
+.docs-stepper h2::before {
+    content: counter(docs-step);
+    position: absolute;
+    left: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: var(--color-accent-teal);
+    color: #fff;
+    font-size: 14px;
+    font-weight: 600;
+    text-align: center;
+    line-height: 32px;
+    z-index: 1;
+}
+
+/* 连接线：从当前圆圈底部向下延伸到下一个步骤 */
+.docs-stepper h2::after {
+    content: '';
+    position: absolute;
+    left: 15px;
+    top: calc(50% + 16px);
+    width: 2px;
+    height: 9999px;
+    background: var(--color-border);
+}
+
+/* 最后一个步骤不需要向下的连接线 */
+.docs-stepper h2:last-of-type::after {
+    display: none;
+}
+
+/* 第一个 h2 上方不要太多间距 */
+.docs-stepper h2:first-of-type {
+    margin-top: 0;
+}
+
 /* 文档表格样式 */
 .docs-content-body .docs-table {
     width: 100%;

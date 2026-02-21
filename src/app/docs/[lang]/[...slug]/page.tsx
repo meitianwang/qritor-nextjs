@@ -113,7 +113,7 @@ export default function DocsContentPage() {
             </div>
 
             {/* Body content */}
-            <div className="docs-content-body" dangerouslySetInnerHTML={{ __html: formatContent(content.body) }} />
+            <div className={`docs-content-body${content.layout === 'stepper' ? ' docs-stepper' : ''}`} dangerouslySetInnerHTML={{ __html: formatContent(content.body) }} />
 
             {/* Quick links */}
             {content.quickLinks && content.quickLinks.length > 0 && (
