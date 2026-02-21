@@ -91,7 +91,6 @@ export async function PUT(
     const enabled = toTinyInt(body.enabled)
     const inputPricePerM = toNumber(body.input_price_per_m ?? body.inputPricePerM)
     const outputPricePerM = toNumber(body.output_price_per_m ?? body.outputPricePerM)
-    const pricingMultiplier = toNumber(body.pricing_multiplier ?? body.pricingMultiplier)
     const contextWindow = toPositiveInt(body.context_window ?? body.contextWindow)
 
     const updateData: Record<string, unknown> = { updated_at: new Date() }
@@ -106,7 +105,6 @@ export async function PUT(
     if (enabled !== undefined) updateData.enabled = enabled
     if (inputPricePerM !== undefined) updateData.input_price_per_m = inputPricePerM
     if (outputPricePerM !== undefined) updateData.output_price_per_m = outputPricePerM
-    if (pricingMultiplier !== undefined) updateData.pricing_multiplier = pricingMultiplier
     if (modelTier !== undefined) updateData.model_tier = modelTier
     if (contextWindow !== undefined) updateData.context_window = contextWindow
 

@@ -4,6 +4,7 @@ import { apiSuccess, apiError } from '@/lib/api-response'
 import { parseLlmTags } from '@/lib/llm-tags'
 import { getCurrentUserOptional } from '@/lib/middleware/auth-middleware'
 import { getUserAllowedModelTiers } from '@/lib/services/subscription-service'
+import { creditsPerMToken } from '@/lib/services/token-calculator'
 
 const CONTEXT_WINDOW_COLUMN_CANDIDATES = ['context_window', 'max_tokens'] as const
 let cachedContextWindowColumn: string | null | undefined
@@ -104,7 +105,8 @@ export async function GET(request: NextRequest) {
           isDefault: c.is_default === 1,
           inputPricePerM: c.input_price_per_m ?? 0.20,
           outputPricePerM: c.output_price_per_m ?? 0.40,
-          pricingMultiplier: c.pricing_multiplier ?? 1.0,
+          inputCreditsPerM: creditsPerMToken(c.input_price_per_m ?? 0.20),
+          outputCreditsPerM: creditsPerMToken(c.output_price_per_m ?? 0.40),
           modelTier,
           tags: parseLlmTags(c.tags),
           contextWindow,

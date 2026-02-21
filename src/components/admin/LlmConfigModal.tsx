@@ -70,7 +70,6 @@ interface LlmConfig {
     enabled: boolean
     inputPricePerM: number
     outputPricePerM: number
-    pricingMultiplier: number
     contextWindow?: number
 }
 
@@ -85,7 +84,6 @@ interface LlmFormData {
     enabled: boolean
     inputPricePerM: number
     outputPricePerM: number
-    pricingMultiplier: number
     contextWindow: number | ''
 }
 
@@ -116,7 +114,7 @@ function LlmConfigModal({ isOpen, onClose, config, onSave, apiBasePath = '/api',
     enabled: true,
     inputPricePerM: 0.20,
     outputPricePerM: 0.40,
-    pricingMultiplier: 1.0,
+
     contextWindow: ''
   })
 
@@ -134,7 +132,7 @@ function LlmConfigModal({ isOpen, onClose, config, onSave, apiBasePath = '/api',
           enabled: true,
           inputPricePerM: 0.20,
           outputPricePerM: 0.40,
-          pricingMultiplier: 1.0,
+      
           contextWindow: ''
         })
       } else if (config) {
@@ -149,7 +147,7 @@ function LlmConfigModal({ isOpen, onClose, config, onSave, apiBasePath = '/api',
           enabled: config.enabled !== false,
           inputPricePerM: config.inputPricePerM ?? 0.20,
           outputPricePerM: config.outputPricePerM ?? 0.40,
-          pricingMultiplier: config.pricingMultiplier ?? 1.0,
+
           contextWindow: config.contextWindow || ''
         })
       }
@@ -198,7 +196,6 @@ function LlmConfigModal({ isOpen, onClose, config, onSave, apiBasePath = '/api',
             enabled: formData.enabled ? 1 : 0,
             input_price_per_m: formData.inputPricePerM,
             output_price_per_m: formData.outputPricePerM,
-            pricing_multiplier: formData.pricingMultiplier,
             context_window: formData.contextWindow || undefined,
           }
         })
@@ -235,7 +232,6 @@ function LlmConfigModal({ isOpen, onClose, config, onSave, apiBasePath = '/api',
             enabled: formData.enabled ? 1 : 0,
             input_price_per_m: Number(formData.inputPricePerM),
             output_price_per_m: Number(formData.outputPricePerM),
-            pricing_multiplier: Number(formData.pricingMultiplier),
             context_window: formData.contextWindow || undefined,
           }
         })
@@ -459,7 +455,7 @@ function LlmConfigModal({ isOpen, onClose, config, onSave, apiBasePath = '/api',
             </svg>
             积分配置
           </h3>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '16px' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '16px' }}>
             <div className="admin-form-group" style={{ marginBottom: 0 }}>
               <label className="admin-form-label">输入价格 ($/1M)</label>
               <input
@@ -486,22 +482,9 @@ function LlmConfigModal({ isOpen, onClose, config, onSave, apiBasePath = '/api',
                 placeholder="0.40"
               />
             </div>
-            <div className="admin-form-group" style={{ marginBottom: 0 }}>
-              <label className="admin-form-label">展示倍率</label>
-              <input
-                type="number"
-                name="pricingMultiplier"
-                value={formData.pricingMultiplier}
-                onChange={handleInputChange}
-                step="0.1"
-                min="0"
-                className="admin-form-input"
-                placeholder="1.0"
-              />
-            </div>
           </div>
           <p style={{ fontSize: '0.75rem', color: 'rgba(255,255,255,0.4)', marginTop: '12px' }}>
-            积分 = ceil(inputTokens × 输入价格 + outputTokens × 输出价格) / 1M × 200。展示倍率用于模型选择器显示（如 0.3x、1.0x）。
+            积分 = ceil(inputTokens × 输入价格 + outputTokens × 输出价格) / 1M × 200。积分倍率（每 1M token 消耗的积分）根据价格自动计算。
           </p>
         </div>
 

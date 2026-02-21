@@ -4,6 +4,7 @@ import { getCurrentAdminUser } from '@/lib/middleware/auth-middleware'
 import { prisma } from '@/lib/prisma'
 import { serializeCamel } from '@/lib/serialize'
 import { parseLlmTags, serializeLlmTags } from '@/lib/llm-tags'
+import { creditsPerMToken } from '@/lib/services/token-calculator'
 
 export async function GET(request: NextRequest) {
   try {
@@ -14,10 +15,15 @@ export async function GET(request: NextRequest) {
     })
 
     const serialized = serializeCamel(configs) as unknown as Record<string, unknown>[]
-    const normalized = serialized.map((item, index) => ({
-      ...item,
-      tags: parseLlmTags(configs[index]?.tags ?? null),
-    }))
+    const normalized = serialized.map((item, index) => {
+      const c = configs[index]
+      return {
+        ...item,
+        tags: parseLlmTags(c?.tags ?? null),
+        inputCreditsPerM: creditsPerMToken(c?.input_price_per_m ?? 0.20),
+        outputCreditsPerM: creditsPerMToken(c?.output_price_per_m ?? 0.40),
+      }
+    })
 
     return apiSuccess(normalized)
   } catch (error) {
@@ -40,7 +46,6 @@ export async function POST(request: NextRequest) {
       enabled,
       input_price_per_m,
       output_price_per_m,
-      pricing_multiplier,
       model_tier,
       context_window,
     } = body as {
@@ -53,7 +58,6 @@ export async function POST(request: NextRequest) {
       enabled?: unknown
       input_price_per_m?: unknown
       output_price_per_m?: unknown
-      pricing_multiplier?: unknown
       model_tier?: string
       context_window?: unknown
     }
@@ -97,7 +101,6 @@ export async function POST(request: NextRequest) {
     const normalizedEnabled = toTinyInt(enabled, 1)
     const normalizedInputPricePerM = toNumber(input_price_per_m, 0.20)
     const normalizedOutputPricePerM = toNumber(output_price_per_m, 0.40)
-    const normalizedPricingMultiplier = toNumber(pricing_multiplier, 1.0)
     const normalizedModelTier =
       typeof model_tier === 'string' && model_tier.trim() ? model_tier.trim() : null
     const normalizedContextWindow = toPositiveInt(context_window)
@@ -113,7 +116,6 @@ export async function POST(request: NextRequest) {
         enabled: normalizedEnabled,
         input_price_per_m: normalizedInputPricePerM,
         output_price_per_m: normalizedOutputPricePerM,
-        pricing_multiplier: normalizedPricingMultiplier,
         model_tier: normalizedModelTier,
         context_window: normalizedContextWindow,
         created_at: new Date(),

@@ -1,6 +1,13 @@
 import { prisma } from '@/lib/prisma'
 
 // ---------------------------------------------------------------------------
+// Constants
+// ---------------------------------------------------------------------------
+
+/** 积分/美元 × 加价倍率: 100 (credits per USD) × 2 (markup for 50% profit margin) */
+const CREDITS_PER_USD = 200
+
+// ---------------------------------------------------------------------------
 // Credit calculation (based on real model pricing)
 // ---------------------------------------------------------------------------
 
@@ -10,8 +17,6 @@ import { prisma } from '@/lib/prisma'
  * Formula:
  *   credits = ceil( (inputTokens × inputPricePerM + outputTokens × outputPricePerM)
  *                   / 1,000,000 × 200 )
- *
- * 200 = 100 (credits per USD) × 2 (markup for 50% profit margin)
  */
 export function calculateCredits(
   inputTokens: number,
@@ -22,10 +27,22 @@ export function calculateCredits(
   const costInUSD =
     (inputTokens * inputPricePerM + outputTokens * outputPricePerM) / 1_000_000
 
-  // 100 credits/USD × 2 markup = 200
-  const credits = costInUSD * 200
+  const credits = costInUSD * CREDITS_PER_USD
 
   return Math.max(1, Math.ceil(credits))
+}
+
+// ---------------------------------------------------------------------------
+// Credits-per-million-token rate (pricing multiplier)
+// ---------------------------------------------------------------------------
+
+/**
+ * 每 1M token 消耗的积分数。
+ *
+ * 公式: pricePerM × 200
+ */
+export function creditsPerMToken(pricePerM: number): number {
+  return Math.round(pricePerM * CREDITS_PER_USD)
 }
 
 // ---------------------------------------------------------------------------
@@ -117,6 +134,7 @@ export async function getConfigParams(
 
 export const tokenCalculator = {
   calculateCredits,
+  creditsPerMToken,
   estimateInputTokens,
   getConfigParams,
 }

@@ -22,7 +22,8 @@ interface LlmConfig {
     provider?: string
     platform?: string
     modelTier?: string
-    pricingMultiplier: number
+    inputCreditsPerM: number
+    outputCreditsPerM: number
     enabled: boolean
     isDefault: boolean
     tags: string[]
@@ -240,8 +241,8 @@ export default function LlmConfigPage() {
                                         </span>
                                     </div>
                                     <div className="admin-card-row">
-                                        <span className="admin-card-label">积分倍率</span>
-                                        <span className="admin-card-value">{config.pricingMultiplier}x</span>
+                                        <span className="admin-card-label">倍率 ($/1M tokens)</span>
+                                        <span className="admin-card-value">入 {config.inputPricePerM}x / 出 {config.outputPricePerM}x</span>
                                     </div>
                                     {config.contextWindow && (
                                         <div className="admin-card-row">

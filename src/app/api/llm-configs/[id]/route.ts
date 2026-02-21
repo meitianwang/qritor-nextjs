@@ -2,6 +2,7 @@ import { NextRequest } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { apiSuccess, apiError, apiNotFound } from '@/lib/api-response'
 import { parseLlmTags } from '@/lib/llm-tags'
+import { creditsPerMToken } from '@/lib/services/token-calculator'
 
 export async function GET(
   request: NextRequest,
@@ -27,7 +28,8 @@ export async function GET(
       enabled: c.enabled === 1,
       inputPricePerM: c.input_price_per_m ?? 0.20,
       outputPricePerM: c.output_price_per_m ?? 0.40,
-      pricingMultiplier: c.pricing_multiplier ?? 1.0,
+      inputCreditsPerM: creditsPerMToken(c.input_price_per_m ?? 0.20),
+      outputCreditsPerM: creditsPerMToken(c.output_price_per_m ?? 0.40),
       modelTier: c.model_tier || 'base',
       tags: parseLlmTags(c.tags),
     })

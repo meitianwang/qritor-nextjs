@@ -85,7 +85,6 @@ export async function POST(request: NextRequest) {
             is_default: 0,
             input_price_per_m: 0.20,
             output_price_per_m: 0.40,
-            pricing_multiplier: 1.0,
             created_at: new Date(),
             updated_at: new Date(),
           },

@@ -113,51 +113,36 @@
 
 ---
 
-## 五、模型选择器展示（参考 Cursor）
+## 五、模型选择器展示
 
-模型名称右侧显示小数倍率，以默认模型为 1.0x 基准。
+模型名称右侧显示输入/输出积分倍率，表示每 1M token 消耗的积分数。
 
-### 展示方案
-
-```
-┌──────────────────────────────────────┐
-│  Grok 4.1 Fast Reasoning      0.3x  │
-│  GLM-4.7 Flash                0.3x  │
-│  DeepSeek V3.2 Thinking       0.3x  │
-│  MiniMax M2.5                 0.3x  │
-│  Kimi K2.5                    0.7x  │
-│  Gemini 3 Flash               0.7x  │
-│  GLM-5                        1.0x  │ ← 默认模型 = 基准
-│  Claude Sonnet 4.5            3.5x  │
-│  Claude Opus 4.6              5.8x  │
-└──────────────────────────────────────┘
-```
-
-### 倍率计算
-
-以默认模型（GLM-5）的续写积分消耗为 1.0x 基准：
+### 倍率定义
 
 ```
-基准积分 = ceil((20000 × 1.00 + 3000 × 3.20) / 1,000,000 × 200) = 6
-模型积分 = ceil((20000 × inputPricePerM + 3000 × outputPricePerM) / 1,000,000 × 200)
-倍率 = round(模型积分 / 基准积分, 1)
+输入倍率 = inputPricePerM × 200（积分 / 1M input tokens）
+输出倍率 = outputPricePerM × 200（积分 / 1M output tokens）
 ```
 
-| 模型 | 积分/次 | 倍率 |
-|------|--------|------|
-| Grok 4.1 Fast | 2 | 0.3x |
-| GLM-4.7 Flash | 2 | 0.3x |
-| DeepSeek V3.2 | 2 | 0.3x |
-| MiniMax M2.5 | 2 | 0.3x |
-| Kimi K2.5 | 4 | 0.7x |
-| Gemini 3 Flash | 4 | 0.7x |
-| **GLM-5** | **6** | **1.0x** |
-| Claude Sonnet 4.5 | 21 | 3.5x |
-| Claude Opus 4.6 | 35 | 5.8x |
+其中 200 = 100（积分/美元）× 2（加价倍率），与计费公式完全一致。不依赖任何基准模型，自动从价格计算。
+
+### 各模型倍率
+
+| 模型 | 输入倍率 | 输出倍率 |
+|------|---------|---------|
+| Grok 4.1 Fast | 40 | 100 |
+| GLM-4.7 Flash | 40 | 80 |
+| DeepSeek V3.2 | 56 | 84 |
+| MiniMax M2.5 | 60 | 240 |
+| Kimi K2.5 | 100 | 560 |
+| Gemini 3 Flash | 100 | 600 |
+| GLM-5 | 200 | 640 |
+| Claude Sonnet 4.5 | 600 | 3,000 |
+| Claude Opus 4.6 | 1,000 | 5,000 |
 
 ### 数据来源
 
-`llm_config` 表的 `pricing_multiplier` DECIMAL(3,1) 字段，管理员在后台设置。
+API 返回 `inputCreditsPerM` / `outputCreditsPerM` 字段，由 `token-calculator.ts` 的 `creditsPerMToken()` 函数从 `input_price_per_m` / `output_price_per_m` 实时计算。
 
 ---
 

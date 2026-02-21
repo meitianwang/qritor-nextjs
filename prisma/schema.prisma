@@ -73,7 +73,6 @@ model llm_config {
   enabled             Int?      @db.SmallInt
   input_price_per_m   Float?    @db.Float
   output_price_per_m  Float?    @db.Float
-  pricing_multiplier  Float?    @db.Float
   model_tier          String?   @db.VarChar(20)
   context_window      Int?      @db.Int
   created_at          DateTime  @db.DateTime(0)
