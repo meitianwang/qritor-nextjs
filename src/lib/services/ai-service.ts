@@ -1,6 +1,5 @@
 import { streamText, createGateway } from 'ai'
 import { createAnthropic } from '@ai-sdk/anthropic'
-import { createGoogleGenerativeAI } from '@ai-sdk/google'
 import { createOpenAI } from '@ai-sdk/openai'
 import { prisma } from '@/lib/prisma'
 import {
@@ -163,17 +162,12 @@ export const gateway = createGateway({
 })
 
 const anthropic = createAnthropic({
-  baseURL: 'https://api.aicodemirror.com/api/claudecode/v1',
+  baseURL: process.env.ANTHROPIC_BASE_URL ?? '',
   apiKey: process.env.ANTHROPIC_API_KEY ?? '',
 })
 
-const google = createGoogleGenerativeAI({
-  baseURL: 'https://api.aicodemirror.com/api/gemini/v1beta',
-  apiKey: process.env.GOOGLE_GENERATIVE_AI_API_KEY ?? '',
-})
-
 const openai = createOpenAI({
-  baseURL: 'https://api.aicodemirror.com/api/codex/backend-api/codex/v1',
+  baseURL: process.env.OPENAI_BASE_URL ?? '',
   apiKey: process.env.OPENAI_API_KEY ?? '',
 })
 
@@ -185,8 +179,6 @@ export function resolveModel(modelName: string, platform?: string | null) {
     switch (platform) {
       case 'anthropic':
         return anthropic(modelName)
-      case 'google':
-        return google(modelName)
       case 'openai':
         return openai.responses(modelName)
       default:
@@ -229,6 +221,92 @@ class GatewayAIService {
       messages.push({ role: 'system', content: systemPrompt })
     }
     messages.push({ role: 'user', content: prompt })
+
+    // Google platform: 直接走 @google/genai SDK
+    if (config.platform === 'google') {
+      const { streamGoogleContent, classifyGoogleError } = await import('./google-genai')
+      let outputText = ''
+      try {
+        for await (const event of streamGoogleContent({
+          modelName: config.model_name,
+          contents: [{ role: 'user', parts: [{ text: prompt }] }],
+          systemInstruction: systemPrompt,
+          thinkingConfig: { includeThoughts: true, thinkingLevel: 'HIGH' },
+          maxTokens: modelPolicy.maxTokens,
+        })) {
+          switch (event.type) {
+            case 'text-delta':
+              outputText += event.text
+              yield { type: 'chunk', content: event.text }
+              break
+            case 'reasoning-delta':
+              yield { type: 'reasoning', content: event.text }
+              break
+            case 'finish':
+              yield {
+                type: 'usage',
+                inputTokens: event.usage.inputTokens,
+                outputTokens: event.usage.outputTokens,
+              }
+              break
+            case 'error': {
+              const classified = classifyGoogleError(event.error)
+              console.error('Google AI stream error:', event.error)
+              yield { type: 'error', ...classified }
+              return
+            }
+          }
+        }
+      } catch (error) {
+        console.error('Google AI service error:', error)
+        const classified = classifyGoogleError(error)
+        yield { type: 'error', ...classified }
+      }
+      return
+    }
+
+    // Anthropic platform: 直接走 @anthropic-ai/sdk
+    if (config.platform === 'anthropic') {
+      const { streamAnthropicContent, classifyAnthropicError } = await import('./anthropic-sdk')
+      let outputText = ''
+      try {
+        for await (const event of streamAnthropicContent({
+          modelName: config.model_name,
+          messages: [{ role: 'user', content: prompt }],
+          systemBlocks: systemPrompt ? [{ type: 'text', text: systemPrompt }] : [],
+          maxTokens: modelPolicy.maxTokens ?? 16000,
+          thinking: { type: 'enabled', budget_tokens: Math.max(1024, (modelPolicy.maxTokens ?? 16000) - 1) },
+        })) {
+          switch (event.type) {
+            case 'text-delta':
+              outputText += event.text
+              yield { type: 'chunk', content: event.text }
+              break
+            case 'reasoning-delta':
+              yield { type: 'reasoning', content: event.text }
+              break
+            case 'finish':
+              yield {
+                type: 'usage',
+                inputTokens: event.usage.inputTokens,
+                outputTokens: event.usage.outputTokens,
+              }
+              break
+            case 'error': {
+              const classified = classifyAnthropicError(event.error)
+              console.error('Anthropic AI stream error:', event.error)
+              yield { type: 'error', ...classified }
+              return
+            }
+          }
+        }
+      } catch (error) {
+        console.error('Anthropic AI service error:', error)
+        const classified = classifyAnthropicError(error)
+        yield { type: 'error', ...classified }
+      }
+      return
+    }
 
     let outputText = ''
     let usageInputTokens: number | undefined

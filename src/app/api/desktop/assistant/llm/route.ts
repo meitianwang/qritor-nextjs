@@ -1,5 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { streamText, jsonSchema } from 'ai'
+import {
+  streamText,
+  jsonSchema,
+  createUIMessageStream,
+  createUIMessageStreamResponse,
+} from 'ai'
+import { generateId } from '@ai-sdk/provider-utils'
 import { getCurrentUser } from '@/lib/middleware/auth-middleware'
 import { resolveModel, getConfigById } from '@/lib/services/ai-service'
 import {
@@ -176,6 +182,42 @@ export async function POST(request: NextRequest) {
     // 透传给 AI Gateway，积分在 onFinish 回调中扣减
     const systemPrompt: string | undefined = body.systemPrompt || body.system
 
+    // -----------------------------------------------------------------------
+    // Google platform: 走 @google/genai SDK
+    // -----------------------------------------------------------------------
+    if (config.platform === 'google') {
+      return handleGoogleStream({
+        modelName: config.model_name,
+        messages,
+        systemPrompt,
+        rawTools: body.tools,
+        temperature,
+        maxTokens: modelPolicy.maxTokens,
+        userId: user.id,
+        configId,
+      })
+    }
+
+    // -----------------------------------------------------------------------
+    // Anthropic platform: 走 @anthropic-ai/sdk
+    // -----------------------------------------------------------------------
+    if (config.platform === 'anthropic') {
+      return handleAnthropicStream({
+        modelName: config.model_name,
+        messages,
+        systemPrompt,
+        rawTools: body.tools,
+        temperature,
+        maxTokens: modelPolicy.maxTokens ?? 16000,
+        userId: user.id,
+        configId,
+      })
+    }
+
+    // -----------------------------------------------------------------------
+    // 其他 platform: 继续走 Vercel AI SDK streamText
+    // -----------------------------------------------------------------------
+
     // Anthropic: 将 system prompt 标记为可缓存
     const systemOption = systemPrompt
       ? isAnthropic
@@ -294,4 +336,422 @@ export async function POST(request: NextRequest) {
       { status: httpStatus },
     )
   }
+}
+
+// ---------------------------------------------------------------------------
+// Anthropic platform: @anthropic-ai/sdk 直连 + createUIMessageStream SSE 输出
+// ---------------------------------------------------------------------------
+
+interface HandleAnthropicStreamParams {
+  modelName: string
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  messages: any[]
+  systemPrompt?: string
+  rawTools?: Record<string, { description?: string; inputSchema?: Record<string, unknown> }>
+  temperature: number
+  maxTokens: number
+  userId: bigint
+  configId?: number
+}
+
+async function handleAnthropicStream(params: HandleAnthropicStreamParams): Promise<Response> {
+  const {
+    streamAnthropicContent,
+    convertMessagesToAnthropicFormat,
+    convertToolsToAnthropicFormat,
+    classifyAnthropicError,
+  } = await import('@/lib/services/anthropic-sdk')
+
+  const { messages: anthropicMessages, systemBlocks } = convertMessagesToAnthropicFormat(params.messages)
+
+  // 合并外部 system prompt 和消息中提取的 system blocks
+  if (params.systemPrompt) {
+    systemBlocks.unshift({ type: 'text', text: params.systemPrompt })
+  }
+
+  const anthropicTools = params.rawTools
+    ? convertToolsToAnthropicFormat(params.rawTools)
+    : undefined
+
+  const stream = createUIMessageStream({
+    execute: async ({ writer }) => {
+      let totalInputTokens = 0
+      let totalOutputTokens = 0
+      let totalReasoningTokens = 0
+
+      let reasoningPartId = ''
+      let textPartId = ''
+      let hasError = false
+
+      writer.write({ type: 'start' })
+      writer.write({ type: 'start-step' })
+
+      try {
+        for await (const event of streamAnthropicContent({
+          modelName: params.modelName,
+          messages: anthropicMessages,
+          systemBlocks,
+          tools: anthropicTools,
+          temperature: params.temperature,
+          maxTokens: params.maxTokens,
+          thinking: { type: 'enabled', budget_tokens: Math.max(1024, params.maxTokens - 1) },
+        })) {
+          switch (event.type) {
+            case 'reasoning-delta': {
+              if (!reasoningPartId) {
+                reasoningPartId = generateId()
+                writer.write({ type: 'reasoning-start', id: reasoningPartId })
+              }
+              if (event.text) {
+                writer.write({
+                  type: 'reasoning-delta',
+                  id: reasoningPartId,
+                  delta: event.text,
+                })
+              }
+              // signature 到达时通过 providerMetadata 传递
+              if (event.signature) {
+                writer.write({
+                  type: 'reasoning-end',
+                  id: reasoningPartId,
+                  providerMetadata: { anthropic: { signature: event.signature } },
+                })
+                reasoningPartId = ''
+              }
+              break
+            }
+
+            case 'text-delta': {
+              if (reasoningPartId) {
+                writer.write({ type: 'reasoning-end', id: reasoningPartId })
+                reasoningPartId = ''
+              }
+              if (!textPartId) {
+                textPartId = generateId()
+                writer.write({ type: 'text-start', id: textPartId })
+              }
+              writer.write({ type: 'text-delta', id: textPartId, delta: event.text })
+              break
+            }
+
+            case 'tool-call': {
+              if (textPartId) {
+                writer.write({ type: 'text-end', id: textPartId })
+                textPartId = ''
+              }
+              if (reasoningPartId) {
+                writer.write({ type: 'reasoning-end', id: reasoningPartId })
+                reasoningPartId = ''
+              }
+              writer.write({
+                type: 'tool-input-available',
+                toolCallId: event.toolCallId,
+                toolName: event.toolName,
+                input: event.args,
+              })
+              break
+            }
+
+            case 'finish': {
+              if (textPartId) {
+                writer.write({ type: 'text-end', id: textPartId })
+                textPartId = ''
+              }
+              if (reasoningPartId) {
+                writer.write({ type: 'reasoning-end', id: reasoningPartId })
+                reasoningPartId = ''
+              }
+
+              totalInputTokens = event.usage.inputTokens
+              totalOutputTokens = event.usage.outputTokens
+              totalReasoningTokens = event.usage.reasoningTokens
+
+              writer.write({ type: 'finish-step' })
+              writer.write({
+                type: 'finish',
+                finishReason: event.finishReason as 'stop' | 'length' | 'tool-calls',
+                messageMetadata: {
+                  usage: {
+                    inputTokens: totalInputTokens,
+                    outputTokens: totalOutputTokens,
+                    ...(totalReasoningTokens > 0 ? { reasoningTokens: totalReasoningTokens } : {}),
+                  },
+                },
+              })
+              break
+            }
+
+            case 'error': {
+              hasError = true
+              const classified = classifyAnthropicError(event.error)
+              writer.write({ type: 'error', errorText: classified.message })
+              break
+            }
+          }
+        }
+      } catch (error) {
+        hasError = true
+        const classified = classifyAnthropicError(error)
+        writer.write({ type: 'error', errorText: classified.message })
+      }
+
+      // 积分扣减
+      if (!hasError && totalInputTokens + totalOutputTokens > 0) {
+        console.log(
+          `[LLM/Anthropic] Finish: in=${totalInputTokens}, out=${totalOutputTokens}, reasoning=${totalReasoningTokens}`,
+        )
+        const {
+          inputPricePerM: ip,
+          outputPricePerM: op,
+          configId: cid,
+        } = await getConfigParams(params.configId)
+        const credits = calculateCredits(totalInputTokens, totalOutputTokens, ip, op)
+        try {
+          const deducted = await consumeCreditsWithTransaction(
+            params.userId,
+            credits,
+            'DESKTOP_ASSISTANT_LLM',
+            cid ? BigInt(cid) : undefined,
+            totalInputTokens,
+            totalOutputTokens,
+            ip,
+            op,
+            '桌面端助手对话',
+          )
+          if (!deducted) {
+            console.error(
+              `[LLM/Anthropic] Credit deduction failed: user=${params.userId}, credits=${credits}`,
+            )
+            await recordCreditDebt(
+              params.userId,
+              credits,
+              'DESKTOP_ASSISTANT_LLM',
+              '桌面端助手扣费失败，已记入欠费',
+            )
+          }
+        } catch (e) {
+          console.error('积分扣减失败:', e)
+          await recordCreditDebt(
+            params.userId,
+            credits,
+            'DESKTOP_ASSISTANT_LLM',
+            '桌面端助手扣费异常，已记入欠费',
+          )
+        }
+      }
+    },
+  })
+
+  return createUIMessageStreamResponse({ stream })
+}
+
+// ---------------------------------------------------------------------------
+// Google platform: @google/genai 直连 + createUIMessageStream SSE 输出
+// ---------------------------------------------------------------------------
+
+interface HandleGoogleStreamParams {
+  modelName: string
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  messages: any[]
+  systemPrompt?: string
+  rawTools?: Record<string, { description?: string; inputSchema?: Record<string, unknown> }>
+  temperature: number
+  maxTokens?: number
+  userId: bigint
+  configId?: number
+}
+
+async function handleGoogleStream(params: HandleGoogleStreamParams): Promise<Response> {
+  const {
+    streamGoogleContent,
+    convertMessagesToGoogleContents,
+    convertToolsToGoogleFormat,
+    classifyGoogleError,
+  } = await import('@/lib/services/google-genai')
+
+  const { contents, systemInstruction } = convertMessagesToGoogleContents(params.messages)
+  const mergedSystem = params.systemPrompt
+    ? systemInstruction
+      ? `${params.systemPrompt}\n\n${systemInstruction}`
+      : params.systemPrompt
+    : systemInstruction
+
+  const googleTools = params.rawTools
+    ? convertToolsToGoogleFormat(params.rawTools)
+    : undefined
+
+  const stream = createUIMessageStream({
+    execute: async ({ writer }) => {
+      let totalInputTokens = 0
+      let totalOutputTokens = 0
+      let totalReasoningTokens = 0
+
+      let reasoningPartId = ''
+      let textPartId = ''
+      let hasError = false
+
+      writer.write({ type: 'start' })
+      writer.write({ type: 'start-step' })
+
+      try {
+        for await (const event of streamGoogleContent({
+          modelName: params.modelName,
+          contents,
+          systemInstruction: mergedSystem,
+          tools: googleTools,
+          temperature: params.temperature,
+          maxTokens: params.maxTokens,
+          thinkingConfig: { includeThoughts: true, thinkingLevel: 'HIGH' },
+        })) {
+          switch (event.type) {
+            case 'reasoning-delta': {
+              if (!reasoningPartId) {
+                reasoningPartId = generateId()
+                writer.write({
+                  type: 'reasoning-start',
+                  id: reasoningPartId,
+                  providerMetadata: event.thoughtSignature
+                    ? { google: { thoughtSignature: event.thoughtSignature } }
+                    : undefined,
+                })
+              }
+              writer.write({
+                type: 'reasoning-delta',
+                id: reasoningPartId,
+                delta: event.text,
+                providerMetadata: event.thoughtSignature
+                  ? { google: { thoughtSignature: event.thoughtSignature } }
+                  : undefined,
+              })
+              break
+            }
+
+            case 'text-delta': {
+              // 从 reasoning 过渡到 text 时，关闭 reasoning part
+              if (reasoningPartId) {
+                writer.write({ type: 'reasoning-end', id: reasoningPartId })
+                reasoningPartId = ''
+              }
+              if (!textPartId) {
+                textPartId = generateId()
+                writer.write({ type: 'text-start', id: textPartId })
+              }
+              writer.write({ type: 'text-delta', id: textPartId, delta: event.text })
+              break
+            }
+
+            case 'tool-call': {
+              // 关闭未关闭的 part
+              if (textPartId) {
+                writer.write({ type: 'text-end', id: textPartId })
+                textPartId = ''
+              }
+              if (reasoningPartId) {
+                writer.write({ type: 'reasoning-end', id: reasoningPartId })
+                reasoningPartId = ''
+              }
+              writer.write({
+                type: 'tool-input-available',
+                toolCallId: event.toolCallId,
+                toolName: event.toolName,
+                input: event.args,
+                providerMetadata: event.thoughtSignature
+                  ? { google: { thoughtSignature: event.thoughtSignature } }
+                  : undefined,
+              })
+              break
+            }
+
+            case 'finish': {
+              // 关闭未关闭的 part
+              if (textPartId) {
+                writer.write({ type: 'text-end', id: textPartId })
+                textPartId = ''
+              }
+              if (reasoningPartId) {
+                writer.write({ type: 'reasoning-end', id: reasoningPartId })
+                reasoningPartId = ''
+              }
+
+              totalInputTokens = event.usage.inputTokens
+              totalOutputTokens = event.usage.outputTokens
+              totalReasoningTokens = event.usage.reasoningTokens
+
+              writer.write({ type: 'finish-step' })
+              writer.write({
+                type: 'finish',
+                finishReason: event.finishReason as 'stop' | 'length' | 'tool-calls',
+                messageMetadata: {
+                  usage: {
+                    inputTokens: totalInputTokens,
+                    outputTokens: totalOutputTokens,
+                    ...(totalReasoningTokens > 0 ? { reasoningTokens: totalReasoningTokens } : {}),
+                  },
+                },
+              })
+              break
+            }
+
+            case 'error': {
+              hasError = true
+              const classified = classifyGoogleError(event.error)
+              writer.write({ type: 'error', errorText: classified.message })
+              break
+            }
+          }
+        }
+      } catch (error) {
+        hasError = true
+        const classified = classifyGoogleError(error)
+        writer.write({ type: 'error', errorText: classified.message })
+      }
+
+      // 积分扣减
+      if (!hasError && totalInputTokens + totalOutputTokens > 0) {
+        console.log(
+          `[LLM/Google] Finish: in=${totalInputTokens}, out=${totalOutputTokens}, reasoning=${totalReasoningTokens}`,
+        )
+        const {
+          inputPricePerM: ip,
+          outputPricePerM: op,
+          configId: cid,
+        } = await getConfigParams(params.configId)
+        const credits = calculateCredits(totalInputTokens, totalOutputTokens, ip, op)
+        try {
+          const deducted = await consumeCreditsWithTransaction(
+            params.userId,
+            credits,
+            'DESKTOP_ASSISTANT_LLM',
+            cid ? BigInt(cid) : undefined,
+            totalInputTokens,
+            totalOutputTokens,
+            ip,
+            op,
+            '桌面端助手对话',
+          )
+          if (!deducted) {
+            console.error(
+              `[LLM/Google] Credit deduction failed: user=${params.userId}, credits=${credits}`,
+            )
+            await recordCreditDebt(
+              params.userId,
+              credits,
+              'DESKTOP_ASSISTANT_LLM',
+              '桌面端助手扣费失败，已记入欠费',
+            )
+          }
+        } catch (e) {
+          console.error('积分扣减失败:', e)
+          await recordCreditDebt(
+            params.userId,
+            credits,
+            'DESKTOP_ASSISTANT_LLM',
+            '桌面端助手扣费异常，已记入欠费',
+          )
+        }
+      }
+    },
+  })
+
+  return createUIMessageStreamResponse({ stream })
 }
