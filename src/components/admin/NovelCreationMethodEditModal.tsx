@@ -9,7 +9,6 @@ interface NovelCreationMethod {
     description?: string
     novelType?: string
     language?: string
-    isPreset?: boolean
 }
 
 interface NovelCreationMethodEditModalProps {
@@ -37,7 +36,6 @@ export default function NovelCreationMethodEditModal({
         description: '',
         novelType: '',
         language: '',
-        isPreset: false
     })
     const [loading, setLoading] = useState(false)
     const [languages, setLanguages] = useState<EnumOption[]>([])
@@ -68,7 +66,6 @@ export default function NovelCreationMethodEditModal({
                     description: method.description || '',
                     novelType: method.novelType || '',
                     language: method.language || '',
-                    isPreset: method.isPreset || false
                 })
             } else {
                 setFormData({
@@ -76,7 +73,6 @@ export default function NovelCreationMethodEditModal({
                     description: '',
                     novelType: '',
                     language: '',
-                    isPreset: false
                 })
             }
         }

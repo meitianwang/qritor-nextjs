@@ -53,8 +53,6 @@ interface SidebarProps {
     deletingItem: DeletingItem | null
     handleDelete: (type: string, id: number) => void
     onOpenModal?: () => void
-    onPublish: () => void
-    publishing: boolean
     showToast: (type: string, message: string) => void
     isCollapsed: boolean
     onToggleCollapse: () => void
@@ -68,8 +66,6 @@ const Sidebar: React.FC<SidebarProps> = ({
     deletingItem,
     handleDelete,
     onOpenModal,
-    onPublish,
-    publishing,
     showToast,
     isCollapsed,
     onToggleCollapse,
@@ -238,51 +234,6 @@ const Sidebar: React.FC<SidebarProps> = ({
                     </div>
                 )}
 
-                {/* 状态和发布按钮 */}
-                {method && !method.isPreset && (
-                    <div className="flex items-center justify-between mt-4">
-                        <span
-                            className={`
-                                inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium
-                                ${method.status === 'published'
-                                    ? 'bg-emerald-500/10 text-emerald-400'
-                                    : 'bg-amber-500/10 text-amber-400'
-                                }
-                            `}
-                        >
-                            <span className={`w-1.5 h-1.5 rounded-full mr-2 ${method.status === 'published' ? 'bg-emerald-400' : 'bg-amber-400'}`} />
-                            {method.status === 'published'
-                                ? '已发布'
-                                : '开发中'
-                            }
-                        </span>
-
-                        {method.status !== 'published' && method.canEdit && (
-                            <button
-                                onClick={onPublish}
-                                disabled={publishing}
-                                className="px-3 py-1.5 text-xs font-medium text-white rounded-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1.5 bg-teal-600 hover:bg-teal-500"
-                            >
-                                {publishing ? (
-                                    <>
-                                        <svg className="animate-spin h-3 w-3" viewBox="0 0 24 24">
-                                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
-                                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
-                                        </svg>
-                                        发布中...
-                                    </>
-                                ) : (
-                                    <>
-                                        <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
-                                        </svg>
-                                        发布
-                                    </>
-                                )}
-                            </button>
-                        )}
-                    </div>
-                )}
             </div>
 
             {/* Resources List */}

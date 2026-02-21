@@ -1,8 +1,7 @@
 import { NextRequest } from 'next/server'
 import { prisma } from '@/lib/prisma'
-import { getCurrentUser, getCurrentUserOptional } from '@/lib/middleware/auth-middleware'
-import { apiSuccess, apiError, apiNotFound, apiForbidden } from '@/lib/api-response'
-import { users_role } from '@/generated/prisma/client'
+import { getCurrentAdminUser } from '@/lib/middleware/auth-middleware'
+import { apiSuccess, apiError, apiNotFound } from '@/lib/api-response'
 
 function serializeMethod(
   method: {
@@ -11,15 +10,10 @@ function serializeMethod(
     description: string | null
     novel_type: string | null
     language: string | null
-    is_preset: number
-    user_id: bigint | null
-    status: string
     visible_categories: string | null
     created_at: Date
     updated_at: Date | null
   },
-  creatorName: string | null,
-  canEdit: boolean
 ) {
   let parsedCategories: string[] | null = null
   if (method.visible_categories) {
@@ -36,11 +30,6 @@ function serializeMethod(
     description: method.description,
     novelType: method.novel_type,
     language: method.language,
-    isPreset: method.is_preset === 1,
-    userId: method.user_id ? Number(method.user_id) : null,
-    status: method.status,
-    creatorName,
-    canEdit,
     visibleCategories: parsedCategories,
     createdAt: method.created_at.toISOString(),
     updatedAt: method.updated_at?.toISOString() || null,
@@ -48,12 +37,11 @@ function serializeMethod(
 }
 
 export async function GET(
-  request: NextRequest,
+  _request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const { id } = await params
-    const user = await getCurrentUserOptional(request)
 
     const method = await prisma.novel_creation_method.findUnique({
       where: { id: BigInt(id) },
@@ -63,21 +51,7 @@ export async function GET(
       return apiNotFound('创作方法不存在')
     }
 
-    let creatorName: string | null = null
-    if (method.user_id) {
-      const creator = await prisma.users.findUnique({
-        where: { id: method.user_id },
-        select: { nickname: true },
-      })
-      creatorName = creator?.nickname || null
-    }
-
-    const canEdit =
-      user !== null &&
-      (user.role === users_role.ADMIN ||
-        (method.user_id !== null && method.user_id === user.id))
-
-    return apiSuccess(serializeMethod(method, creatorName, canEdit))
+    return apiSuccess(serializeMethod(method))
   } catch (error) {
     if (error instanceof Response) return error
     return apiError(500, '获取创作方法失败')
@@ -90,7 +64,7 @@ export async function PUT(
 ) {
   try {
     const { id } = await params
-    const user = await getCurrentUser(request)
+    await getCurrentAdminUser(request)
     const body = await request.json()
 
     const method = await prisma.novel_creation_method.findUnique({
@@ -99,14 +73,6 @@ export async function PUT(
 
     if (!method) {
       return apiNotFound('创作方法不存在')
-    }
-
-    const canEdit =
-      user.role === users_role.ADMIN ||
-      (method.user_id !== null && method.user_id === user.id)
-
-    if (!canEdit) {
-      return apiForbidden('无权修改此创作方法')
     }
 
     const updateData: Record<string, unknown> = {
@@ -121,23 +87,12 @@ export async function PUT(
       updateData.visible_categories = body.visibleCategories
         ? JSON.stringify(body.visibleCategories)
         : null
-    if (body.status !== undefined) updateData.status = body.status
-
     const updated = await prisma.novel_creation_method.update({
       where: { id: BigInt(id) },
       data: updateData,
     })
 
-    let creatorName: string | null = null
-    if (updated.user_id) {
-      const creator = await prisma.users.findUnique({
-        where: { id: updated.user_id },
-        select: { nickname: true },
-      })
-      creatorName = creator?.nickname || null
-    }
-
-    return apiSuccess(serializeMethod(updated, creatorName, true))
+    return apiSuccess(serializeMethod(updated))
   } catch (error) {
     if (error instanceof Response) return error
     return apiError(500, '更新创作方法失败')
@@ -150,7 +105,7 @@ export async function DELETE(
 ) {
   try {
     const { id } = await params
-    const user = await getCurrentUser(request)
+    await getCurrentAdminUser(request)
 
     const method = await prisma.novel_creation_method.findUnique({
       where: { id: BigInt(id) },
@@ -160,16 +115,9 @@ export async function DELETE(
       return apiNotFound('创作方法不存在')
     }
 
-    const canEdit =
-      user.role === users_role.ADMIN ||
-      (method.user_id !== null && method.user_id === user.id)
-
-    if (!canEdit) {
-      return apiForbidden('无权删除此创作方法')
-    }
-
     await prisma.$transaction(async (tx) => {
       const methodId = BigInt(id)
+      await tx.skill.deleteMany({ where: { novel_creation_method_id: methodId } })
       await tx.module_type.deleteMany({ where: { novel_creation_method_id: methodId } })
       await tx.novel_creation_method.delete({ where: { id: methodId } })
     })

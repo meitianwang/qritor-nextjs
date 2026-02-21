@@ -1,8 +1,7 @@
 import { NextRequest } from 'next/server'
 import { prisma } from '@/lib/prisma'
-import { getCurrentUser, getCurrentUserOptional } from '@/lib/middleware/auth-middleware'
-import { apiSuccess, apiError, apiNotFound, apiValidationError } from '@/lib/api-response'
-import { users_role } from '@/generated/prisma/client'
+import { getCurrentAdminUser } from '@/lib/middleware/auth-middleware'
+import { apiSuccess, apiError, apiValidationError } from '@/lib/api-response'
 
 function serializeMethod(
   method: {
@@ -11,15 +10,10 @@ function serializeMethod(
     description: string | null
     novel_type: string | null
     language: string | null
-    is_preset: number
-    user_id: bigint | null
-    status: string
     visible_categories: string | null
     created_at: Date
     updated_at: Date | null
   },
-  creatorName: string | null,
-  canEdit: boolean
 ) {
   let parsedCategories: string[] | null = null
   if (method.visible_categories) {
@@ -36,72 +30,19 @@ function serializeMethod(
     description: method.description,
     novelType: method.novel_type,
     language: method.language,
-    isPreset: method.is_preset === 1,
-    userId: method.user_id ? Number(method.user_id) : null,
-    status: method.status,
-    creatorName: creatorName,
-    canEdit: canEdit,
     visibleCategories: parsedCategories,
     createdAt: method.created_at.toISOString(),
     updatedAt: method.updated_at?.toISOString() || null,
   }
 }
 
-export async function GET(request: NextRequest) {
+export async function GET() {
   try {
-    const user = await getCurrentUserOptional(request)
-
-    let where = {}
-    if (user) {
-      where = {
-        OR: [
-          { is_preset: 1 },
-          { user_id: user.id },
-          { status: 'published' },
-        ],
-      }
-    } else {
-      where = {
-        OR: [
-          { is_preset: 1 },
-          { status: 'published' },
-        ],
-      }
-    }
-
     const methods = await prisma.novel_creation_method.findMany({
-      where,
       orderBy: { created_at: 'desc' },
     })
 
-    const userIds = methods
-      .map((m) => m.user_id)
-      .filter((id): id is bigint => id !== null)
-    const uniqueUserIds = [...new Set(userIds.map((id) => id.toString()))].map(
-      (id) => BigInt(id)
-    )
-
-    let usersMap: Record<string, string> = {}
-    if (uniqueUserIds.length > 0) {
-      const users = await prisma.users.findMany({
-        where: { id: { in: uniqueUserIds } },
-        select: { id: true, nickname: true },
-      })
-      usersMap = Object.fromEntries(
-        users.map((u) => [u.id.toString(), u.nickname])
-      )
-    }
-
-    const result = methods.map((method) => {
-      const creatorName = method.user_id
-        ? usersMap[method.user_id.toString()] || null
-        : null
-      const canEdit =
-        user !== null &&
-        (user.role === users_role.ADMIN ||
-          (method.user_id !== null && method.user_id === user.id))
-      return serializeMethod(method, creatorName, canEdit)
-    })
+    const result = methods.map((method) => serializeMethod(method))
 
     return apiSuccess(result)
   } catch (error) {
@@ -112,7 +53,7 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
-    const user = await getCurrentUser(request)
+    await getCurrentAdminUser(request)
     const body = await request.json()
     const { searchParams } = new URL(request.url)
     const templateMethodId = searchParams.get('templateMethodId')
@@ -137,9 +78,6 @@ export async function POST(request: NextRequest) {
             novel_type: body.novelType ?? template.novel_type,
             language: body.language ?? template.language,
             visible_categories: template.visible_categories,
-            is_preset: 0,
-            user_id: user.id,
-            status: 'draft',
             created_at: new Date(),
           },
         })
@@ -176,9 +114,6 @@ export async function POST(request: NextRequest) {
             visible_categories: body.visibleCategories
               ? JSON.stringify(body.visibleCategories)
               : null,
-            is_preset: 0,
-            user_id: user.id,
-            status: 'draft',
             created_at: new Date(),
           },
         })
@@ -187,10 +122,7 @@ export async function POST(request: NextRequest) {
       }
     })
 
-    const canEdit = true
-    return apiSuccess(
-      serializeMethod(result, user.nickname, canEdit)
-    )
+    return apiSuccess(serializeMethod(result))
   } catch (error) {
     if (error instanceof Response) return error
     const message =

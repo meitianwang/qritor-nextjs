@@ -15,9 +15,6 @@ interface Method {
     novelType: string
     language: string
     visibleCategories: string[] | null
-    isPreset: boolean
-    status: string
-    canEdit: boolean
     plotConfig: string | Record<string, any> | null
     [key: string]: any
 }
@@ -48,9 +45,6 @@ function NovelCreationMethodDetailContent() {
 
     // Deleting state
     const [deletingItem, setDeletingItem] = useState<DeletingItem | null>(null)
-
-    // Publishing state
-    const [publishing, setPublishing] = useState(false)
 
     // Sidebar collapsed state
     const [sidebarCollapsed, setSidebarCollapsed] = useState(false)
@@ -151,29 +145,6 @@ function NovelCreationMethodDetailContent() {
         }
     }
 
-    const handlePublish = async () => {
-        if (!method || method.isPreset) return
-
-        setPublishing(true)
-        try {
-            const response = await authFetch(`/api/novel-creation-methods/${id}/publish`, {
-                method: 'POST'
-            })
-            const result = await response.json()
-            if (result.code === 200) {
-                showToast('success', '发布成功')
-                fetchMethodDetails()
-            } else {
-                showToast('error', result.message || '发布失败')
-            }
-        } catch (error) {
-            console.error('Publish failed', error)
-            showToast('error', '发布失败')
-        } finally {
-            setPublishing(false)
-        }
-    }
-
     return (
         <div className="h-screen flex bg-background text-text-primary overflow-hidden">
             {/* 返回按钮 */}
@@ -197,8 +168,6 @@ function NovelCreationMethodDetailContent() {
                         fetchResources={fetchResources}
                         deletingItem={deletingItem}
                         handleDelete={handleDelete}
-                        onPublish={handlePublish}
-                        publishing={publishing}
                         showToast={showToast}
                         isCollapsed={sidebarCollapsed}
                         onToggleCollapse={() => setSidebarCollapsed(!sidebarCollapsed)}
@@ -335,17 +304,6 @@ function MethodOverview({ method, moduleTypes }: { method: Method | null; module
                     <div className="grid grid-cols-2 gap-x-8 gap-y-3">
                         <InfoRow label="类型" value={method.novelType || '-'} />
                         <InfoRow label="语言" value={method.language === 'zh' ? '简体中文' : method.language === 'en' ? 'English' : (method.language || '-')} />
-                        <InfoRow label="状态">
-                            <span className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-xs font-medium ${
-                                method.status === 'published'
-                                    ? 'bg-emerald-500/15 text-emerald-400'
-                                    : 'bg-amber-500/15 text-amber-400'
-                            }`}>
-                                <span className={`w-1.5 h-1.5 rounded-full ${method.status === 'published' ? 'bg-emerald-400' : 'bg-amber-400'}`} />
-                                {method.status === 'published' ? '已发布' : '开发中'}
-                            </span>
-                        </InfoRow>
-                        <InfoRow label="预设方法" value={method.isPreset ? '是' : '否'} />
                         <InfoRow label="创建时间" value={formatDate(method.createdAt)} />
                         <InfoRow label="更新时间" value={formatDate(method.updatedAt)} />
                     </div>

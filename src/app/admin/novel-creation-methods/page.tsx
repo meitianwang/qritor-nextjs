@@ -12,10 +12,6 @@ interface NovelCreationMethod {
     id: string
     name: string
     description?: string
-    isPreset: boolean
-    canEdit: boolean
-    status?: string
-    creatorName?: string
     novelType?: string
     language?: string
 }
@@ -68,14 +64,6 @@ function TrashIcon({ className }: { className?: string }) {
     )
 }
 
-function BadgeCheckIcon({ className }: { className?: string }) {
-    return (
-        <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
-            <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z" />
-        </svg>
-    )
-}
-
 export default function NovelCreationMethodListPage() {
     const router = useRouter()
     const { notification, showToast } = useToast()
@@ -84,7 +72,6 @@ export default function NovelCreationMethodListPage() {
     const [isEditModalOpen, setIsEditModalOpen] = useState(false)
     const [editingMethod, setEditingMethod] = useState<NovelCreationMethod | null>(null)
     const [searchQuery, setSearchQuery] = useState('')
-    const [activeTab, setActiveTab] = useState('all')
 
     const [deleteConfirm, setDeleteConfirm] = useState({
         isOpen: false,
@@ -138,29 +125,11 @@ export default function NovelCreationMethodListPage() {
         }
     }
 
-    const stats = {
-        totalMethods: methods.length,
-        presetMethods: methods.filter(m => m.isPreset && !m.canEdit).length,
-        customMethods: methods.filter(m => m.canEdit).length
-    }
-
     const filteredMethods = methods.filter(method => {
-        const matchSearch = !searchQuery ||
+        return !searchQuery ||
             method.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
             method.description?.toLowerCase().includes(searchQuery.toLowerCase())
-
-        const matchTab = activeTab === 'all' ||
-            (activeTab === 'preset' && method.isPreset && !method.canEdit) ||
-            (activeTab === 'custom' && method.canEdit)
-
-        return matchSearch && matchTab
     })
-
-    const tabs = [
-        { id: 'all', label: '全部' },
-        { id: 'preset', label: '官方预设' },
-        { id: 'custom', label: '我的方法' }
-    ]
 
     const getMethodColor = (_method: NovelCreationMethod, index: number) => {
         const colors = [
@@ -181,30 +150,9 @@ export default function NovelCreationMethodListPage() {
                             探索小说创作方法
                         </span>
                     </h1>
-                    <p className="text-text-secondary text-lg flex items-center gap-2">
-                        <BadgeCheckIcon className="w-5 h-5 text-emerald-400" />
+                    <p className="text-text-secondary text-lg">
                         管理和开发小说创作方法，自定义创作流程
                     </p>
-                </div>
-
-                <div className="flex items-center gap-6 mb-8">
-                    <div className="text-center">
-                        <p className="text-5xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-teal-400 to-cyan-500">
-                            {stats.totalMethods}
-                        </p>
-                        <p className="text-sm text-text-secondary mt-1">项方法</p>
-                    </div>
-                    <div className="w-px h-12 bg-white/10" />
-                    <div className="flex items-center gap-8">
-                        <div className="flex items-center gap-2">
-                            <div className="w-3 h-3 rounded-full bg-emerald-500" />
-                            <span className="text-text-secondary text-sm">{stats.presetMethods} 预设</span>
-                        </div>
-                        <div className="flex items-center gap-2">
-                            <div className="w-3 h-3 rounded-full bg-cyan-500" />
-                            <span className="text-text-secondary text-sm">{stats.customMethods} 自定义</span>
-                        </div>
-                    </div>
                 </div>
 
                 <div className="flex flex-col sm:flex-row gap-4 mb-6">
@@ -229,21 +177,6 @@ export default function NovelCreationMethodListPage() {
                         <PlusIcon className="w-5 h-5" />
                         新建方法
                     </button>
-                </div>
-
-                <div className="flex items-center gap-2 mb-6 border-b border-white/[0.06] pb-4">
-                    {tabs.map(tab => (
-                        <button
-                            key={tab.id}
-                            onClick={() => setActiveTab(tab.id)}
-                            className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${activeTab === tab.id
-                                ? 'bg-emerald-500/15 text-emerald-400'
-                                : 'text-text-secondary hover:text-text-primary hover:bg-white/[0.04]'
-                                }`}
-                        >
-                            {tab.label}
-                        </button>
-                    ))}
                 </div>
 
                 {loading && (
@@ -295,18 +228,6 @@ export default function NovelCreationMethodListPage() {
                                                 <h3 className="text-lg font-semibold text-text-primary truncate group-hover:text-white transition-colors">
                                                     {method.name}
                                                 </h3>
-                                                {method.isPreset ? (
-                                                    <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
-                                                        预设
-                                                    </span>
-                                                ) : (
-                                                    <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium ${method.status === 'published'
-                                                        ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30'
-                                                        : 'bg-amber-500/20 text-amber-400 border border-amber-500/30'
-                                                        }`}>
-                                                        {method.status === 'published' ? '已发布' : '开发中'}
-                                                    </span>
-                                                )}
                                             </div>
                                             <p className="text-sm text-text-tertiary line-clamp-2">
                                                 {method.description || '暂无描述'}
@@ -320,15 +241,9 @@ export default function NovelCreationMethodListPage() {
                                                 <LightningBoltIcon className="w-4 h-4" />
                                                 点击开发
                                             </span>
-                                            {method.creatorName && (
-                                                <span className="text-text-quaternary">
-                                                    创建者: {method.creatorName}
-                                                </span>
-                                            )}
                                         </div>
 
-                                        {method.canEdit && (
-                                            <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                                        <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                                                 <button
                                                     onClick={(e) => {
                                                         e.stopPropagation()
@@ -350,8 +265,7 @@ export default function NovelCreationMethodListPage() {
                                                 >
                                                     <TrashIcon className="w-4 h-4" />
                                                 </button>
-                                            </div>
-                                        )}
+                                        </div>
                                     </div>
                                 </div>
                             )
