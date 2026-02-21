@@ -418,6 +418,13 @@ export function classifyOpenAIError(error: unknown): ClassifiedAIError {
         retryable: true,
       }
     }
+    if (msg.includes('terminated') || msg.includes('other side closed') || msg.includes('socket hang up')) {
+      return {
+        code: AI_ERROR_CODE.STREAM_ERROR,
+        message: 'Stream connection was interrupted',
+        retryable: true,
+      }
+    }
   }
 
   return {
