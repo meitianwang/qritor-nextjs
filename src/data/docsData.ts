@@ -1029,9 +1029,21 @@ Qritor 提供了专业的**剧情管理**工具，帮助您从宏观层面把控
         },
         credits: {
             title: '积分',
-            description: '积分（Credits）是 Qritor 中所有 AI 功能的统一消费单位。每次调用 AI 模型都会消耗积分，不同模型的消耗量不同。',
+            description: '了解 Qritor 积分系统的运作方式、消耗规则和管理方法。',
             body: `
-## 扣费规则
+## 什么是 Qritor Credits？
+
+Credits 是 Qritor 中高级 AI 模型的资源配额，用于衡量 AI 执行任务时消耗的计算资源。以下操作会消耗 Credits：
+
+- **智能写作** — AI 续写、润色、修改章节内容
+- **Ask 模式** — 在 AI 助手中进行对话和提问
+- **Agent 模式** — AI 自主创建、修改模块和内容
+- **图片生成** — AI 生成角色立绘、场景插图等
+- **视频生成** — AI 生成短视频内容
+
+实际消耗量取决于任务复杂度和所用模型。各功能的具体消耗可参考下方的消耗参考表。
+
+## 扣减规则
 
 - 系统会 **优先消耗最先到期的积分**。
 - 积分仅在 AI 调用 **成功** 时扣除，调用失败不扣费。
@@ -1039,37 +1051,21 @@ Qritor 提供了专业的**剧情管理**工具，帮助您从宏观层面把控
 
 ## 消耗参考
 
-以下为各功能在典型场景下的积分消耗参考：
+积分按 AI 调用的实际 token 用量计费，不同模型的单价不同。以下为典型场景的消耗估算，**实际消耗以账单明细为准**。
 
-### 续写场景（典型小说续写）
+### 智能写作（Agent 模式）
 
-| 模型 | 积分/次 | 免费版可用次数 | Plus 可用次数 |
-|------|--------|-------------|-------------|
-| Grok 4.1 Fast | 2 | ~50 次 | ~1,000 次 |
-| GLM-4.7 Flash | 2 | ~50 次 | ~1,000 次 |
-| DeepSeek V3.2 | 2 | ~50 次 | ~1,000 次 |
-| MiniMax M2.5 | 2 | ~50 次 | ~1,000 次 |
-| Kimi K2.5 | 4 | ~25 次 | ~500 次 |
-| Gemini 3 Flash | 4 | ~25 次 | ~500 次 |
-| GLM-5 | 6 | ~16 次 | ~333 次 |
-| Claude Sonnet 4.5 | 21 | ~4 次 | ~95 次 |
-| Claude Opus 4.6 | 35 | ~2 次 | ~57 次 |
+AI 写作通过 Agent 模式执行：先搜索大纲、参与实体、前文等上下文信息，经过多轮对话收集必要素材后，再生成章节内容。一次完整的写作任务通常包含多轮 AI 调用。
 
-### 短对话场景
+| 场景 | 轻量模型（如 DeepSeek V3.2） | 旗舰模型（如 Claude Sonnet 4.5） |
+|------|---------------------------|------------------------------|
+| 简单问答（1 轮） | ~1-2 积分 | ~5-8 积分 |
+| 章节续写（多轮） | ~10-30 积分 | ~50-150 积分 |
+| 模块批量初始化 | ~30-80 积分 | ~100-300 积分 |
 
-短对话场景下，大多数模型每次仅消耗 **1 积分**，旗舰模型消耗 5-8 积分。
+### Ask 模式
 
-### 图片生成
-
-- **标准模型**：1024x1024 约 9 积分
-- **高级模型**：1024x1024 约 16 积分
-- **顶级模型**：1024x1024 约 27 积分
-
-### 视频生成
-
-- **标准模型**：5 秒约 100 积分
-- **高级模型**：5 秒约 200 积分
-- **顶级模型**：5 秒约 400 积分
+Ask 模式为只读对话，不执行工具调用，消耗较低。单次对话通常消耗 1-5 积分，具体取决于上下文长度和所选模型。
 
 ## 查看用量
 
@@ -2112,8 +2108,20 @@ Switch the interface language. Supports Simplified Chinese, Traditional Chinese,
         },
         credits: {
             title: 'Credits',
-            description: 'Credits are the unified billing unit for all AI features in Qritor. Each AI model call consumes credits, with different models consuming different amounts.',
+            description: 'Learn how the Qritor credit system works, including consumption rules and management.',
             body: `
+## What are Qritor Credits?
+
+Credits are the resource quota for advanced AI models in Qritor, used to measure the computational resources consumed when AI executes tasks. The following operations consume Credits:
+
+- **Smart Writing** — AI continue, polish, and modify chapter content
+- **Ask Mode** — Conversations and questions in the AI Assistant
+- **Agent Mode** — AI autonomously creates, modifies modules and content
+- **Image Generation** — AI-generated character portraits, scene illustrations, etc.
+- **Video Generation** — AI-generated short video content
+
+Actual consumption depends on task complexity and the model used. See the consumption reference table below for specifics.
+
 ## Deduction Rules
 
 - The system **prioritizes consuming credits that expire soonest**.
@@ -2122,37 +2130,21 @@ Switch the interface language. Supports Simplified Chinese, Traditional Chinese,
 
 ## Consumption Reference
 
-Below is a reference for credit consumption across features in typical scenarios:
+Credits are billed based on actual token usage per AI call, with different rates for different models. The following are estimates for typical scenarios. **Actual consumption is based on your billing details.**
 
-### Writing Continuation (Typical Novel Writing)
+### Smart Writing (Agent Mode)
 
-| Model | Credits/Use | Free Plan Uses | Plus Plan Uses |
-|-------|------------|----------------|----------------|
-| Grok 4.1 Fast | 2 | ~50 | ~1,000 |
-| GLM-4.7 Flash | 2 | ~50 | ~1,000 |
-| DeepSeek V3.2 | 2 | ~50 | ~1,000 |
-| MiniMax M2.5 | 2 | ~50 | ~1,000 |
-| Kimi K2.5 | 4 | ~25 | ~500 |
-| Gemini 3 Flash | 4 | ~25 | ~500 |
-| GLM-5 | 6 | ~16 | ~333 |
-| Claude Sonnet 4.5 | 21 | ~4 | ~95 |
-| Claude Opus 4.6 | 35 | ~2 | ~57 |
+AI writing is executed via Agent mode: it first searches for outlines, participating entities, preceding text, and other contextual information, collecting necessary material through multiple dialogue rounds before generating chapter content. A complete writing task typically involves multiple AI calls.
 
-### Short Conversations
+| Scenario | Lightweight Model (e.g. DeepSeek V3.2) | Flagship Model (e.g. Claude Sonnet 4.5) |
+|----------|----------------------------------------|------------------------------------------|
+| Simple Q&A (1 round) | ~1-2 credits | ~5-8 credits |
+| Chapter writing (multi-round) | ~10-30 credits | ~50-150 credits |
+| Batch module initialization | ~30-80 credits | ~100-300 credits |
 
-In short conversation scenarios, most models consume only **1 credit** per use, while flagship models consume 5-8 credits.
+### Ask Mode
 
-### Image Generation
-
-- **Standard models**: ~9 credits for 1024x1024
-- **Advanced models**: ~16 credits for 1024x1024
-- **Premium models**: ~27 credits for 1024x1024
-
-### Video Generation
-
-- **Standard models**: ~100 credits for 5 seconds
-- **Advanced models**: ~200 credits for 5 seconds
-- **Premium models**: ~400 credits for 5 seconds
+Ask mode is read-only conversation without tool calls, consuming fewer credits. A single conversation typically costs 1-5 credits, depending on context length and model selected.
 
 ## Usage Tracking
 
