@@ -1,6 +1,7 @@
 import { streamText, createGateway } from 'ai'
 import { createAnthropic } from '@ai-sdk/anthropic'
 import { createGoogleGenerativeAI } from '@ai-sdk/google'
+import { createOpenAI } from '@ai-sdk/openai'
 import { prisma } from '@/lib/prisma'
 import {
   calculateCredits,
@@ -171,6 +172,11 @@ const google = createGoogleGenerativeAI({
   apiKey: process.env.GOOGLE_GENERATIVE_AI_API_KEY ?? '',
 })
 
+const openai = createOpenAI({
+  baseURL: 'https://api.aicodemirror.com/api/codex/backend-api/codex/v1',
+  apiKey: process.env.OPENAI_API_KEY ?? '',
+})
+
 export function resolveModel(modelName: string, platform?: string | null) {
   const resolved = (() => {
     if (!platform || platform === 'vercel') {
@@ -181,6 +187,8 @@ export function resolveModel(modelName: string, platform?: string | null) {
         return anthropic(modelName)
       case 'google':
         return google(modelName)
+      case 'openai':
+        return openai.responses(modelName)
       default:
         return gateway(modelName)
     }

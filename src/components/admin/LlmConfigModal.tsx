@@ -8,6 +8,7 @@ const PLATFORMS = [
   { key: 'vercel', label: 'Vercel AI Gateway' },
   { key: 'anthropic', label: 'Anthropic' },
   { key: 'google', label: 'Google' },
+  { key: 'openai', label: 'OpenAI' },
 ] as const
 
 type PlatformKey = typeof PLATFORMS[number]['key']
