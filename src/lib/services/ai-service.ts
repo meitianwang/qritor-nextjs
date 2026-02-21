@@ -1,6 +1,5 @@
 import { streamText, createGateway } from 'ai'
 import { createAnthropic } from '@ai-sdk/anthropic'
-import { createOpenAI } from '@ai-sdk/openai'
 import { prisma } from '@/lib/prisma'
 import {
   calculateCredits,
@@ -166,11 +165,6 @@ const anthropic = createAnthropic({
   apiKey: process.env.ANTHROPIC_API_KEY ?? '',
 })
 
-const openai = createOpenAI({
-  baseURL: process.env.OPENAI_BASE_URL ?? '',
-  apiKey: process.env.OPENAI_API_KEY ?? '',
-})
-
 export function resolveModel(modelName: string, platform?: string | null) {
   const resolved = (() => {
     if (!platform || platform === 'vercel') {
@@ -179,8 +173,6 @@ export function resolveModel(modelName: string, platform?: string | null) {
     switch (platform) {
       case 'anthropic':
         return anthropic(modelName)
-      case 'openai':
-        return openai.responses(modelName)
       default:
         return gateway(modelName)
     }
@@ -260,6 +252,52 @@ class GatewayAIService {
       } catch (error) {
         console.error('Google AI service error:', error)
         const classified = classifyGoogleError(error)
+        yield { type: 'error', ...classified }
+      }
+      return
+    }
+
+    // OpenAI platform: 直接走 openai 官方 SDK (Responses API)
+    if (config.platform === 'openai') {
+      const { streamOpenAIContent, convertMessagesToOpenAIInput, classifyOpenAIError } = await import('./openai-sdk')
+      const { input } = convertMessagesToOpenAIInput([
+        { role: 'user', content: prompt },
+      ])
+      let outputText = ''
+      try {
+        for await (const event of streamOpenAIContent({
+          modelName: config.model_name,
+          input,
+          instructions: systemPrompt,
+          maxTokens: modelPolicy.maxTokens,
+          reasoning: { effort: 'high', summary: 'detailed' },
+        })) {
+          switch (event.type) {
+            case 'text-delta':
+              outputText += event.text
+              yield { type: 'chunk', content: event.text }
+              break
+            case 'reasoning-delta':
+              yield { type: 'reasoning', content: event.text }
+              break
+            case 'finish':
+              yield {
+                type: 'usage',
+                inputTokens: event.usage.inputTokens,
+                outputTokens: event.usage.outputTokens,
+              }
+              break
+            case 'error': {
+              const classified = classifyOpenAIError(event.error)
+              console.error('OpenAI stream error:', event.error)
+              yield { type: 'error', ...classified }
+              return
+            }
+          }
+        }
+      } catch (error) {
+        console.error('OpenAI service error:', error)
+        const classified = classifyOpenAIError(error)
         yield { type: 'error', ...classified }
       }
       return

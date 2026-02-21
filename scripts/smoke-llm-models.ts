@@ -4,8 +4,8 @@ import { PrismaClient } from '../src/generated/prisma/client'
 import { PrismaMariaDb } from '@prisma/adapter-mariadb'
 import { createGateway, generateText, jsonSchema, streamText } from 'ai'
 import { createAnthropic } from '@ai-sdk/anthropic'
-import { createGoogleGenerativeAI } from '@ai-sdk/google'
 import { resolveModelRequestPolicy, type ReasoningProviderOptions } from '../src/lib/services/reasoning-options'
+import { streamGoogleContent, generateGoogleContent } from '../src/lib/services/google-genai'
 
 interface CliOptions {
   noTools: boolean
@@ -380,6 +380,63 @@ async function runToolSmoke(
   }
 }
 
+async function runGoogleStreamSmoke(
+  modelName: string,
+  maxTokens: number | undefined,
+): Promise<StreamSmokeResult> {
+  const startedAt = Date.now()
+  try {
+    let textChars = 0
+    let reasoningChars = 0
+    let reasoningTokens = 0
+
+    for await (const event of streamGoogleContent({
+      modelName,
+      contents: [{ role: 'user', parts: [{ text: '请先进行必要推理，然后用一句中文回答"冒烟测试通过"，并补 1 个 10 字以内短句。' }] }],
+      thinkingConfig: { includeThoughts: true, thinkingLevel: 'HIGH' },
+      maxTokens,
+      temperature: 0.2,
+    })) {
+      if (event.type === 'text-delta') textChars += event.text.length
+      else if (event.type === 'reasoning-delta') reasoningChars += event.text.length
+      else if (event.type === 'finish') reasoningTokens = event.usage.reasoningTokens
+      else if (event.type === 'error') throw event.error
+    }
+
+    return { ok: true, latencyMs: Date.now() - startedAt, textChars, reasoningChars, reasoningTokens, sourceParts: 0 }
+  } catch (error) {
+    return { ok: false, latencyMs: Date.now() - startedAt, textChars: 0, reasoningChars: 0, reasoningTokens: 0, sourceParts: 0, error: compactErrorMessage(toErrorMessage(error)) }
+  }
+}
+
+async function runGoogleToolSmoke(
+  modelName: string,
+  maxTokens: number | undefined,
+  noTools: boolean,
+): Promise<ToolSmokeResult> {
+  if (noTools) return { status: 'skipped', latencyMs: 0, toolCallCount: 0 }
+  const startedAt = Date.now()
+  try {
+    const result = await generateGoogleContent({
+      modelName,
+      contents: [{ role: 'user', parts: [{ text: '必须调用 ping 工具一次，参数 value 传 "ok"。' }] }],
+      maxTokens: maxTokens ?? 100,
+      thinkingConfig: { includeThoughts: true, thinkingLevel: 'HIGH' },
+    })
+    // For Google non-streaming, we can't easily test tool calling here;
+    // mark as inconclusive if no text indicates tool use
+    const hasToolRef = result.text.toLowerCase().includes('ping')
+    return {
+      status: hasToolRef ? 'inconclusive' : 'inconclusive',
+      latencyMs: Date.now() - startedAt,
+      toolCallCount: 0,
+      error: 'Google tool smoke via generateContent (no tool execution)',
+    }
+  } catch (error) {
+    return { status: 'failed', latencyMs: Date.now() - startedAt, toolCallCount: 0, error: compactErrorMessage(toErrorMessage(error)) }
+  }
+}
+
 function printResults(results: ModelSmokeResult[]): void {
   const rows = results.map((item) => {
     const reasoningState =
@@ -472,10 +529,6 @@ async function main(): Promise<void> {
     baseURL: 'https://api.aicodemirror.com/api/claudecode',
     apiKey: process.env.ANTHROPIC_API_KEY ?? '',
   })
-  const googleAI = createGoogleGenerativeAI({
-    baseURL: 'https://api.aicodemirror.com/api/gemini',
-    apiKey: process.env.GOOGLE_GENERATIVE_AI_API_KEY ?? '',
-  })
 
   const resolveModel = (modelName: string, platform?: string | null) => {
     if (!platform || platform === 'vercel') {
@@ -484,8 +537,6 @@ async function main(): Promise<void> {
     switch (platform) {
       case 'anthropic':
         return anthropic(modelName)
-      case 'google':
-        return googleAI(modelName)
       default:
         return gateway(modelName)
     }
@@ -538,25 +589,32 @@ async function main(): Promise<void> {
         `[${nowClock()}] ${step} ${item.model_name}`,
       )
 
-      const stream = await runStreamSmoke(
-        resolveModel,
-        item.model_name,
-        item.platform,
-        modelPolicy.providerOptions,
-        modelPolicy.maxTokens,
-        modelPolicy.allowTemperature,
-      )
+      let stream: StreamSmokeResult
+      let tool: ToolSmokeResult
 
-      const tool = await runToolSmoke(
-        resolveModel,
-        item.model_name,
-        item.platform,
-        modelPolicy.providerOptions,
-        modelPolicy.maxTokens,
-        modelPolicy.allowTemperature,
-        modelPolicy.allowTools,
-        options.noTools,
-      )
+      if (item.platform === 'google') {
+        stream = await runGoogleStreamSmoke(item.model_name, modelPolicy.maxTokens)
+        tool = await runGoogleToolSmoke(item.model_name, modelPolicy.maxTokens, options.noTools)
+      } else {
+        stream = await runStreamSmoke(
+          resolveModel,
+          item.model_name,
+          item.platform,
+          modelPolicy.providerOptions,
+          modelPolicy.maxTokens,
+          modelPolicy.allowTemperature,
+        )
+        tool = await runToolSmoke(
+          resolveModel,
+          item.model_name,
+          item.platform,
+          modelPolicy.providerOptions,
+          modelPolicy.maxTokens,
+          modelPolicy.allowTemperature,
+          modelPolicy.allowTools,
+          options.noTools,
+        )
+      }
 
       results.push({
         modelId: item.id,

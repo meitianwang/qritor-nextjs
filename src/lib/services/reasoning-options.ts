@@ -34,16 +34,6 @@ function createProviderOptions(
         },
       }
 
-    case 'google':
-      return {
-        google: {
-          thinkingConfig: {
-            includeThoughts: true,
-            thinkingLevel: 'high',
-          },
-        },
-      }
-
     case 'deepseek':
       return {
         deepseek: {

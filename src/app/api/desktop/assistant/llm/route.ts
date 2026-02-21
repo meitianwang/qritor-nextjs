@@ -215,6 +215,22 @@ export async function POST(request: NextRequest) {
     }
 
     // -----------------------------------------------------------------------
+    // OpenAI platform: 走 openai 官方 SDK (Responses API)
+    // -----------------------------------------------------------------------
+    if (config.platform === 'openai') {
+      return handleOpenAIStream({
+        modelName: config.model_name,
+        messages,
+        systemPrompt,
+        rawTools: body.tools,
+        temperature,
+        maxTokens: modelPolicy.maxTokens,
+        userId: user.id,
+        configId,
+      })
+    }
+
+    // -----------------------------------------------------------------------
     // 其他 platform: 继续走 Vercel AI SDK streamText
     // -----------------------------------------------------------------------
 
@@ -521,6 +537,206 @@ async function handleAnthropicStream(params: HandleAnthropicStreamParams): Promi
           if (!deducted) {
             console.error(
               `[LLM/Anthropic] Credit deduction failed: user=${params.userId}, credits=${credits}`,
+            )
+            await recordCreditDebt(
+              params.userId,
+              credits,
+              'DESKTOP_ASSISTANT_LLM',
+              '桌面端助手扣费失败，已记入欠费',
+            )
+          }
+        } catch (e) {
+          console.error('积分扣减失败:', e)
+          await recordCreditDebt(
+            params.userId,
+            credits,
+            'DESKTOP_ASSISTANT_LLM',
+            '桌面端助手扣费异常，已记入欠费',
+          )
+        }
+      }
+    },
+  })
+
+  return createUIMessageStreamResponse({ stream })
+}
+
+// ---------------------------------------------------------------------------
+// OpenAI platform: openai 官方 SDK (Responses API) + createUIMessageStream SSE 输出
+// ---------------------------------------------------------------------------
+
+interface HandleOpenAIStreamParams {
+  modelName: string
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  messages: any[]
+  systemPrompt?: string
+  rawTools?: Record<string, { description?: string; inputSchema?: Record<string, unknown> }>
+  temperature: number
+  maxTokens?: number
+  userId: bigint
+  configId?: number
+}
+
+async function handleOpenAIStream(params: HandleOpenAIStreamParams): Promise<Response> {
+  const {
+    streamOpenAIContent,
+    convertMessagesToOpenAIInput,
+    convertToolsToOpenAIFormat,
+    classifyOpenAIError,
+  } = await import('@/lib/services/openai-sdk')
+
+  const { input, systemInstruction } = convertMessagesToOpenAIInput(params.messages)
+
+  // 合并外部 system prompt 和消息中提取的 system instruction
+  const mergedInstructions = params.systemPrompt
+    ? systemInstruction
+      ? `${params.systemPrompt}\n\n${systemInstruction}`
+      : params.systemPrompt
+    : systemInstruction
+
+  const openaiTools = params.rawTools
+    ? convertToolsToOpenAIFormat(params.rawTools)
+    : undefined
+
+  const stream = createUIMessageStream({
+    execute: async ({ writer }) => {
+      let totalInputTokens = 0
+      let totalOutputTokens = 0
+      let totalReasoningTokens = 0
+
+      let reasoningPartId = ''
+      let textPartId = ''
+      let hasError = false
+
+      writer.write({ type: 'start' })
+      writer.write({ type: 'start-step' })
+
+      try {
+        for await (const event of streamOpenAIContent({
+          modelName: params.modelName,
+          input,
+          instructions: mergedInstructions,
+          tools: openaiTools,
+          temperature: params.temperature,
+          maxTokens: params.maxTokens,
+          reasoning: { effort: 'high', summary: 'detailed' },
+        })) {
+          switch (event.type) {
+            case 'reasoning-delta': {
+              if (!reasoningPartId) {
+                reasoningPartId = generateId()
+                writer.write({ type: 'reasoning-start', id: reasoningPartId })
+              }
+              if (event.text) {
+                writer.write({
+                  type: 'reasoning-delta',
+                  id: reasoningPartId,
+                  delta: event.text,
+                })
+              }
+              break
+            }
+
+            case 'text-delta': {
+              if (reasoningPartId) {
+                writer.write({ type: 'reasoning-end', id: reasoningPartId })
+                reasoningPartId = ''
+              }
+              if (!textPartId) {
+                textPartId = generateId()
+                writer.write({ type: 'text-start', id: textPartId })
+              }
+              writer.write({ type: 'text-delta', id: textPartId, delta: event.text })
+              break
+            }
+
+            case 'tool-call': {
+              if (textPartId) {
+                writer.write({ type: 'text-end', id: textPartId })
+                textPartId = ''
+              }
+              if (reasoningPartId) {
+                writer.write({ type: 'reasoning-end', id: reasoningPartId })
+                reasoningPartId = ''
+              }
+              writer.write({
+                type: 'tool-input-available',
+                toolCallId: event.toolCallId,
+                toolName: event.toolName,
+                input: event.args,
+              })
+              break
+            }
+
+            case 'finish': {
+              if (textPartId) {
+                writer.write({ type: 'text-end', id: textPartId })
+                textPartId = ''
+              }
+              if (reasoningPartId) {
+                writer.write({ type: 'reasoning-end', id: reasoningPartId })
+                reasoningPartId = ''
+              }
+
+              totalInputTokens = event.usage.inputTokens
+              totalOutputTokens = event.usage.outputTokens
+              totalReasoningTokens = event.usage.reasoningTokens
+
+              writer.write({ type: 'finish-step' })
+              writer.write({
+                type: 'finish',
+                finishReason: event.finishReason as 'stop' | 'length' | 'tool-calls',
+                messageMetadata: {
+                  usage: {
+                    inputTokens: totalInputTokens,
+                    outputTokens: totalOutputTokens,
+                    ...(totalReasoningTokens > 0 ? { reasoningTokens: totalReasoningTokens } : {}),
+                  },
+                },
+              })
+              break
+            }
+
+            case 'error': {
+              hasError = true
+              const classified = classifyOpenAIError(event.error)
+              writer.write({ type: 'error', errorText: classified.message })
+              break
+            }
+          }
+        }
+      } catch (error) {
+        hasError = true
+        const classified = classifyOpenAIError(error)
+        writer.write({ type: 'error', errorText: classified.message })
+      }
+
+      // 积分扣减
+      if (!hasError && totalInputTokens + totalOutputTokens > 0) {
+        console.log(
+          `[LLM/OpenAI] Finish: in=${totalInputTokens}, out=${totalOutputTokens}, reasoning=${totalReasoningTokens}`,
+        )
+        const {
+          inputPricePerM: ip,
+          outputPricePerM: op,
+          configId: cid,
+        } = await getConfigParams(params.configId)
+        const credits = calculateCredits(totalInputTokens, totalOutputTokens, ip, op)
+        try {
+          const deducted = await consumeCreditsWithTransaction(
+            params.userId,
+            credits,
+            'DESKTOP_ASSISTANT_LLM',
+            cid ? BigInt(cid) : undefined,
+            totalInputTokens,
+            totalOutputTokens,
+            ip,
+            op,
+            '桌面端助手对话',
+          )
+          if (!deducted) {
+            console.error(
+              `[LLM/OpenAI] Credit deduction failed: user=${params.userId}, credits=${credits}`,
             )
             await recordCreditDebt(
               params.userId,
