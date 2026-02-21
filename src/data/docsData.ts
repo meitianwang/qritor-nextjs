@@ -256,11 +256,9 @@ export const docsContent: Record<string, Record<string, DocsContentEntry>> = {
         overview: {
             breadcrumb: '快速入门',
             title: '产品概述',
-            description: 'Qritor 是一款面向专业创作者的桌面端 AI 辅助创作平台。它结合了极简主义的美学设计与深度上下方工程，为长篇小说创作提供从灵感到完稿的全流程支持。',
+            description: 'Qritor 是一款面向真实小说创作的 Agentic 写作平台。通过增强上下文工程与智能体无缝结合，全面理解你的作品世界观，并以系统化方式推进创作任务。',
             body: `
-Qritor 不仅仅是一个写作工具，它是你的 24 小时 AI 创作搭档。它深入理解你的作品世界观、通过可视化的关系图谱辅助情节构建，并以模块化的方式管理复杂的创作任务。
-
-无论是构建庞大的奇幻世界，还是推敲细腻的人物关系，Qritor 都能提供深度的智能辅助。
+它提供模块化世界构建、AI 协同写作、关系图谱可视化、剧情管理等能力，构思更深入、创作更高效、叙事更精彩，为创作者带来专业、流畅的写作体验。
 
 ## 核心特性
 
@@ -1348,9 +1346,9 @@ Qritor 支持自动更新功能：
         overview: {
             breadcrumb: 'Quick Start',
             title: 'Product Overview',
-            description: 'Qritor is a professional desktop AI-assisted creative writing platform. Combining minimalist aesthetics with deep context engineering, it supports the entire writing process from inspiration to completion.',
+            description: 'Qritor is an Agentic writing platform built for real novel creation. By seamlessly combining enhanced context engineering with intelligent agents, it fully understands your story world and drives creative tasks in a systematic way.',
             body: `
-Qritor is more than just a writing tool; it is your 24/7 AI creative partner. It deeply understands your world-building, visualizes plot structures through relationship graphs, and manages complex creative tasks with modular systems.
+It provides modular worldbuilding, AI collaborative writing, relationship graph visualization, plot management, and more — enabling deeper thinking, more efficient creation, and richer storytelling for a professional, fluid writing experience.
 
 ## Core Features
 
