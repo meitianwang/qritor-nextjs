@@ -33,6 +33,80 @@ function jsonError(status: number, message: string) {
 }
 
 /**
+ * 校验消息中 tool-call / tool-result 的配对关系，移除孤立项。
+ * 防止 DB 裁剪、上下文压缩、Gateway 转换等导致的不匹配，
+ * 避免 provider 返回 "tool result's tool id not found" 等 400 错误。
+ */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function sanitizeToolMessages(messages: any[]): void {
+  // 1. 收集所有 tool-call IDs
+  const toolCallIds = new Set<string>()
+  for (const msg of messages) {
+    if (msg.role === 'assistant' && Array.isArray(msg.content)) {
+      for (const part of msg.content) {
+        if (part.type === 'tool-call' && part.toolCallId) {
+          toolCallIds.add(part.toolCallId)
+        }
+      }
+    }
+  }
+
+  // 2. 收集所有 tool-result IDs
+  const toolResultIds = new Set<string>()
+  for (const msg of messages) {
+    if (msg.role === 'tool' && Array.isArray(msg.content)) {
+      for (const part of msg.content) {
+        if (part.type === 'tool-result' && part.toolCallId) {
+          toolResultIds.add(part.toolCallId)
+        }
+      }
+    }
+  }
+
+  // 3. 找出孤立项
+  const orphanedResultIds = new Set<string>()
+  for (const id of toolResultIds) {
+    if (!toolCallIds.has(id)) orphanedResultIds.add(id)
+  }
+
+  const orphanedCallIds = new Set<string>()
+  for (const id of toolCallIds) {
+    if (!toolResultIds.has(id)) orphanedCallIds.add(id)
+  }
+
+  if (orphanedResultIds.size === 0 && orphanedCallIds.size === 0) return
+
+  console.warn(
+    `[LLM] sanitizeToolMessages: orphaned results=[${[...orphanedResultIds]}], orphaned calls=[${[...orphanedCallIds]}]`,
+  )
+
+  // 4. 从后往前遍历，移除孤立消息部分
+  for (let i = messages.length - 1; i >= 0; i--) {
+    const msg = messages[i]
+
+    if (msg.role === 'tool' && Array.isArray(msg.content)) {
+      msg.content = msg.content.filter(
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (p: any) => p.type !== 'tool-result' || !orphanedResultIds.has(p.toolCallId),
+      )
+      if (msg.content.length === 0) {
+        messages.splice(i, 1)
+      }
+    }
+
+    if (msg.role === 'assistant' && Array.isArray(msg.content)) {
+      msg.content = msg.content.filter(
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (p: any) => p.type !== 'tool-call' || !orphanedCallIds.has(p.toolCallId),
+      )
+      if (msg.content.length === 0) {
+        msg.content = ' '
+      }
+    }
+  }
+}
+
+/**
  * 桌面端 LLM 代理 — 纯透传 + 积分扣减
  *
  * 桌面端发送 AI SDK CoreMessage 格式的 messages，
@@ -233,6 +307,10 @@ export async function POST(request: NextRequest) {
     // -----------------------------------------------------------------------
     // 其他 platform: 继续走 Vercel AI SDK streamText
     // -----------------------------------------------------------------------
+
+    // 校验 tool-call / tool-result 配对，移除孤立项
+    // 防止 DB 裁剪、上下文压缩、Gateway 转换等导致的不匹配
+    sanitizeToolMessages(messages)
 
     // Anthropic: 将 system prompt 标记为可缓存
     const systemOption = systemPrompt
