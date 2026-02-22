@@ -56,6 +56,11 @@ export const docsNavigation: Record<string, DocsNavigation> = {
                     ]
                 },
                 {
+                    id: 'skills',
+                    title: '技能',
+                    path: '/docs/zh/user-guide/skills'
+                },
+                {
                     id: 'configuration',
                     title: '系统配置',
                     path: '/docs/zh/user-guide/configuration'
@@ -138,6 +143,11 @@ export const docsNavigation: Record<string, DocsNavigation> = {
                         { id: 'storylines', title: 'Storylines & Events', path: '/docs/en/user-guide/plot-management/storylines' },
                         { id: 'foreshadowing', title: 'Foreshadowing', path: '/docs/en/user-guide/plot-management/foreshadowing' }
                     ]
+                },
+                {
+                    id: 'skills',
+                    title: 'Skills',
+                    path: '/docs/en/user-guide/skills'
                 },
                 {
                     id: 'configuration',
