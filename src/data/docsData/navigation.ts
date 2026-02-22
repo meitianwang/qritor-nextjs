@@ -83,7 +83,8 @@ export const docsNavigation: Record<string, DocsNavigation> = {
             title: '配置',
             items: [
                 { id: 'llm-config', title: 'LLM 配置', path: '/docs/zh/config/llm' },
-                { id: 'module-config', title: '模块配置', path: '/docs/zh/config/module' }
+                { id: 'module-config', title: '模块配置', path: '/docs/zh/config/module' },
+                { id: 'keyboard-shortcuts', title: '快捷键', path: '/docs/zh/config/keyboard-shortcuts' }
             ]
         },
         support: {
@@ -176,7 +177,8 @@ export const docsNavigation: Record<string, DocsNavigation> = {
             title: 'Configuration',
             items: [
                 { id: 'llm-config', title: 'LLM Configuration', path: '/docs/en/config/llm' },
-                { id: 'module-config', title: 'Module Configuration', path: '/docs/en/config/module' }
+                { id: 'module-config', title: 'Module Configuration', path: '/docs/en/config/module' },
+                { id: 'keyboard-shortcuts', title: 'Keyboard Shortcuts', path: '/docs/en/config/keyboard-shortcuts' }
             ]
         },
         support: {
