@@ -64,15 +64,6 @@ function isTemperatureAllowed(provider: string): boolean {
   }
 }
 
-function isToolsAllowed(provider: string): boolean {
-  switch (provider) {
-    case 'xai':
-      return false
-    default:
-      return true
-  }
-}
-
 export function resolveModelRequestPolicy(
   modelName: string,
   provider: string,
@@ -83,7 +74,7 @@ export function resolveModelRequestPolicy(
   return {
     providerOptions,
     maxTokens: providerOptions ? 16000 : undefined,
-    allowTools: isToolsAllowed(normalizedProvider),
+    allowTools: true,
     allowTemperature: isTemperatureAllowed(normalizedProvider),
   }
 }
