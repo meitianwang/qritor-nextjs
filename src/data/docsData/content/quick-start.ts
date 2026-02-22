@@ -6,7 +6,7 @@ export const zhQuickStartContent: Record<string, DocsContentEntry> = {
     overview: {
         breadcrumb: '快速入门',
         title: '产品概述',
-        description: 'Qritor 是一款面向真实小说创作的 Agentic 写作平台。通过增强上下文工程与智能体无缝结合，全面理解你的作品世界观，并以系统化方式推进创作任务。',
+        description: 'Qritor（/kriːtər/）是一款面向真实小说创作的 Agentic 写作平台。通过增强上下文工程与智能体无缝结合，全面理解你的作品世界观，并以系统化方式推进创作任务。',
         body: `
 它提供模块化世界构建、AI 协同写作、关系图谱可视化、剧情管理等能力，构思更深入、创作更高效、叙事更精彩，为创作者带来专业、流畅的写作体验。
 
@@ -153,7 +153,7 @@ export const enQuickStartContent: Record<string, DocsContentEntry> = {
     overview: {
         breadcrumb: 'Quick Start',
         title: 'Product Overview',
-        description: 'Qritor is an Agentic writing platform built for real novel creation. By seamlessly combining enhanced context engineering with intelligent agents, it fully understands your story world and drives creative tasks in a systematic way.',
+        description: 'Qritor (/kriːtər/) is an Agentic writing platform built for real novel creation. By seamlessly combining enhanced context engineering with intelligent agents, it fully understands your story world and drives creative tasks in a systematic way.',
         body: `
 It provides modular worldbuilding, AI collaborative writing, relationship graph visualization, plot management, and more — enabling deeper thinking, more efficient creation, and richer storytelling for a professional, fluid writing experience.
 
