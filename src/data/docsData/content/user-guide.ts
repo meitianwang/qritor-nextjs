@@ -113,9 +113,14 @@ Qritor 的 AI 助手拥有 **上下文感知 (Context Awareness)** 能力。
         body: `
 ## 什么是 @ 提及
 
-在与 AI 对话时，使用 **@** 符号可以将小说中的任意模块作为上下文注入给 AI。被提及的模块内容会完整传递到 AI 的上下文窗口中，让 AI 在回答和操作时能够参考这些信息。
+在与 AI 对话时，你可以将小说中的内容作为上下文注入给 AI，帮助 AI 更好地理解你的创作需求。目前支持两种引用类型：
 
-## 可提及的内容
+- **模块引用**：通过 **@** 符号引用角色、场景、章节等模块，模块的完整内容会传递到 AI 的上下文窗口中
+- **文字引用**：从编辑器中选取文字片段添加到对话，AI 可以针对具体段落进行分析和操作
+
+## 模块引用
+
+### 可提及的内容
 
 你可以 @ 当前小说中的所有模块，包括：
 
@@ -130,11 +135,11 @@ Qritor 的 AI 助手拥有 **上下文感知 (Context Awareness)** 能力。
 
 模块选择器按类型分组显示，方便快速定位。
 
-## 使用方法
+### 添加方式
 
 有三种方式将模块添加为 AI 对话的上下文：
 
-### 方式一：输入 @ 触发
+**方式一：输入 @ 触发**
 
 1. 在 AI 助手输入框中输入 \`@\`
 2. 弹出模块选择下拉框，显示当前小说的所有模块（按类型分组）
@@ -142,29 +147,39 @@ Qritor 的 AI 助手拥有 **上下文感知 (Context Awareness)** 能力。
 4. 点击或按回车选择目标模块
 5. 选中的模块会以标签形式嵌入输入框
 
-### 方式二：工具栏 + 按钮
+**方式二：工具栏 + 按钮**
 
 点击 AI 助手输入框左侧的 **+** 按钮，同样会弹出模块选择下拉框，选择后模块以标签形式嵌入输入框。
 
-### 方式三：模块右键菜单「添加到对话」
+**方式三：右键菜单 / 快捷键**
 
-在左侧模块树中右键点击任意模块，选择 **「添加到对话」**，该模块会自动添加到当前 AI 对话的输入框中。
+在左侧模块树中右键点击任意模块，选择 **「添加到对话」**；或选中模块后按 \`⌘L\` 快捷键快速添加。
 
----
+## 文字引用
 
-你可以在一条消息中通过以上任意方式添加多个模块，它们的内容都会作为上下文传递给 AI。
+除了引用整个模块，你还可以引用编辑器中的具体文字片段：
 
-### 管理已提及模块
+在编辑器中选中一段文字，右键选择 **「添加到对话」**（或按 \`⌘L\`），选中的文字片段会以引用标签的形式添加到 AI 助手输入框中。标签显示为 **📎 第X章 第Y-Z字** 的格式，标明引用的章节和字符位置。
 
-选中的模块以标签形式直接嵌入输入框中（如截图所示的绿色标签），点击标签上的 **×** 可移除。你可以在同一条消息中提及多个模块，自由组合上下文。
+## 快捷键
+
+| 快捷键 | 场景 | 效果 |
+|--------|------|------|
+| \`⌘L\` | 模块树中选中模块时 | 将选中模块添加到对话 |
+| \`⌘L\` | 编辑器中选中文字时 | 将选中文字作为引用添加到对话 |
+
+## 管理已添加内容
+
+选中的模块以绿色标签形式嵌入输入框，文字引用以 📎 标签形式嵌入。点击标签上的 **×** 可移除。你可以在同一条消息中同时提及多个模块和文字片段，自由组合上下文。
 
 ## 上下文注入机制
 
-当你发送消息时，所有被 @ 的模块内容会以 **「引用资料」** 的形式注入到 AI 的系统提示中：
+当你发送消息时，所有引用的内容会注入到 AI 的系统提示中：
 
-- AI 收到的上下文包含每个模块的 **标题、类型和完整内容**
+- **模块引用**：以 **「引用资料」** 的形式注入，包含模块的 **标题、类型和完整内容**
+- **文字引用**：以 **「文字引用」** 的形式注入，包含 **章节信息、字符位置和实际文字内容**
 - 内容过长时会自动截断，优先保留关键信息
-- 引用的模块与你的消息文本一起发送，AI 能理解"你在说什么"和"你在参考什么"
+- 引用内容与你的消息文本一起发送，AI 能理解"你在说什么"和"你在参考什么"
 
 ## 使用场景
 
@@ -899,9 +914,14 @@ Qritor's AI Assistant features **Context Awareness**.
         body: `
 ## What Is @ Mention
 
-When chatting with the AI, you can use the **@** symbol to inject any module from your novel as context for the AI. The mentioned module's content is passed in full to the AI's context window, allowing it to reference this information when responding or performing actions.
+When chatting with the AI, you can inject content from your novel as context to help the AI better understand your creative needs. Two types of references are supported:
 
-## What You Can Mention
+- **Module references**: Use the **@** symbol to reference characters, scenes, chapters, and other modules — their full content is passed to the AI's context window
+- **Text quotes**: Select text passages from the editor to add to the conversation — the AI can analyze and work with specific paragraphs
+
+## Module References
+
+### What You Can Mention
 
 You can @ any module in your current novel, including:
 
@@ -916,11 +936,11 @@ You can @ any module in your current novel, including:
 
 The module selector groups items by type for quick navigation.
 
-## How to Use
+### How to Add
 
 There are three ways to add modules as context for AI conversations:
 
-### Method 1: Trigger with @
+**Method 1: Trigger with @**
 
 1. Type \`@\` in the AI assistant input field
 2. A dropdown appears showing all modules in the current novel (grouped by type)
@@ -928,29 +948,39 @@ There are three ways to add modules as context for AI conversations:
 4. Click or press Enter to select a module
 5. The selected module appears as a badge in the input field
 
-### Method 2: Toolbar + Button
+**Method 2: Toolbar + Button**
 
 Click the **+** button on the left side of the AI assistant input field to open the same module selector dropdown. Selected modules appear as badges in the input field.
 
-### Method 3: "Add to Conversation" Context Menu
+**Method 3: Context Menu / Shortcut**
 
-Right-click any module in the module tree on the left panel and select **"Add to Conversation"**. The module will be automatically added to the current AI conversation input field.
+Right-click any module in the module tree on the left panel and select **"Add to Chat"**; or select a module and press \`⌘L\` to add it quickly.
 
----
+## Text Quotes
 
-You can add multiple modules in a single message using any combination of the above methods — all their content will be passed as context to the AI.
+In addition to referencing entire modules, you can also quote specific text passages from the editor:
 
-### Manage Mentioned Modules
+Select a text passage in the editor, then right-click and choose **"Add to Chat"** (or press \`⌘L\`). The selected text will be added as a quote badge in the AI assistant input field, displayed as **📎 Chapter X, chars Y-Z**, indicating the chapter and character position of the quote.
 
-Selected modules appear as inline badges directly within the input field. Click the **×** on a badge to remove it. You can mention multiple modules in a single message to freely combine context.
+## Keyboard Shortcut
+
+| Shortcut | Context | Effect |
+|----------|---------|--------|
+| \`⌘L\` | Module selected in the module tree | Add the selected module to the chat |
+| \`⌘L\` | Text selected in the editor | Add the selected text as a quote to the chat |
+
+## Manage Referenced Content
+
+Selected modules appear as green badges in the input field, while text quotes appear as 📎 badges. Click the **×** on a badge to remove it. You can mention multiple modules and text passages in a single message to freely combine context.
 
 ## Context Injection
 
-When you send a message, all @-mentioned modules are injected into the AI's system prompt as **"Referenced Materials"**:
+When you send a message, all referenced content is injected into the AI's system prompt:
 
-- The AI receives each module's **title, type, and full content**
+- **Module references**: Injected as **"Referenced Materials"**, including each module's **title, type, and full content**
+- **Text quotes**: Injected as **"Text Quotes"**, including **chapter info, character positions, and the actual text content**
 - Overly long content is automatically truncated, preserving key information
-- Referenced modules are sent alongside your message text, so the AI understands both "what you're saying" and "what you're referencing"
+- Referenced content is sent alongside your message text, so the AI understands both "what you're saying" and "what you're referencing"
 
 ## Use Cases
 
