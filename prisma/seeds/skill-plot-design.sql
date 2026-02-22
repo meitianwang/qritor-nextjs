@@ -29,11 +29,18 @@ VALUES (
 
 ### 核心原则
 
-1. **结构先行**：先规划故事线，再填充事件，最后埋设伏笔
-2. **主次分明**：主线承载核心冲突，支线丰富故事层次，避免喧宾夺主
-3. **节奏把控**：事件类型（普通→转折→高潮→结局）的分布要有节奏感
-4. **伏笔闭环**：每个埋下的伏笔都必须回收，避免烂尾
-5. **章节锚定**：事件和伏笔应尽量关联到具体章节，便于追踪
+1. **禁止向用户提问**：禁止询问偏好、想法、选择。禁止在调用工具之前征求意见。信息不足时自行做出合理决策。用户通过系统确认 UI 审批
+2. **结构先行**：先规划故事线，再填充事件，最后埋设伏笔
+3. **主次分明**：主线承载核心冲突，支线丰富故事层次，避免喧宾夺主
+4. **节奏把控**：事件类型（普通→转折→高潮→结局）的分布要有节奏感
+5. **伏笔闭环**：每个埋下的伏笔都必须回收，避免烂尾
+6. **章节锚定**：事件和伏笔应尽量关联到具体章节，便于追踪
+
+---
+
+### 〇、加载领域知识
+
+在执行任何情节操作之前，检查技能列表中是否有与当前创作方法匹配的剧情设计领域知识技能（名称以 `-plot-gen` 结尾）。如有，调用 `use_skill` 加载它，获取该小说类型的剧情设计知识（典型故事结构、故事线模式、事件编排模式、伏笔策略等）。
 
 ---
 
@@ -46,6 +53,8 @@ VALUES (
 | 场景 | 必须调用 | 说明 |
 |------|---------|------|
 | **任何情节操作** | `get_plot_overview` | 获取所有故事线和事件，了解剧情全貌 |
+| **任何情节操作** | `list_settings` | 获取世界观设定，确保剧情与设定一致 |
+| **任何情节操作** | `list_characters` | 获取角色阵容，确保事件中的角色已存在 |
 | **评估剧情健康度** | `analyze_plot_structure` | 获取结构统计和诊断建议 |
 | **伏笔相关操作** | `list_pending_foreshadows` | 查看待回收伏笔清单 |
 
@@ -55,7 +64,7 @@ VALUES (
 - `get_story_line_detail`：查看故事线的详细信息和事件统计
 - `get_foreshadow_detail`：查看某个伏笔的详细信息
 - `list_chapters`：了解章节结构，为事件关联章节做准备
-- `list_characters`：了解角色阵容，确保事件中的角色已存在
+- `list_scenes`：了解场景库，确保事件中的场景已存在
 
 ---
 
@@ -390,11 +399,18 @@ This skill involves three interconnected systems:
 
 ### Core Principles
 
-1. **Structure first**: Plan story lines first, then fill in events, finally plant foreshadows
-2. **Clear hierarchy**: The main line carries the core conflict; branch lines enrich the story layers without overshadowing the main plot
-3. **Pacing control**: The distribution of event types (normal → turning point → climax → resolution) should have a sense of rhythm
-4. **Foreshadow closure**: Every planted foreshadow must be resolved; avoid loose ends
-5. **Chapter anchoring**: Events and foreshadows should be linked to specific chapters whenever possible for easy tracking
+1. **NEVER ask the user any questions**: Do not ask for preferences, opinions, or choices. Do not seek confirmation before calling tools. Make reasonable decisions autonomously when information is insufficient. Users approve via the system confirmation UI
+2. **Structure first**: Plan story lines first, then fill in events, finally plant foreshadows
+3. **Clear hierarchy**: The main line carries the core conflict; branch lines enrich the story layers without overshadowing the main plot
+4. **Pacing control**: The distribution of event types (normal → turning point → climax → resolution) should have a sense of rhythm
+5. **Foreshadow closure**: Every planted foreshadow must be resolved; avoid loose ends
+6. **Chapter anchoring**: Events and foreshadows should be linked to specific chapters whenever possible for easy tracking
+
+---
+
+### 0. Load Domain Knowledge
+
+Before performing any plot operation, check the skill list for a plot design domain knowledge skill matching the current creation method (name ending in `-plot-gen`). If found, call `use_skill` to load it, obtaining genre-specific plot design knowledge (typical story structure, story line patterns, event arrangement patterns, foreshadow strategies, etc.).
 
 ---
 
@@ -407,6 +423,8 @@ Before any plot operation, understand the full picture of the novel''s plot:
 | Scenario | Required Call | Description |
 |----------|--------------|-------------|
 | **Any plot operation** | `get_plot_overview` | Get all story lines and events to understand the full plot |
+| **Any plot operation** | `list_settings` | Get world settings to ensure plot consistency with settings |
+| **Any plot operation** | `list_characters` | Get character roster to ensure characters in events exist |
 | **Assess plot health** | `analyze_plot_structure` | Get structural statistics and diagnostic suggestions |
 | **Foreshadow operations** | `list_pending_foreshadows` | View the list of unresolved foreshadows |
 
@@ -416,7 +434,7 @@ Before any plot operation, understand the full picture of the novel''s plot:
 - `get_story_line_detail`: View detailed information and event statistics of a story line
 - `get_foreshadow_detail`: View detailed information of a specific foreshadow
 - `list_chapters`: Understand the chapter structure, for linking events to chapters
-- `list_characters`: Understand the character roster, to ensure characters in events exist
+- `list_scenes`: Understand the scene library, to ensure scenes in events exist
 
 ---
 

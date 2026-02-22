@@ -25,12 +25,16 @@ export const docsNavigation: Record<string, DocsNavigation> = {
                     ]
                 },
                 {
+                    id: 'ai-mention',
+                    title: '@提及',
+                    path: '/docs/zh/user-guide/ai-mention'
+                },
+                {
                     id: 'ai-assistant',
-                    title: 'AI 助手',
+                    title: '聊天',
                     path: '/docs/zh/user-guide/ai-assistant',
                     children: [
                         { id: 'ai-modes', title: 'AI 模式', path: '/docs/zh/user-guide/ai-assistant/ai-modes' },
-                        { id: 'ai-mention', title: '@提及', path: '/docs/zh/user-guide/ai-assistant/ai-mention' },
                         { id: 'smart-write', title: '智能写作工具', path: '/docs/zh/user-guide/ai-assistant/smart-write' },
                         { id: 'editor-toolbar', title: '编辑器工具栏', path: '/docs/zh/user-guide/ai-assistant/editor-toolbar' },
                         { id: 'chat-history', title: '对话历史', path: '/docs/zh/user-guide/ai-assistant/chat-history' }
@@ -114,12 +118,16 @@ export const docsNavigation: Record<string, DocsNavigation> = {
                     ]
                 },
                 {
+                    id: 'ai-mention',
+                    title: '@Mention',
+                    path: '/docs/en/user-guide/ai-mention'
+                },
+                {
                     id: 'ai-assistant',
-                    title: 'AI Assistant',
+                    title: 'Chat',
                     path: '/docs/en/user-guide/ai-assistant',
                     children: [
                         { id: 'ai-modes', title: 'AI Modes', path: '/docs/en/user-guide/ai-assistant/ai-modes' },
-                        { id: 'ai-mention', title: '@Mention', path: '/docs/en/user-guide/ai-assistant/ai-mention' },
                         { id: 'smart-write', title: 'Smart Writing Tools', path: '/docs/en/user-guide/ai-assistant/smart-write' },
                         { id: 'editor-toolbar', title: 'Editor Toolbar', path: '/docs/en/user-guide/ai-assistant/editor-toolbar' },
                         { id: 'chat-history', title: 'Chat History', path: '/docs/en/user-guide/ai-assistant/chat-history' }
