@@ -10,7 +10,7 @@ VALUES (
   '## 组织初始化技能（编排层）
 
 批量初始化小说项目的核心组织/势力阵容。本技能负责编排流程，具体生成能力由两层技能提供：
-- **通用组织生成技能**（`organization-generation`）：提供获取 Schema、生成属性、创建组织的通用流程
+- **组织操作技能**（`organization-operations`）：提供获取 Schema、生成属性、创建组织的通用流程
 - **专属组织生成技能**（名称以 `-org-gen` 结尾）：提供特定小说类型下的组织/势力设计领域知识
 
 ### 绝对禁止
@@ -37,9 +37,9 @@ VALUES (
 
 调用 `list_characters` 和 `list_scenes`，获取已有角色和场景列表。组织与角色紧密关联——核心人物、势力归属、据点场景，这些信息是组织设计的重要参考。
 
-#### 4. 加载通用组织生成技能
+#### 4. 加载组织操作技能
 
-调用 `use_skill(skill_name="organization-generation")`。
+调用 `use_skill(skill_name="organization-operations")`。
 
 #### 5. 加载专属组织生成技能
 
@@ -58,7 +58,7 @@ VALUES (
 
 #### 7. 逐个生成
 
-对每个规划的组织，按通用组织生成技能的流程执行：获取 Schema → 生成属性 → 创建组织 → 建立关系。
+对每个规划的组织，按组织操作技能的创建流程执行：获取 Schema → 生成属性 → 创建组织 → 建立关系。
 
 **立即调用工具，不要先用文字描述计划。**
 
@@ -70,7 +70,7 @@ VALUES (
   '## Organization Initialization Skill (Orchestration Layer)
 
 Batch-initialize the core faction/organization lineup for a novel project. This skill orchestrates the flow; actual generation is powered by two skill layers:
-- **Generic organization generation skill** (`organization-generation`): provides the universal flow for reading schemas, generating attributes, and creating organizations
+- **Organization operations skill** (`organization-operations`): provides the universal flow for reading schemas, generating attributes, and creating organizations
 - **Specialized organization generation skills** (names ending in `-org-gen`): provide domain knowledge for organization/faction design within specific novel types
 
 ### Absolute Rule
@@ -97,9 +97,9 @@ Call `list_settings` to read all setting modules (worldview, story hook, etc.). 
 
 Call `list_characters` and `list_scenes` to get existing character and scene lists. Organizations are tightly linked to characters and scenes — key members, faction allegiance, and headquarters locations.
 
-#### 4. Load Generic Organization Generation Skill
+#### 4. Load Organization Operations Skill
 
-Call `use_skill(skill_name="organization-generation")`.
+Call `use_skill(skill_name="organization-operations")`.
 
 #### 5. Load Specialized Organization Generation Skill
 
@@ -118,7 +118,7 @@ Adjust numbers and types flexibly based on story settings.
 
 #### 7. Generate One by One
 
-For each planned organization, follow the generic organization generation skill''s flow: get Schema → generate attributes → create organization → establish relations.
+For each planned organization, follow the organization operations skill''s creation flow: get Schema → generate attributes → create organization → establish relations.
 
 **Call tools immediately. Do not describe your plan in text first.**
 

@@ -10,7 +10,7 @@ VALUES (
   '## 道具初始化技能（编排层）
 
 批量初始化小说项目的核心道具阵容。本技能负责编排流程，具体生成能力由两层技能提供：
-- **通用道具生成技能**（`prop-generation`）：提供获取 Schema、生成属性、创建道具的通用流程
+- **道具操作技能**（`prop-operations`）：提供获取 Schema、生成属性、创建道具的通用流程
 - **专属道具生成技能**（名称以 `-prop-gen` 结尾）：提供特定小说类型下的道具设计领域知识
 
 ### 绝对禁止
@@ -37,9 +37,9 @@ VALUES (
 
 调用 `list_characters` 和 `list_scenes`，获取已有角色和场景列表。道具与角色紧密关联——谁使用、谁持有、道具出现在哪个场景，这些信息是道具设计的重要参考。
 
-#### 4. 加载通用道具生成技能
+#### 4. 加载道具操作技能
 
-调用 `use_skill(skill_name="prop-generation")`。
+调用 `use_skill(skill_name="prop-operations")`。
 
 #### 5. 加载专属道具生成技能
 
@@ -57,7 +57,7 @@ VALUES (
 
 #### 7. 逐个生成
 
-对每个规划的道具，按通用道具生成技能的流程执行：获取 Schema → 生成属性 → 创建道具 → 建立关系。
+对每个规划的道具，按道具操作技能的创建流程执行：获取 Schema → 生成属性 → 创建道具 → 建立关系。
 
 **立即调用工具，不要先用文字描述计划。**
 
@@ -69,7 +69,7 @@ VALUES (
   '## Prop Initialization Skill (Orchestration Layer)
 
 Batch-initialize the core prop lineup for a novel project. This skill orchestrates the flow; actual generation is powered by two skill layers:
-- **Generic prop generation skill** (`prop-generation`): provides the universal flow for reading schemas, generating attributes, and creating props
+- **Prop operations skill** (`prop-operations`): provides the universal flow for reading schemas, generating attributes, and creating props
 - **Specialized prop generation skills** (names ending in `-prop-gen`): provide domain knowledge for prop design within specific novel types
 
 ### Absolute Rule
@@ -96,9 +96,9 @@ Call `list_settings` to read all setting modules (worldview, story hook, etc.). 
 
 Call `list_characters` and `list_scenes` to get existing character and scene lists. Props are tightly linked to characters and scenes — who uses them, who holds them, and where they appear.
 
-#### 4. Load Generic Prop Generation Skill
+#### 4. Load Prop Operations Skill
 
-Call `use_skill(skill_name="prop-generation")`.
+Call `use_skill(skill_name="prop-operations")`.
 
 #### 5. Load Specialized Prop Generation Skill
 
@@ -116,7 +116,7 @@ Adjust numbers and types flexibly based on story settings.
 
 #### 7. Generate One by One
 
-For each planned prop, follow the generic prop generation skill''s flow: get Schema → generate attributes → create prop → establish relations.
+For each planned prop, follow the prop operations skill''s creation flow: get Schema → generate attributes → create prop → establish relations.
 
 **Call tools immediately. Do not describe your plan in text first.**
 

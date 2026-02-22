@@ -10,7 +10,7 @@ VALUES (
   '## 角色初始化技能（编排层）
 
 批量初始化小说项目的核心角色阵容。本技能负责编排流程，具体生成能力由两层技能提供：
-- **通用角色生成技能**（`character-generation`）：提供获取 Schema、生成属性、创建角色的通用流程
+- **角色操作技能**（`character-operations`）：提供获取 Schema、生成属性、创建角色的通用流程
 - **专属角色生成技能**（名称以 `-character-gen` 结尾）：提供特定小说类型下的角色设计领域知识
 
 ### 绝对禁止
@@ -33,9 +33,9 @@ VALUES (
 
 调用 `list_settings`，读取所有设定模块的内容（世界观、穿越设定、金手指等）。这些设定是角色设计的基础——角色的身份、能力、关系必须与世界观和故事设定一致。
 
-#### 3. 加载通用角色生成技能
+#### 3. 加载角色操作技能
 
-调用 `use_skill(skill_name="character-generation")`。
+调用 `use_skill(skill_name="character-operations")`。
 
 #### 4. 加载专属角色生成技能
 
@@ -54,7 +54,7 @@ VALUES (
 
 #### 6. 逐个生成
 
-对每个规划的角色，按通用角色生成技能的流程执行：获取 Schema → 生成属性 → 创建角色 → 建立关系。
+对每个规划的角色，按角色操作技能的创建流程执行：获取 Schema → 生成属性 → 创建角色 → 建立关系。
 
 **立即调用工具，不要先用文字描述计划。**
 
@@ -66,7 +66,7 @@ VALUES (
   '## Character Initialization Skill (Orchestration Layer)
 
 Batch-initialize the core character lineup for a novel project. This skill orchestrates the flow; actual generation is powered by two skill layers:
-- **Generic character generation skill** (`character-generation`): provides the universal flow for reading schemas, generating attributes, and creating characters
+- **Character operations skill** (`character-operations`): provides the universal flow for reading schemas, generating attributes, and creating characters
 - **Specialized character generation skills** (names ending in `-character-gen`): provide domain knowledge for character design within specific novel types
 
 ### Absolute Rule
@@ -89,9 +89,9 @@ Call `get_novel_overview` to get creation method name and project info.
 
 Call `list_settings` to read all setting modules (worldview, crossing setup, cheat ability, etc.). Settings are the foundation for character design — character identity, abilities, and relationships must align with worldview and story settings.
 
-#### 3. Load Generic Character Generation Skill
+#### 3. Load Character Operations Skill
 
-Call `use_skill(skill_name="character-generation")`.
+Call `use_skill(skill_name="character-operations")`.
 
 #### 4. Load Specialized Character Generation Skill
 
@@ -110,7 +110,7 @@ Adjust numbers and types flexibly based on the story settings.
 
 #### 6. Generate One by One
 
-For each planned character, follow the generic character generation skill''s flow: get Schema → generate attributes → create character → establish relations.
+For each planned character, follow the character operations skill''s creation flow: get Schema → generate attributes → create character → establish relations.
 
 **Call tools immediately. Do not describe your plan in text first.**
 

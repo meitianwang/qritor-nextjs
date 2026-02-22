@@ -10,7 +10,7 @@ VALUES (
   '## 场景初始化技能（编排层）
 
 批量初始化小说项目的核心场景阵容。本技能负责编排流程，具体生成能力由两层技能提供：
-- **通用场景生成技能**（`scene-generation`）：提供获取 Schema、生成属性、创建场景的通用流程
+- **场景操作技能**（`scene-operations`）：提供获取 Schema、生成属性、创建场景的通用流程
 - **专属场景生成技能**（名称以 `-scene-gen` 结尾）：提供特定小说类型下的场景设计领域知识
 
 ### 绝对禁止
@@ -37,9 +37,9 @@ VALUES (
 
 调用 `list_characters`，获取已有角色列表。场景与角色紧密关联——角色的活动场所、势力据点等信息是场景设计的重要参考。
 
-#### 4. 加载通用场景生成技能
+#### 4. 加载场景操作技能
 
-调用 `use_skill(skill_name="scene-generation")`。
+调用 `use_skill(skill_name="scene-operations")`。
 
 #### 5. 加载专属场景生成技能
 
@@ -57,7 +57,7 @@ VALUES (
 
 #### 7. 逐个生成
 
-对每个规划的场景，按通用场景生成技能的流程执行：获取 Schema → 生成属性 → 创建场景 → 建立关系。
+对每个规划的场景，按场景操作技能的创建流程执行：获取 Schema → 生成属性 → 创建场景 → 建立关系。
 
 **立即调用工具，不要先用文字描述计划。**
 
@@ -69,7 +69,7 @@ VALUES (
   '## Scene Initialization Skill (Orchestration Layer)
 
 Batch-initialize the core scene lineup for a novel project. This skill orchestrates the flow; actual generation is powered by two skill layers:
-- **Generic scene generation skill** (`scene-generation`): provides the universal flow for reading schemas, generating attributes, and creating scenes
+- **Scene operations skill** (`scene-operations`): provides the universal flow for reading schemas, generating attributes, and creating scenes
 - **Specialized scene generation skills** (names ending in `-scene-gen`): provide domain knowledge for scene design within specific novel types
 
 ### Absolute Rule
@@ -96,9 +96,9 @@ Call `list_settings` to read all setting modules (worldview, crossing setup, che
 
 Call `list_characters` to get the existing character list. Scenes and characters are tightly linked — character activity locations, faction bases, etc. are important references for scene design.
 
-#### 4. Load Generic Scene Generation Skill
+#### 4. Load Scene Operations Skill
 
-Call `use_skill(skill_name="scene-generation")`.
+Call `use_skill(skill_name="scene-operations")`.
 
 #### 5. Load Specialized Scene Generation Skill
 
@@ -116,7 +116,7 @@ Adjust numbers and types flexibly based on story settings. Scenes should have lo
 
 #### 7. Generate One by One
 
-For each planned scene, follow the generic scene generation skill''s flow: get Schema → generate attributes → create scene → establish relations.
+For each planned scene, follow the scene operations skill''s creation flow: get Schema → generate attributes → create scene → establish relations.
 
 **Call tools immediately. Do not describe your plan in text first.**
 

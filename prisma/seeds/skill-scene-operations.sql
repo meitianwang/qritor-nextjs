@@ -15,7 +15,7 @@ VALUES (
 
 ### 核心原则
 
-1. **先调研，后执行**：任何场景操作前必须收集充分的上下文信息
+1. **禁止向用户提问**：禁止询问偏好、想法、选择。禁止在调用工具之前征求意见。信息不足时自行做出合理决策。用户通过系统确认 UI 审批
 2. **Schema 驱动**：场景属性必须严格遵循当前项目的 JSON Schema 定义
 3. **关系同步**：场景变动必须同步维护知识图谱中的关系（场景与角色、场景与场景、场景与组织等）
 4. **影响评估**：操作完成后评估对剧情动线、角色活动、事件发生地的连锁影响
@@ -40,7 +40,8 @@ VALUES (
 
 根据操作的复杂度，选择性调用以下工具补充上下文：
 
-- `get_setting_detail`：查看世界观设定，确保场景的地理、文化、环境设定与世界观一致
+- `list_settings`：获取所有设定模块内容（世界观、核心设定等），作为创意决策的基础
+- `get_setting_detail`：查看特定设定的详细内容
 - `get_plot_overview`：了解主线剧情和关键事件，判断场景在故事中承载的功能
 - `get_story_line_events`：查看具体故事线的事件，了解哪些事件发生在相关场景
 - `list_characters`：浏览角色列表，了解哪些角色可能活动在该场景
@@ -51,6 +52,15 @@ VALUES (
 **判断标准**：
 - 简单操作（如修改场景的某个描述属性）：调研可精简
 - 复杂操作（如创建核心场景、删除关键剧情场景）：必须充分调研
+
+#### 1.3 领域知识注入
+
+在可用技能列表中查找：名称含 `-scene-gen` 的专属场景生成技能。如有，调用 `use_skill` 加载，获取该小说类型下的领域知识指导。
+
+领域知识在各操作中的作用：
+- **创建**：指导场景属性的生成，确保符合该小说类型的惯例和风格
+- **修改**：指导属性值的调整，确保修改后的内容与小说类型风格一致
+- **删除**：辅助影响评估，帮助判断删除后对场景体系和空间关系的影响
 
 ---
 
@@ -71,18 +81,27 @@ get_scene_schema → 收集上下文 → 设计场景属性 → create_scene →
 
 **Step 2**：收集上下文
 
+- 调用 `list_settings` 获取所有设定模块内容（世界观、核心设定等）
 - 调用 `list_scenes` 了解已有场景布局
-- 调用 `get_setting_detail` 了解世界观设定，确保场景与世界观契合
-- 调用 `get_plot_overview` 理解剧情需求，判断场景应承载的叙事功能
-- 如有需要，查看相关角色和组织信息
+- 如有需要，调用 `get_plot_overview` 理解剧情需求，查看相关角色和组织信息
 
-**Step 3**：构建场景数据
+**Step 3**：分析 Schema 字段并生成场景数据
 
+遍历 Schema 的 `properties`，对每个字段确定生成策略：
+- `required` 数组中的字段 → 必须填充
+- 其余字段 → 根据 `description` 判断是否适合生成
+- 嵌套 `object` 类型字段 → 递归遵循子 Schema
+
+严格按类型生成：
+- `string` → 生成文本（对 `x-uiWidget: textarea` 的字段写详细内容）
+- `object` → 生成嵌套对象（填充所有子字段）
+- `array` → 生成数组（注意 `items` 的类型定义）
+- `number`/`integer` → 生成数值
+- `enum` 约束 → 从可选值中选择一个
+
+构建创建参数：
 - `name` 参数：场景名称（不可与已有场景重复）
-- `properties` 参数：严格按照 Schema 定义构建 JSON 对象
-- 必须填写所有 `required` 字段
-- `enum` 类型字段只能使用预定义的选项值
-- 嵌套 `object` 或 `array` 类型字段需递归遵循子 Schema
+- `properties` 参数：包含所有需要生成的字段的 JSON 对象
 
 **Step 4**：调用 `create_scene` 创建场景
 
@@ -106,9 +125,11 @@ get_scene_schema → 收集上下文 → 设计场景属性 → create_scene →
 - `description`：关系的具体描述
 - `strength`：关系强度（1-5，可选）
 
+**立即调用工具，不要先用文字描述计划。**
+
 #### 2.3 注意事项
 
-- 如果用户提供的信息不足以填写必填字段，**主动询问**用户补充
+- 信息不足时自行做出合理的创意决策，不要向用户提问
 - 新场景的空间关系要与已有场景的地理逻辑自洽（如不能与相隔万里的场景"相邻"）
 - 关系描述要具体，说明空间距离、通行方式、归属性质等
 
@@ -189,7 +210,7 @@ get_scene_detail → query_character_relations → 评估影响 → 清理关系
 #### 4.3 警告
 
 - 删除操作不可逆
-- 关键场景（主线剧情发生地、角色聚集地）的删除务必与用户充分确认
+- 关键场景（主线剧情发生地、角色聚集地）的删除需在影响评估中重点标注风险
 
 ---
 
@@ -248,7 +269,7 @@ This skill guides you through creating, modifying, and deleting scenes, ensuring
 
 ### Core Principles
 
-1. **Research first, act second**: Gather sufficient context before any scene operation
+1. **NEVER ask the user any questions**: Do not ask for preferences, ideas, or choices. Do not seek input before calling tools. When information is insufficient, make reasonable decisions on your own. Users review via the system confirmation UI
 2. **Schema-driven**: Scene properties must strictly follow the current project''s JSON Schema definition
 3. **Relationship synchronization**: Scene changes must synchronize relationships in the knowledge graph (scene-to-character, scene-to-scene, scene-to-organization, etc.)
 4. **Impact assessment**: After each operation, evaluate cascading effects on plot progression, character activities, and event locations
@@ -273,7 +294,8 @@ Before executing any scene operation, gather the necessary information based on 
 
 Depending on the operation''s complexity, selectively call the following tools to supplement context:
 
-- `get_setting_detail`: Review world-building settings to ensure the scene''s geography, culture, and environment align with the world-building
+- `list_settings`: Retrieve all setting module contents (worldview, core settings, etc.) as the foundation for creative decisions
+- `get_setting_detail`: Review specific setting details
 - `get_plot_overview`: Understand the main plot and key events to determine the scene''s narrative function in the story
 - `get_story_line_events`: Review specific storyline events to identify which events occur at the relevant scene
 - `list_characters`: Browse the character list to understand which characters may be active at the scene
@@ -284,6 +306,15 @@ Depending on the operation''s complexity, selectively call the following tools t
 **Decision criteria**:
 - Simple operations (e.g., modifying a scene''s descriptive attribute): Research can be streamlined
 - Complex operations (e.g., creating a core scene, deleting a key plot scene): Thorough research is required
+
+#### 1.3 Domain Knowledge Injection
+
+Search the available skills list for one whose name contains `-scene-gen`. If found, call `use_skill` to load it and obtain domain knowledge guidance for the specific novel type.
+
+How domain knowledge applies across operations:
+- **Create**: Guides scene attribute generation to ensure compliance with the novel type''s conventions and style
+- **Modify**: Guides attribute value adjustments to ensure modified content remains consistent with the novel type''s style
+- **Delete**: Assists impact assessment, helping evaluate the effect of deletion on the scene system and spatial relationships
 
 ---
 
@@ -304,18 +335,27 @@ get_scene_schema -> gather context -> design scene properties -> create_scene ->
 
 **Step 2**: Gather context
 
+- Call `list_settings` to retrieve all setting module contents (worldview, core settings, etc.)
 - Call `list_scenes` to understand the existing scene layout
-- Call `get_setting_detail` to understand world-building settings and ensure the scene fits the world-building
-- Call `get_plot_overview` to understand plot requirements and determine the narrative function the scene should serve
-- If needed, review related character and organization information
+- If needed, call `get_plot_overview` to understand plot requirements, and review related character and organization information
 
-**Step 3**: Construct scene data
+**Step 3**: Analyze Schema fields and generate scene data
 
+Iterate through the Schema''s `properties` to determine the generation strategy for each field:
+- Fields in the `required` array → must be populated
+- Other fields → determine whether to generate based on `description`
+- Nested `object` type fields → recursively follow sub-Schemas
+
+Generate strictly by type:
+- `string` → generate text (write detailed content for fields with `x-uiWidget: textarea`)
+- `object` → generate nested objects (populate all sub-fields)
+- `array` → generate arrays (follow the `items` type definition)
+- `number`/`integer` → generate numerical values
+- `enum` constraints → select from the available options
+
+Build creation parameters:
 - `name` parameter: Scene name (must not duplicate existing scene names)
-- `properties` parameter: Build a JSON object strictly according to the Schema definition
-- All `required` fields must be populated
-- `enum` type fields may only use predefined option values
-- Nested `object` or `array` type fields must recursively follow their sub-Schemas
+- `properties` parameter: A JSON object containing all fields to be generated
 
 **Step 4**: Call `create_scene` to create the scene
 
@@ -339,9 +379,11 @@ Analyze the relationships that should exist between the new scene and other enti
 - `description`: Specific description of the relationship
 - `strength`: Relationship strength (1-5, optional)
 
+**Call tools immediately. Do not describe your plan in text first.**
+
 #### 2.3 Notes
 
-- If the user provides insufficient information to fill required fields, **proactively ask** the user for additional details
+- When information is insufficient, make reasonable creative decisions on your own — never ask the user
 - Spatial relationships of the new scene must be geographically consistent with existing scenes (e.g., a scene cannot be "adjacent" to one that is thousands of miles away)
 - Relationship descriptions should be specific, detailing spatial distance, travel methods, affiliation nature, etc.
 
@@ -422,7 +464,7 @@ get_scene_detail -> query_character_relations -> assess impact -> clean up relat
 #### 4.3 Warnings
 
 - Deletion is irreversible
-- Deletion of key scenes (main plot event locations, character gathering places) must be thoroughly confirmed with the user
+- Deletion of key scenes (main plot event locations, character gathering places) requires highlighting risks in the impact assessment
 
 ---
 
