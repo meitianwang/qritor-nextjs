@@ -33,6 +33,38 @@ function jsonError(status: number, message: string) {
 }
 
 /**
+ * 检测是否为 DeepSeek reasoning 模型（如 deepseek-reasoner / deepseek-v3.2-thinking）。
+ * 这类模型要求对话历史中所有含 tool-call 的 assistant 消息都携带 reasoning_content 字段。
+ */
+function isDeepSeekReasoningModel(modelName: string): boolean {
+  const lower = modelName.toLowerCase()
+  return lower.includes('deepseek') && (lower.includes('thinking') || lower.includes('reasoner'))
+}
+
+/**
+ * DeepSeek reasoning 模型消息预处理：
+ * 为缺少 reasoning part 的 assistant tool-call 消息补充空 reasoning，
+ * 防止 "Missing reasoning_content field in the assistant message" 400 错误。
+ *
+ * 背景：桌面端斜杠命令会在发送 LLM 请求前注入合成的 assistant tool-call 消息，
+ * 这类消息没有 reasoning_content，DeepSeek reasoner 会拒绝包含此类消息的请求。
+ */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function patchDeepSeekReasoningMessages(messages: any[]): void {
+  for (const msg of messages) {
+    if (msg.role === 'assistant' && Array.isArray(msg.content)) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const hasToolCall = msg.content.some((p: any) => p.type === 'tool-call')
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const hasReasoning = msg.content.some((p: any) => p.type === 'reasoning')
+      if (hasToolCall && !hasReasoning) {
+        msg.content.unshift({ type: 'reasoning', text: '' })
+      }
+    }
+  }
+}
+
+/**
  * 校验消息中 tool-call / tool-result 的配对关系，移除孤立项。
  * 防止 DB 裁剪、上下文压缩、Gateway 转换等导致的不匹配，
  * 避免 provider 返回 "tool result's tool id not found" 等 400 错误。
@@ -311,6 +343,11 @@ export async function POST(request: NextRequest) {
     // 校验 tool-call / tool-result 配对，移除孤立项
     // 防止 DB 裁剪、上下文压缩、Gateway 转换等导致的不匹配
     sanitizeToolMessages(messages)
+
+    // DeepSeek reasoning 模型：为缺少 reasoning_content 的合成 tool-call 消息补充空 reasoning
+    if (isDeepSeekReasoningModel(config.model_name)) {
+      patchDeepSeekReasoningMessages(messages)
+    }
 
     // Anthropic: 将 system prompt 标记为可缓存
     const systemOption = systemPrompt
