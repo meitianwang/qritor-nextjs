@@ -94,6 +94,8 @@ export const zhQuickStartContent: Record<string, DocsContentEntry> = {
 
 1. 在侧边栏点击 **「小说」** 回到作品列表，点击右上角 **「新建小说」**。
 2. 填写 **作品名称**，从下拉列表选择一种 **小说创作方法**（决定作品拥有哪些模块类型，如角色卡、场景、道具等），可选填写简介。
+
+> 没有想法的话可以随便填写名称，后续让创作助手帮你起一个合适的名字。
 3. 点击创建，系统会根据所选方法自动生成初始模块结构。
 
 ## 熟悉编辑器界面
@@ -253,6 +255,8 @@ Click **"Novel Creation Methods"** in the sidebar to enter the creation methods 
 
 1. Click **"Novels"** in the sidebar to return to the works list, then click **"New Novel"** at the top right.
 2. Enter a **Novel Name**, select a **Novel Creation Method** from the dropdown (this determines which module types your work will have, e.g., character sheets, scenes, props), and optionally add a description.
+
+> No name ideas? Just enter anything for now — you can ask the AI assistant to suggest a better title later.
 3. Click create. The system will automatically generate an initial module structure based on the selected method.
 
 ## Explore the Editor Interface

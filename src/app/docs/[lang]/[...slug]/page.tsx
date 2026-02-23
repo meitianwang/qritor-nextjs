@@ -50,6 +50,8 @@ function formatContent(markdown: string): string {
         .replace(/^#### (.+)$/gm, '<h4>$1</h4>')
         .replace(/^### (.+)$/gm, '<h3>$1</h3>')
         .replace(/^## (.+)$/gm, '<h2>$1</h2>')
+        // Blockquotes
+        .replace(/^> (.+)$/gm, '<blockquote>$1</blockquote>')
         // Images
         .replace(/!\[(.+?)\]\((.+?)\)/g, '<img src="$2" alt="$1" class="docs-image" />')
         // Lists
