@@ -15,7 +15,7 @@ VALUES (
 
 ### 核心原则
 
-1. **禁止向用户提问**：禁止询问偏好、想法、选择。禁止在调用工具之前征求意见。信息不足时自行做出合理决策。用户通过系统确认 UI 审批
+1. **禁止向用户提问**：禁止询问偏好、想法、选择。禁止在调用工具之前征求意见。信息不足时自行做出合理决策
 2. **上下文连贯**：章节正文必须与前后章节、角色状态、剧情走向保持连贯
 3. **实体关联**：正文撰写后，及时更新参与实体（角色、场景、组织、道具）
 
@@ -130,7 +130,7 @@ get_chapter_content → 分析参与实体 → list_characters/list_scenes → u
 
 ### 四、写作后检查
 
-写入完成（`end_chapter_write` 调用后）、用户确认保存后，执行以下检查：
+写入完成（`end_chapter_write` 调用后，内容自动保存），执行以下检查：
 
 #### 4.1 内容质量检查
 
@@ -220,7 +220,7 @@ This skill guides you through chapter body text writing, ensuring body text rema
 
 ### Core Principles
 
-1. **NEVER ask the user any questions**: Do not ask for preferences, ideas, or choices. Do not seek input before calling tools. When information is insufficient, make reasonable decisions on your own. Users review via system confirmation UI
+1. **NEVER ask the user any questions**: Do not ask for preferences, ideas, or choices. Do not seek input before calling tools. When information is insufficient, make reasonable decisions on your own
 2. **Contextual continuity**: Chapter body text must remain coherent with surrounding chapters, character states, and plot direction
 3. **Entity association**: After writing body text, promptly update participating entities (characters, scenes, organizations, props)
 
@@ -335,7 +335,7 @@ get_chapter_content → analyze participating entities → list_characters/list_
 
 ### IV. Post-Writing Review
 
-After writing is complete (`end_chapter_write` called) and the user has confirmed saving, perform the following checks:
+After writing is complete (`end_chapter_write` called, content is auto-saved), perform the following checks:
 
 #### 4.1 Content Quality Checks
 

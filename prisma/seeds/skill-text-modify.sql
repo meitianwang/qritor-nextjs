@@ -15,8 +15,7 @@ VALUES (
 
 ### 核心原则
 
-1. **禁止向用户提问**：禁止询问偏好、想法、选择。禁止在调用工具之前征求意见。信息不足时自行做出合理决策。用户通过系统确认 UI 审批
-2. **上下文连贯**：修改后的内容必须与前后文、角色状态、剧情走向保持连贯
+1. **禁止向用户提问**：禁止询问偏好、想法、选择。禁止在调用工具之前征求意见。信息不足时自行做出合理决策。2. **上下文连贯**：修改后的内容必须与前后文、角色状态、剧情走向保持连贯
 3. **精准定位**：修改前必须准确定位目标文本，避免误操作
 4. **实体关联**：正文修改后如有实体变动，及时更新参与实体（角色、场景、组织、道具）
 
@@ -51,58 +50,57 @@ VALUES (
 
 ---
 
-### 二、修改正文（修改模式）
+### 二、修改正文
 
-> 使用 `start_chapter_modify` + `end_chapter_modify`，适用于对现有正文做局部替换或插入。
+> 使用 `edit_chapter` 工具，一次调用完成替换。类似 Claude Code 的 Edit 工具。
 
 #### 2.1 流程
 
 ```
-search_in_chapter → 确认目标文本 → start_chapter_modify → 输出新内容 → end_chapter_modify
+search_in_chapter → 确认目标文本 → edit_chapter(old_string, new_string)
 ```
 
-#### 2.2 三种操作类型
+#### 2.2 参数说明
 
-| 操作 | 说明 | 场景 |
-|------|------|------|
-| `replace` | 替换 searchText 为新内容 | 修改错别字、改写段落、替换名称 |
-| `insert_after` | 在 searchText 之后插入 | 在某段后添加新内容 |
-| `insert_before` | 在 searchText 之前插入 | 在某段前添加新内容 |
+| 参数 | 说明 |
+|------|------|
+| `chapterId` / `chapterTitle` | 定位章节（二选一） |
+| `old_string` | 要被替换的原文本，必须在章节中**完全匹配且唯一** |
+| `new_string` | 替换后的新文本（可以是空字符串，表示删除） |
 
 #### 2.3 步骤
 
 **Step 1**：调用 `search_in_chapter` 定位目标文本
 
-- 确认 searchText 在章节中存在
+- 确认 old_string 在章节中存在
 - 如果有多处匹配，需要选择足够长的文本来唯一定位
 
-**Step 2**：调用 `start_chapter_modify`
+**Step 2**：调用 `edit_chapter`
 
-- `chapterTitle` 或 `chapterId`：定位章节
-- `operation`：选择操作类型
-- `searchText`：定位文本（必须在章节中存在）
-
-**Step 3**：输出新内容
-
-- **只输出替换/插入的内容**，不要输出解释或评论
-
-**Step 4**：调用 `end_chapter_modify` 结束修改
+- 提供 old_string（要替换的原文）和 new_string（替换后的新文本）
+- 工具会自动验证、替换、保存
 
 #### 2.4 典型修改场景
 
-| 场景 | 操作类型 | searchText 选择 |
-|------|---------|----------------|
-| 改错别字/改名 | `replace` | 包含错误文字的短句 |
-| 改写一段描写 | `replace` | 要改写的完整段落 |
-| 在某段后补充内容 | `insert_after` | 目标段落的最后一句 |
-| 在章节开头添加内容 | `insert_before` | 章节正文的第一句 |
+| 场景 | old_string | new_string |
+|------|-----------|------------|
+| 改错别字/改名 | 包含错误文字的短句 | 修正后的短句 |
+| 改写一段描写 | 要改写的完整段落 | 改写后的段落 |
+| 在某段后补充内容 | 目标段落的最后一句 | 最后一句 + 新增内容 |
+| 删除一段内容 | 要删除的文本 | 空字符串 "" |
 
-#### 2.5 注意事项
+#### 2.5 多处修改
 
-- searchText 必须在章节中**精确存在**，否则会报错
+- 每次调用 `edit_chapter` 只做一处替换
+- 多处修改请多次调用
+- 注意：前一次替换可能改变后续文本的位置，建议每次替换前重新搜索确认
+
+#### 2.6 注意事项
+
+- old_string 必须在章节中**精确存在**且**唯一出现**，否则会报错
 - 如果多处出现相同文本，使用更长的文本片段来唯一定位
 - 修改前建议先用 `read_chapter_section` 阅读周围上下文，确保修改后的内容衔接自然
-- 如果需要重写整个章节正文，不要用修改模式，改用 `text-write` 技能
+- 如果需要重写整个章节正文，不要用编辑模式，改用 `text-write` 技能
 
 ---
 
@@ -169,12 +167,11 @@ get_chapter_content → 分析参与实体 → list_characters/list_scenes → u
 | `get_chapter_content` | 获取章节完整内容 | `chapterId` 或 `chapterTitle`, `includeFullText?` |
 | `search_across_chapters` | 跨章节搜索关键词 | `keyword`, `searchIn?`, `contextChars?`, `limit?` |
 
-#### 修改工具（替换/插入模式）
+#### 编辑工具
 
 | 工具名 | 用途 | 关键参数 |
 |--------|------|---------|
-| `start_chapter_modify` | 开始修改正文 | `chapterId`/`chapterTitle`, `operation`, `searchText` |
-| `end_chapter_modify` | 结束修改 | 无参数 |
+| `edit_chapter` | 精确替换章节正文 | `chapterId`/`chapterTitle`, `old_string`, `new_string` |
 
 #### 其他常用工具
 
@@ -196,8 +193,7 @@ This skill guides you through chapter body text modification operations, ensurin
 
 ### Core Principles
 
-1. **NEVER ask the user any questions**: Do not ask for preferences, ideas, or choices. Do not seek input before calling tools. When information is insufficient, make reasonable decisions on your own. Users review via system confirmation UI
-2. **Contextual continuity**: Modified content must remain coherent with surrounding text, character states, and plot direction
+1. **NEVER ask the user any questions**: Do not ask for preferences, ideas, or choices. Do not seek input before calling tools. When information is insufficient, make reasonable decisions on your own2. **Contextual continuity**: Modified content must remain coherent with surrounding text, character states, and plot direction
 3. **Precise targeting**: Before modifying, accurately locate the target text to avoid accidental changes
 4. **Entity association**: After modifying body text with entity changes, promptly update participating entities (characters, scenes, organizations, props)
 
@@ -232,58 +228,57 @@ Depending on the complexity of the modification, selectively call the following 
 
 ---
 
-### II. Modify Body Text (Modify Mode)
+### II. Modify Body Text
 
-> Uses `start_chapter_modify` + `end_chapter_modify`. Suitable for making local replacements or insertions in existing body text.
+> Uses the `edit_chapter` tool for precise text replacement in a single call. Similar to Claude Code''s Edit tool.
 
 #### 2.1 Workflow
 
 ```
-search_in_chapter → confirm target text → start_chapter_modify → output new content → end_chapter_modify
+search_in_chapter → confirm target text → edit_chapter(old_string, new_string)
 ```
 
-#### 2.2 Three Operation Types
+#### 2.2 Parameters
 
-| Operation | Description | Scenarios |
-|-----------|-------------|-----------|
-| `replace` | Replace searchText with new content | Fix typos, rewrite paragraphs, replace names |
-| `insert_after` | Insert after searchText | Add new content after a specific paragraph |
-| `insert_before` | Insert before searchText | Add new content before a specific paragraph |
+| Parameter | Description |
+|-----------|-------------|
+| `chapterId` / `chapterTitle` | Locate the chapter (choose one) |
+| `old_string` | Original text to replace, must **exactly match and be unique** in the chapter |
+| `new_string` | New text to replace with (can be empty string for deletion) |
 
 #### 2.3 Steps
 
 **Step 1**: Call `search_in_chapter` to locate the target text
 
-- Confirm that searchText exists in the chapter
+- Confirm that old_string exists in the chapter
 - If there are multiple matches, select a longer text segment for unique positioning
 
-**Step 2**: Call `start_chapter_modify`
+**Step 2**: Call `edit_chapter`
 
-- `chapterTitle` or `chapterId`: locate the chapter
-- `operation`: select the operation type
-- `searchText`: locating text (must exist in the chapter)
-
-**Step 3**: Output new content
-
-- **Output only the replacement/insertion content**; do not output explanations or comments
-
-**Step 4**: Call `end_chapter_modify` to end modification
+- Provide old_string (text to replace) and new_string (replacement text)
+- The tool automatically validates, replaces, and saves
 
 #### 2.4 Typical Modification Scenarios
 
-| Scenario | Operation Type | searchText Selection |
-|----------|---------------|---------------------|
-| Fix typo / rename | `replace` | Short sentence containing the error |
-| Rewrite a description | `replace` | The complete paragraph to rewrite |
-| Add content after a paragraph | `insert_after` | The last sentence of the target paragraph |
-| Add content at chapter beginning | `insert_before` | The first sentence of the chapter body |
+| Scenario | old_string | new_string |
+|----------|-----------|------------|
+| Fix typo / rename | Short sentence containing the error | Corrected sentence |
+| Rewrite a description | The complete paragraph to rewrite | Rewritten paragraph |
+| Add content after a paragraph | The last sentence of the target paragraph | Last sentence + new content |
+| Delete content | Text to delete | Empty string "" |
 
-#### 2.5 Notes
+#### 2.5 Multiple Edits
 
-- searchText must **exactly exist** in the chapter; otherwise an error will be returned
+- Each `edit_chapter` call makes one replacement
+- For multiple edits, call multiple times
+- Note: Previous replacements may change subsequent text positions; recommend re-searching before each replacement
+
+#### 2.6 Notes
+
+- old_string must **exactly exist** and appear **exactly once** in the chapter; otherwise an error will be returned
 - If the same text appears in multiple places, use a longer text fragment for unique positioning
 - Before modifying, consider using `read_chapter_section` to read the surrounding context to ensure the modified content transitions naturally
-- If you need to rewrite the entire chapter body text, do not use modify mode; use the `text-write` skill instead
+- If you need to rewrite the entire chapter body text, do not use edit mode; use the `text-write` skill instead
 
 ---
 
@@ -350,12 +345,11 @@ After the operation is complete, provide a concise report:
 | `get_chapter_content` | Get complete chapter content | `chapterId` or `chapterTitle`, `includeFullText?` |
 | `search_across_chapters` | Search keywords across chapters | `keyword`, `searchIn?`, `contextChars?`, `limit?` |
 
-#### Modify Tools (Replace/Insert Mode)
+#### Edit Tools
 
 | Tool Name | Purpose | Key Parameters |
 |-----------|---------|---------------|
-| `start_chapter_modify` | Start modifying body text | `chapterId`/`chapterTitle`, `operation`, `searchText` |
-| `end_chapter_modify` | End modification | No parameters |
+| `edit_chapter` | Precisely replace chapter text | `chapterId`/`chapterTitle`, `old_string`, `new_string` |
 
 #### Other Commonly Used Tools
 
