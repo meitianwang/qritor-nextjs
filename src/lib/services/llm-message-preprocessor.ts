@@ -84,6 +84,21 @@ export function sanitizeToolMessages(messages: any[]): void {
 }
 
 // ---------------------------------------------------------------------------
+// 工具名规范化（Anthropic / OpenAI / Google handler 使用）
+// ---------------------------------------------------------------------------
+
+/**
+ * 规范化工具名：剥离模型可能添加的前缀。
+ * - Claude 有时会加 "mcp_" 前缀
+ * - Google SDK 有时会加 "default_api:" 前缀
+ */
+export function normalizeToolName(name: string): string {
+  if (name.startsWith('mcp_')) return name.slice(4)
+  if (name.startsWith('default_api:')) return name.slice('default_api:'.length)
+  return name
+}
+
+// ---------------------------------------------------------------------------
 // DeepSeek reasoning 模型兼容处理（仅 Vercel 路径使用）
 // ---------------------------------------------------------------------------
 
