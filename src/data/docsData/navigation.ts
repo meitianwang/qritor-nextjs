@@ -41,6 +41,11 @@ export const docsNavigation: Record<string, DocsNavigation> = {
                     ]
                 },
                 {
+                    id: 'ai-models',
+                    title: '模型',
+                    path: '/docs/zh/user-guide/ai-models'
+                },
+                {
                     id: 'worldbuilding',
                     title: '世界观管理',
                     path: '/docs/zh/user-guide/worldbuilding',
@@ -133,6 +138,11 @@ export const docsNavigation: Record<string, DocsNavigation> = {
                         { id: 'editor-toolbar', title: 'Editor Toolbar', path: '/docs/en/user-guide/ai-assistant/editor-toolbar' },
                         { id: 'chat-history', title: 'Chat History', path: '/docs/en/user-guide/ai-assistant/chat-history' }
                     ]
+                },
+                {
+                    id: 'ai-models',
+                    title: 'AI Models',
+                    path: '/docs/en/user-guide/ai-models'
                 },
                 {
                     id: 'worldbuilding',
