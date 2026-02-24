@@ -77,6 +77,10 @@ interface ConvertResult {
 export function convertMessagesToGoogleContents(messages: any[]): ConvertResult {
   let systemInstruction: string | undefined
   const contents: Content[] = []
+  // Track tool call IDs that were converted to text (no thoughtSignature).
+  // For Google thinking models, functionCall parts without thoughtSignature cause 400 errors.
+  // Injected (slash-command) fake tool calls never have thoughtSignature, so they fall back to text.
+  const textConvertedToolCallIds = new Set<string>()
 
   for (const msg of messages) {
     if (msg.role === 'system') {
@@ -88,7 +92,7 @@ export function convertMessagesToGoogleContents(messages: any[]): ConvertResult 
 
     if (msg.role === 'tool') {
       // AI SDK tool role → Google user role with functionResponse parts
-      const parts = convertToolResultParts(msg.content)
+      const parts = convertToolResultParts(msg.content, textConvertedToolCallIds)
       // Merge into last user message or create new one
       const last = contents[contents.length - 1]
       if (last?.role === 'user') {
@@ -100,7 +104,7 @@ export function convertMessagesToGoogleContents(messages: any[]): ConvertResult 
     }
 
     const googleRole = msg.role === 'assistant' ? 'model' : 'user'
-    const parts = convertContentParts(msg.content, msg.providerOptions)
+    const parts = convertContentParts(msg.content, msg.providerOptions, textConvertedToolCallIds)
     contents.push({ role: googleRole, parts })
   }
 
@@ -108,7 +112,7 @@ export function convertMessagesToGoogleContents(messages: any[]): ConvertResult 
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-function convertContentParts(content: any, msgProviderOptions?: any): Part[] {
+function convertContentParts(content: any, msgProviderOptions?: any, textConvertedToolCallIds?: Set<string>): Part[] {
   if (typeof content === 'string') {
     return content ? [{ text: content }] : [{ text: ' ' }]
   }
@@ -139,13 +143,25 @@ function convertContentParts(content: any, msgProviderOptions?: any): Part[] {
         const sig = part.providerOptions?.google?.thoughtSignature
           ?? msgProviderOptions?.google?.thoughtSignature
           ?? undefined
-        parts.push({
-          functionCall: {
-            name: part.toolName,
-            args: part.input ?? part.args ?? {},
-          },
-          ...(sig ? { thoughtSignature: sig } : {}),
-        })
+        if (sig) {
+          // Real model-generated tool call: include thoughtSignature as required by Google thinking models
+          parts.push({
+            functionCall: {
+              name: part.toolName,
+              args: part.input ?? part.args ?? {},
+            },
+            thoughtSignature: sig,
+          })
+        } else {
+          // No thoughtSignature (e.g. slash-command injected fake tool calls).
+          // Google thinking models reject functionCall parts without thoughtSignature (HTTP 400).
+          // Fall back to text representation so the model still sees what was called.
+          const argsStr = JSON.stringify(part.input ?? part.args ?? {})
+          parts.push({ text: `[Tool call: ${part.toolName}(${argsStr})]` })
+          if (textConvertedToolCallIds && part.toolCallId) {
+            textConvertedToolCallIds.add(part.toolCallId)
+          }
+        }
         break
       }
 
@@ -174,22 +190,37 @@ function convertContentParts(content: any, msgProviderOptions?: any): Part[] {
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-function convertToolResultParts(content: any): Part[] {
+function convertToolResultParts(content: any, textConvertedToolCallIds?: Set<string>): Part[] {
   if (!Array.isArray(content)) {
     return [{ functionResponse: { name: 'unknown', response: { result: String(content) } } }]
   }
 
-  return content
-    .filter((p: { type: string }) => p.type === 'tool-result')
-    .map((p: { toolName: string; toolCallId?: string; result?: unknown }) => ({
-      functionResponse: {
-        name: p.toolName,
-        id: p.toolCallId,
-        response: (typeof p.result === 'string'
-          ? { result: p.result }
-          : (p.result ?? { result: '' })) as Record<string, unknown>,
-      },
-    }))
+  const parts: Part[] = []
+  for (const p of content) {
+    if (p.type !== 'tool-result') continue
+
+    // result field for AI SDK format, output field for desktop AgentChatMessage format
+    const rawResult = p.result ?? p.output
+
+    if (textConvertedToolCallIds?.has(p.toolCallId)) {
+      // Corresponding tool-call was converted to text; convert result to text too
+      // so that Google doesn't see an orphaned functionResponse without a matching functionCall
+      const resultStr = typeof rawResult === 'string' ? rawResult : JSON.stringify(rawResult ?? '')
+      parts.push({ text: `[Tool result for ${p.toolName}: ${resultStr}]` })
+    } else {
+      const responseData = typeof rawResult === 'string'
+        ? { result: rawResult }
+        : (rawResult ?? { result: '' })
+      parts.push({
+        functionResponse: {
+          name: p.toolName,
+          id: p.toolCallId,
+          response: responseData as Record<string, unknown>,
+        },
+      })
+    }
+  }
+  return parts
 }
 
 // ---------------------------------------------------------------------------
