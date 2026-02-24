@@ -13,7 +13,7 @@ import {
 } from '@/lib/services/reasoning-options'
 import {
   calculateCredits,
-  estimateInputTokens,
+  estimateMessagesTokens,
   getConfigParams,
 } from '@/lib/services/token-calculator'
 import {
@@ -281,10 +281,7 @@ export async function POST(request: NextRequest) {
     )
 
     // 积分预检
-    const allText = messages
-      .map((m) => (typeof m.content === 'string' ? m.content : ''))
-      .join('\n')
-    const est = estimateInputTokens(allText)
+    const est = estimateMessagesTokens(messages)
     const { inputPricePerM, outputPricePerM } =
       await getConfigParams(configId)
     if (

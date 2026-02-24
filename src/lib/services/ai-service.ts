@@ -3,7 +3,7 @@ import { createAnthropic } from '@ai-sdk/anthropic'
 import { prisma } from '@/lib/prisma'
 import {
   calculateCredits,
-  estimateInputTokens,
+  estimateMessagesTokens,
   getConfigParams,
 } from './token-calculator'
 import {
@@ -386,8 +386,8 @@ class GatewayAIService {
     const inputText = (systemPrompt || '') + '\n' + prompt
     yield {
       type: 'usage',
-      inputTokens: usageInputTokens ?? estimateInputTokens(inputText),
-      outputTokens: usageOutputTokens ?? estimateInputTokens(outputText),
+      inputTokens: usageInputTokens ?? estimateMessagesTokens([{ role: 'user', content: inputText }]),
+      outputTokens: usageOutputTokens ?? estimateMessagesTokens([{ role: 'assistant', content: outputText }]),
     }
   }
 }
@@ -453,7 +453,7 @@ class AIGenerateService {
     // Pre-check credits
     if (userId) {
       try {
-        const estInputTokens = estimateInputTokens(prompt)
+        const estInputTokens = estimateMessagesTokens([{ role: 'user', content: prompt }])
         const { inputPricePerM, outputPricePerM } =
           await getConfigParams(actualConfigId)
         const estimatedCredits = calculateCredits(
