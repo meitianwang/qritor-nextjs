@@ -25,6 +25,17 @@ import { classifyAIError } from '@/lib/services/ai-error-classifier'
 
 export const dynamic = 'force-dynamic'
 
+/**
+ * 规范化工具名：剥离模型可能添加的前缀。
+ * - Claude 有时会加 "mcp_" 前缀
+ * - Google SDK 有时会加 "default_api:" 前缀
+ */
+function normalizeToolName(name: string): string {
+  if (name.startsWith('mcp_')) return name.slice(4)
+  if (name.startsWith('default_api:')) return name.slice('default_api:'.length)
+  return name
+}
+
 function jsonError(status: number, message: string) {
   return NextResponse.json(
     { code: status, data: null, message },
@@ -577,7 +588,7 @@ async function handleAnthropicStream(params: HandleAnthropicStreamParams): Promi
               writer.write({
                 type: 'tool-input-available',
                 toolCallId: event.toolCallId,
-                toolName: event.toolName,
+                toolName: normalizeToolName(event.toolName),
                 input: event.args,
               })
               break
@@ -777,7 +788,7 @@ async function handleOpenAIStream(params: HandleOpenAIStreamParams): Promise<Res
               writer.write({
                 type: 'tool-input-available',
                 toolCallId: event.toolCallId,
-                toolName: event.toolName,
+                toolName: normalizeToolName(event.toolName),
                 input: event.args,
               })
               break
@@ -984,7 +995,7 @@ async function handleGoogleStream(params: HandleGoogleStreamParams): Promise<Res
               writer.write({
                 type: 'tool-input-available',
                 toolCallId: event.toolCallId,
-                toolName: event.toolName,
+                toolName: normalizeToolName(event.toolName),
                 input: event.args,
                 providerMetadata: event.thoughtSignature
                   ? { google: { thoughtSignature: event.thoughtSignature } }
