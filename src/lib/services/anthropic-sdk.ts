@@ -139,14 +139,17 @@ function convertContentToAnthropicBlocks(content: any, role: 'user' | 'assistant
       case 'reasoning': {
         // AI SDK reasoning -> Anthropic thinking block (only valid in assistant messages)
         if (role === 'assistant' && part.text) {
-          const thinkingBlock: ThinkingBlockParam = {
-            type: 'thinking',
-            thinking: part.text,
-            signature: part.signature
-              ?? part.providerMetadata?.anthropic?.signature
-              ?? '',
+          const signature = part.signature
+            ?? (part.providerMetadata?.anthropic?.signature as string | undefined)
+          // Anthropic 要求 thinking block 必须有有效的 signature，
+          // 如果 signature 缺失（如旧数据或流中断），跳过该 thinking block 以避免 400 错误
+          if (signature) {
+            blocks.push({
+              type: 'thinking',
+              thinking: part.text,
+              signature,
+            })
           }
-          blocks.push(thinkingBlock)
         }
         break
       }
