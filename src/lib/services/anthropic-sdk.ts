@@ -376,7 +376,7 @@ export async function* streamAnthropicContent(
           } else if (delta.type === 'input_json_delta') {
             if (state) state.inputJson += delta.partial_json
           } else if (delta.type === 'signature_delta') {
-            if (state) state.signature = delta.signature
+            if (state) state.signature += delta.signature
           }
           break
         }
