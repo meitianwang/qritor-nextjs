@@ -170,6 +170,24 @@ function convertAssistantMessage(content: any, output: ResponseInputItem[]): voi
   }
 }
 
+/**
+ * 从 tool result 中提取内容字符串。
+ * 兼容两种格式：
+ * - AI SDK 格式：直接使用 `result` 字段
+ * - Desktop AgentChatMessage 格式：`output` 字段，值为 `{ type: "json", value: {...} }` 包装
+ */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function extractToolResultContent(part: any): string {
+  const raw = part.result ?? part.output
+  if (raw == null) return ''
+  if (typeof raw === 'string') return raw
+  // Desktop wrapper format: { type: "json", value: {...} }
+  if (typeof raw === 'object' && raw.type === 'json' && 'value' in raw) {
+    return typeof raw.value === 'string' ? raw.value : JSON.stringify(raw.value)
+  }
+  return JSON.stringify(raw)
+}
+
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 function convertToolResultItems(content: any): ResponseInputItem[] {
   if (!Array.isArray(content)) {
@@ -182,12 +200,12 @@ function convertToolResultItems(content: any): ResponseInputItem[] {
 
   return content
     .filter((p: { type: string }) => p.type === 'tool-result')
-    .map((p: { toolCallId?: string; result?: unknown }) => ({
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    .map((p: any) => ({
       type: 'function_call_output',
       call_id: p.toolCallId ?? 'unknown',
-      output: typeof p.result === 'string'
-        ? p.result
-        : JSON.stringify(p.result ?? ''),
+      // 兼容 AI SDK (result) 和 Desktop (output) 两种格式
+      output: extractToolResultContent(p),
     } as ResponseInputItem))
 }
 

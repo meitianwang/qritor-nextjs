@@ -165,9 +165,8 @@ function convertContentToAnthropicBlocks(content: any, role: 'user' | 'assistant
 
       case 'tool-result': {
         // AI SDK tool-result -> Anthropic tool_result
-        const resultContent = typeof part.result === 'string'
-          ? part.result
-          : JSON.stringify(part.result ?? '')
+        // 兼容 AI SDK (result) 和 Desktop (output) 两种格式
+        const resultContent = extractToolResultContent(part)
         const toolResultBlock: ToolResultBlockParam = {
           type: 'tool_result',
           tool_use_id: sanitizeToolCallId(part.toolCallId),
@@ -199,10 +198,10 @@ function convertToolResultMessage(content: any): ToolResultBlockParam[] {
 
   return content
     .filter((p: { type: string }) => p.type === 'tool-result')
-    .map((p: { toolCallId?: string; toolName?: string; result?: unknown; isError?: boolean }) => {
-      const resultContent = typeof p.result === 'string'
-        ? p.result
-        : JSON.stringify(p.result ?? '')
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    .map((p: any) => {
+      // 兼容 AI SDK (result) 和 Desktop (output) 两种格式
+      const resultContent = extractToolResultContent(p)
       return {
         type: 'tool_result' as const,
         tool_use_id: sanitizeToolCallId(p.toolCallId ?? 'unknown'),
@@ -210,6 +209,24 @@ function convertToolResultMessage(content: any): ToolResultBlockParam[] {
         ...(p.isError ? { is_error: true } : {}),
       }
     })
+}
+
+/**
+ * 从 tool result 中提取内容字符串。
+ * 兼容两种格式：
+ * - AI SDK 格式：直接使用 `result` 字段
+ * - Desktop AgentChatMessage 格式：`output` 字段，值为 `{ type: "json", value: {...} }` 包装
+ */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function extractToolResultContent(part: any): string {
+  const raw = part.result ?? part.output
+  if (raw == null) return ''
+  if (typeof raw === 'string') return raw
+  // Desktop wrapper format: { type: "json", value: {...} }
+  if (typeof raw === 'object' && raw.type === 'json' && 'value' in raw) {
+    return typeof raw.value === 'string' ? raw.value : JSON.stringify(raw.value)
+  }
+  return JSON.stringify(raw)
 }
 
 function sanitizeToolCallId(id: string): string {
