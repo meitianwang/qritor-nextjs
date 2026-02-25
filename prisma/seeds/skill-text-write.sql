@@ -22,6 +22,18 @@ VALUES (
 
 ---
 
+### 〇、加载领域知识
+
+在撰写正文之前，依次加载两层领域知识：
+
+**第一层：创作指南**
+检查技能列表中是否有与当前创作方法匹配的创作指南技能（名称以 `-guide` 结尾）。如有，调用 `use_skill` 加载它，获取该小说类型的创作指导（叙事结构、子类型写法、文风要求、常见陷阱等）。
+
+**第二层：叙事专项**
+检查技能列表中是否有与当前创作方法匹配的叙事技能（名称以 `-narrative` 结尾）。如有，调用 `use_skill` 加载它，获取该小说类型的正文写作专项指导（叙事节奏、场景描写手法、对话风格、战斗/恐怖/权谋等核心场景的写作技巧）。
+
+---
+
 ### 一、操作前：信息收集阶段
 
 在撰写正文之前，收集必要信息：
@@ -293,6 +305,18 @@ This skill guides you through chapter body text writing, ensuring body text rema
 2. **Body text MUST be in your response text**: After calling `start_chapter_write`, chapter body text MUST be output in your response text (NOT in thinking/reasoning). The system only captures response text for the editor
 3. **Contextual continuity**: Chapter body text must remain coherent with surrounding chapters, character states, and plot direction
 4. **Entity association**: After writing body text, promptly update participating entities (characters, scenes, organizations, props)
+
+---
+
+### 0. Load Domain Knowledge
+
+Before writing body text, load two layers of domain knowledge in sequence:
+
+**Layer 1: Creation Guide**
+Check the skill list for a creation guide skill matching the current creation method (name ending in `-guide`). If found, call `use_skill` to load it, obtaining genre-specific creation guidance (narrative structure, sub-genre writing patterns, writing style requirements, common pitfalls, etc.).
+
+**Layer 2: Narrative Specialization**
+Check the skill list for a narrative skill matching the current creation method (name ending in `-narrative`). If found, call `use_skill` to load it, obtaining genre-specific body text writing guidance (narrative pacing, scene description techniques, dialogue style, writing techniques for core scenes such as battles, horror, political intrigue, etc.).
 
 ---
 
