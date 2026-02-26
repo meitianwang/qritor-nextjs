@@ -20,18 +20,18 @@ VALUES (
 | 系统 | 说明 | 核心工具 |
 |------|------|---------|
 | **节点（实体）** | 知识图谱中的实体（角色、场景、道具、组织、概念等） | `list_nodes`, `get_node_detail`, `create_node`, `update_node`, `delete_node` |
-| **关系（边）** | 实体之间的连接（朋友、敌人、隶属、持有等） | `create_relation`, `update_relation`, `delete_relation` |
+| **关系（边）** | 实体之间的无向连接，relation 为自由文本 | `create_relation`, `update_relation`, `delete_relation` |
 | **动态信息** | 实体字段随章节变化的追踪记录 | `get_field_dynamic_info`, `update_field_dynamic_info` |
 
-**关系**：节点 → 通过关系互相连接 → 关系有类型和强度 → 节点字段可有动态变化记录
+**关系**：节点通过关系互相连接 → 每对实体之间只有一条边 → 边是无向的，顺序无关 → relation 为自由文本，可记录关系的演变过程
 
 ---
 
 ### 核心原则
 
 1. **先查后改**：操作前必须了解现有图谱结构，避免重复创建或错误删除
-2. **语义准确**：关系类型和节点类别要准确反映小说中的实际含义
-3. **双向思考**：创建关系时考虑是否需要反向关系（如 A是B的师父 → B是A的徒弟）
+2. **语义准确**：relation 文本和节点类别要准确反映小说中的实际含义
+3. **一对一条边**：每对实体之间只有一条边，边是无向的。关系发生变化时更新 relation 文本，不要新建
 4. **强度分级**：合理使用关系强度（1-5）区分关系的紧密程度
 5. **动态追踪**：重要实体属性发生变化时及时记录动态信息
 
@@ -150,16 +150,19 @@ get_node_detail → 评估影响 → delete_node
 
 #### 3.1 关系的结构
 
-每条关系包含三个核心要素：
+每条关系（边）连接两个实体，**边是无向的，顺序无关**：
 
 ```
-起点实体 →（关系类型）→ 终点实体
-fromName   relationType    toName
+实体 A — relation（自由文本）— 实体 B
+nameA                          nameB
 ```
 
 附加属性：
 - `description`：关系的具体描述
 - `strength`：关系强度（1-5）
+- `color`：关系颜色（用于可视化）
+
+**关系演变**：relation 是自由文本，可以记录关系的动态变化。例如两个角色的关系从"初识"发展为"好朋友"，直接用 `update_relation` 把 relation 更新为新的描述即可。
 
 | 强度 | 含义 | 示例 |
 |------|------|------|
@@ -169,25 +172,25 @@ fromName   relationType    toName
 | 4 | 较强/重要 | 挚友、师徒 |
 | 5 | 极强/核心 | 生死之交、宿敌、至亲 |
 
-#### 3.2 常见关系类型
+#### 3.2 常见关系示例
 
-**角色↔角色**：
+**角色 — 角色**：
 - 朋友、敌人、恋人、师徒、父子/母女、兄弟/姐妹、同门、对手
 
-**角色↔组织**：
+**角色 — 组织**：
 - 隶属、领导、创立、叛离、效忠
 
-**角色↔道具**：
+**角色 — 道具**：
 - 持有、创造、寻找、守护
 
-**角色↔场景**：
+**角色 — 场景**：
 - 居住、驻守、发现
 
-**组织↔组织**：
+**组织 — 组织**：
 - 同盟、敌对、附庸、竞争
 
-**概念↔实体**：
-- 掌握（角色→概念）、约束（概念→角色）、起源于（概念→场景）
+**概念 — 实体**：
+- 掌握、约束、起源于
 
 #### 3.3 创建关系
 
@@ -205,22 +208,17 @@ list_nodes / get_node_detail → 确认实体存在 → create_relation
 
 **Step 2**：调用 `create_relation`
 
-- `fromName`：起点实体名称
-- `toName`：终点实体名称
-- `relationType`：关系类型（如"朋友"、"师徒"）
+- `nameA`：实体 A 名称
+- `nameB`：实体 B 名称
+- `relation`：关系描述（自由文本，如"朋友"、"师徒"）
 - `description`：补充描述关系的具体情况
 - `strength`：关系强度 1-5，默认 3
-- `fromCategory`/`toCategory`：通常不需要指定，系统会自动识别
+- `categoryA`/`categoryB`：通常不需要指定，系统会自动识别
 
 **注意事项**：
-- 如果 fromName 或 toName 对应的实体不存在于图谱中，系统会自动创建对应节点
-- 相同方向、相同类型的关系不能重复创建
-- A→朋友→B 和 B→朋友→A 是两条不同的关系
-
-**关于双向关系**：
-- 有些关系是对称的（如"朋友"），考虑是否需要创建反向关系
-- 有些关系是不对称的（如"师父→徒弟"），方向有实际意义
-- 根据小说需要决定是否创建双向关系
+- 如果 nameA 或 nameB 对应的实体不存在于图谱中，系统会自动创建对应节点
+- 同一对实体之间只允许一条边，重复创建会报错并提示使用 update_relation
+- 边是无向的，nameA 和 nameB 的顺序无关
 
 #### 3.4 更新关系
 
@@ -239,16 +237,17 @@ get_node_detail → 找到关系 → update_relation
 
 - 定位方式（二选一）：
   - `relationId`：直接使用关系 ID
-  - `fromName` + `toName` + `relationType`：通过三元组查找
+  - `nameA` + `nameB` + `relation`：通过三元组查找（无向，顺序无关）
 - 可修改：
-  - `newRelationType`：新的关系类型
+  - `newRelation`：新的关系文本
   - `newDescription`：新的描述
   - `newStrength`：新的关系强度
+  - `newColor`：新的关系颜色
 
-**典型场景**：
-- 剧情发展导致关系变化（朋友→敌人、陌生人→恋人）
-- 关系强度变化（从普通朋友变为生死之交）
-- 补充或修正关系描述
+**关系演变**：
+- 剧情发展导致关系变化时，用 `newRelation` 更新 relation 文本（如"初识"→"好朋友"→"兄弟"→"仇人"）
+- 关系强度变化（从普通朋友变为生死之交），用 `newStrength` 更新
+- 补充或修正关系描述，用 `newDescription` 更新
 
 #### 3.5 删除关系
 
@@ -265,7 +264,7 @@ get_node_detail → 找到关系 → delete_relation
 
 - 定位方式（二选一）：
   - `relationId`：直接使用关系 ID
-  - `fromName` + `toName` + `relationType`：通过三元组查找
+  - `nameA` + `nameB` + `relation`：通过三元组查找（无向，顺序无关）
 - 删除关系不会删除关联的实体节点
 - 删除不可恢复
 
@@ -383,9 +382,9 @@ Step 3: update_field_dynamic_info  → 记录各章节的变化
 | `create_node` | 创建新节点 | name, category |
 | `update_node` | 更新节点信息 | nodeId/nodeName + 修改字段 |
 | `delete_node` | 删除节点（级联删除关系） | nodeId 或 nodeName |
-| `create_relation` | 创建实体间关系 | fromName, toName, relationType |
-| `update_relation` | 修改已有关系 | relationId 或三元组 + 修改字段 |
-| `delete_relation` | 删除关系 | relationId 或三元组 |
+| `create_relation` | 创建实体间关系 | nameA, nameB, relation |
+| `update_relation` | 修改已有关系 | relationId 或 nameA+nameB+relation + 修改字段 |
+| `delete_relation` | 删除关系 | relationId 或 nameA+nameB+relation |
 | `get_field_dynamic_info` | 查询字段动态信息 | entityName |
 | `update_field_dynamic_info` | 更新字段动态信息 | entityName, fields |',
   '## Relationship Graph Management Skill
@@ -401,18 +400,18 @@ This skill involves three interconnected systems:
 | System | Description | Core Tools |
 |--------|-------------|------------|
 | **Nodes (Entities)** | Entities in the knowledge graph (characters, scenes, props, organizations, concepts, etc.) | `list_nodes`, `get_node_detail`, `create_node`, `update_node`, `delete_node` |
-| **Relations (Edges)** | Connections between entities (friends, enemies, membership, possession, etc.) | `create_relation`, `update_relation`, `delete_relation` |
+| **Relations (Edges)** | Undirected connections between entities; relation is free-form text | `create_relation`, `update_relation`, `delete_relation` |
 | **Dynamic Info** | Tracking records of entity field changes across chapters | `get_field_dynamic_info`, `update_field_dynamic_info` |
 
-**Relationships**: Nodes → connected via Relations → relations have types and strengths → node fields can have dynamic change records
+**Relationships**: Nodes are connected via relations → each entity pair has at most one edge → edges are undirected (order does not matter) → relation is free-form text that can track relationship evolution
 
 ---
 
 ### Core Principles
 
 1. **Query before modifying**: Always understand the existing graph structure before making changes to avoid duplicates or accidental deletions
-2. **Semantic accuracy**: Relationship types and node categories should accurately reflect the actual meaning in the novel
-3. **Bidirectional thinking**: When creating relations, consider whether a reverse relation is needed (e.g., A is B''s master → B is A''s apprentice)
+2. **Semantic accuracy**: Relation text and node categories should accurately reflect the actual meaning in the novel
+3. **One edge per pair**: Each entity pair has at most one edge, and edges are undirected. When a relationship changes, update the relation text instead of creating a new edge
 4. **Strength grading**: Use relationship strength (1-5) appropriately to differentiate closeness
 5. **Dynamic tracking**: Record dynamic info promptly when important entity attributes change
 
@@ -531,16 +530,19 @@ get_node_detail → assess impact → delete_node
 
 #### 3.1 Relation Structure
 
-Each relation consists of three core elements:
+Each relation (edge) connects two entities. **Edges are undirected — order does not matter**:
 
 ```
-Source Entity →(Relation Type)→ Target Entity
-fromName       relationType      toName
+Entity A — relation (free-form text) — Entity B
+nameA                                   nameB
 ```
 
 Additional attributes:
 - `description`: Specific description of the relationship
 - `strength`: Relationship strength (1-5)
+- `color`: Relationship color (for visualization)
+
+**Relationship evolution**: The relation field is free-form text that can describe relationship changes over time. For example, when two characters'' relationship evolves from "acquaintance" to "close friend", simply use `update_relation` to update the relation text.
 
 | Strength | Meaning | Examples |
 |----------|---------|----------|
@@ -552,23 +554,23 @@ Additional attributes:
 
 #### 3.2 Common Relation Types
 
-**Character ↔ Character**:
+**Character — Character**:
 - Friends, enemies, lovers, master-apprentice, parent-child, siblings, fellow disciples, rivals
 
-**Character ↔ Organization**:
+**Character — Organization**:
 - Member of, leader of, founder, defector, loyal to
 
-**Character ↔ Prop**:
+**Character — Prop**:
 - Possesses, created, seeking, guarding
 
-**Character ↔ Scene**:
+**Character — Scene**:
 - Resides in, stationed at, discovered
 
-**Organization ↔ Organization**:
+**Organization — Organization**:
 - Allied, hostile, vassal, competing
 
-**Concept ↔ Entity**:
-- Masters (character → concept), constrains (concept → character), originates from (concept → scene)
+**Concept — Entity**:
+- Masters, constrains, originates from
 
 #### 3.3 Creating Relations
 
@@ -586,22 +588,17 @@ list_nodes / get_node_detail → confirm entities exist → create_relation
 
 **Step 2**: Call `create_relation`
 
-- `fromName`: Source entity name
-- `toName`: Target entity name
-- `relationType`: Relationship type (e.g., "friend", "master-apprentice")
+- `nameA`: Entity A name
+- `nameB`: Entity B name
+- `relation`: Relationship description (free-form text, e.g., "friend", "master-apprentice")
 - `description`: Additional context about the relationship
 - `strength`: Relationship strength 1-5, default 3
-- `fromCategory`/`toCategory`: Usually not needed; the system auto-detects
+- `categoryA`/`categoryB`: Usually not needed; the system auto-detects
 
 **Notes**:
-- If the entity referenced by fromName or toName does not exist in the graph, the system will auto-create the corresponding node
-- Duplicate relations (same direction, same type) cannot be created
-- A→friend→B and B→friend→A are two distinct relations
-
-**About bidirectional relations**:
-- Some relations are symmetric (e.g., "friend"); consider creating a reverse relation
-- Some relations are asymmetric (e.g., "master→apprentice"); direction matters
-- Decide based on the novel''s needs
+- If the entity referenced by nameA or nameB does not exist in the graph, the system will auto-create the corresponding node
+- Only one edge is allowed between the same pair of entities; duplicates will return an error prompting you to use update_relation
+- Edges are undirected — the order of nameA and nameB does not matter
 
 #### 3.4 Updating Relations
 
@@ -620,16 +617,17 @@ get_node_detail → find the relation → update_relation
 
 - Locate via (choose one):
   - `relationId`: Directly use the relation ID
-  - `fromName` + `toName` + `relationType`: Find by triplet
+  - `nameA` + `nameB` + `relation`: Find by triplet (undirected, order does not matter)
 - Modifiable fields:
-  - `newRelationType`: New relationship type
+  - `newRelation`: New relation text
   - `newDescription`: New description
   - `newStrength`: New relationship strength
+  - `newColor`: New relationship color
 
-**Typical scenarios**:
-- Plot developments cause relationship changes (friend → enemy, stranger → lover)
-- Relationship strength changes (from casual friend to life-and-death bond)
-- Supplementing or correcting relationship descriptions
+**Relationship evolution**:
+- When plot developments change a relationship, use `newRelation` to update the relation text (e.g., "acquaintance" → "close friend" → "brothers" → "enemy")
+- When relationship strength changes (from casual friend to life-and-death bond), use `newStrength`
+- To supplement or correct relationship descriptions, use `newDescription`
 
 #### 3.5 Deleting Relations
 
@@ -646,7 +644,7 @@ get_node_detail → find the relation → delete_relation
 
 - Locate via (choose one):
   - `relationId`: Directly use the relation ID
-  - `fromName` + `toName` + `relationType`: Find by triplet
+  - `nameA` + `nameB` + `relation`: Find by triplet (undirected, order does not matter)
 - Deleting a relation does not delete the associated entity nodes
 - Deletion is irreversible
 
@@ -764,9 +762,9 @@ Step 3: update_field_dynamic_info  → record changes at each chapter
 | `create_node` | Create a new node | name, category |
 | `update_node` | Update node info | nodeId/nodeName + fields to modify |
 | `delete_node` | Delete a node (cascades to relations) | nodeId or nodeName |
-| `create_relation` | Create a relation between entities | fromName, toName, relationType |
-| `update_relation` | Modify an existing relation | relationId or triplet + fields to modify |
-| `delete_relation` | Delete a relation | relationId or triplet |
+| `create_relation` | Create a relation between entities | nameA, nameB, relation |
+| `update_relation` | Modify an existing relation | relationId or nameA+nameB+relation + fields to modify |
+| `delete_relation` | Delete a relation | relationId or nameA+nameB+relation |
 | `get_field_dynamic_info` | Query field dynamic info | entityName |
 | `update_field_dynamic_info` | Update field dynamic info | entityName, fields |',
   NULL,

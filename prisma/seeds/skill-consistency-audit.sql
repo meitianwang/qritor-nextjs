@@ -256,10 +256,10 @@ query_character_relations → 逐条分析关系逻辑
 ```
 
 **检查要点**：
-- **方向矛盾**：A→师父→B 同时 B→师父→A
-- **类型矛盾**：A→朋友→B 同时 A→敌人→B（除非有剧情转变）
-- **缺失对称关系**：A→朋友→B 但无 B→朋友→A（对于对称关系）
-- **悬空关系**：关系指向不存在的节点
+- **内容矛盾**：relation 文本中包含自相矛盾的描述（如同时声称友好和敌对，且无剧情转变说明）
+- **过时关系**：关系文本未随剧情发展更新（如角色已反目但 relation 仍写着"朋友"），应使用 update_relation 更新
+- **遗漏关系**：正文中明确体现的关系未在图谱中建立
+- **悬空关系**：关系关联的节点不存在
 
 **步骤**：
 
@@ -663,10 +663,10 @@ query_character_relations → analyze each relation''s logic
 ```
 
 **Check points**:
-- **Direction contradiction**: A→master→B and B→master→A simultaneously
-- **Type contradiction**: A→friend→B and A→enemy→B simultaneously (unless there''s a plot transition)
-- **Missing symmetric relation**: A→friend→B but no B→friend→A (for symmetric relations)
-- **Dangling relation**: Relation pointing to a non-existent node
+- **Content contradiction**: The relation text contains self-contradictory descriptions (e.g., claiming both friendly and hostile without a plot transition explanation)
+- **Outdated relation**: Relation text not updated to reflect plot developments (e.g., characters have turned hostile but relation still says "friend"); use update_relation to fix
+- **Missing relation**: A relationship clearly shown in the text is not established in the graph
+- **Dangling relation**: Relation connected to a non-existent node
 
 **Steps**:
 

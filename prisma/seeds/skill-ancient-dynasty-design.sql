@@ -479,8 +479,8 @@ get_organization_schema → list_organizations → create_organization → creat
 
 创建后记得建立势力之间的关系：
 - 使用 `create_relation` 建立组织间关系
-- `fromCategory: "organization"`, `toCategory: "organization"`
-- `relationType` 描述关系性质（如"同盟"、"敌对"、"从属"等）
+- `categoryA: "organization"`, `categoryB: "organization"`
+- `relation` 描述关系性质（如"同盟"、"敌对"、"从属"等）
 
 #### 6.3 角色身份地位操作
 
@@ -1028,8 +1028,8 @@ Key parameter notes:
 
 After creation, remember to establish inter-faction relationships:
 - Use `create_relation` to build organization-to-organization relationships
-- `fromCategory: "organization"`, `toCategory: "organization"`
-- `relationType` describes the relationship nature (e.g., "alliance", "hostility", "subordination")
+- `categoryA: "organization"`, `categoryB: "organization"`
+- `relation` describes the relationship nature (e.g., "alliance", "hostility", "subordination")
 
 #### 6.3 Character Identity & Status Operations
 

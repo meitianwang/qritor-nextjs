@@ -110,18 +110,18 @@ get_scene_schema → 收集上下文 → 设计场景属性 → create_scene →
 分析新场景与其他实体之间应该存在的关系，对每条关系调用 `create_relation`：
 
 **场景 ↔ 场景**（空间关系）：
-- 用 `fromCategory: "scene"`, `toCategory: "scene"` 明确类型
+- 用 `categoryA: "scene"`, `categoryB: "scene"` 明确类型
 
 **场景 ↔ 角色**（活动关系）：
-- 用 `fromCategory: "scene"`, `toCategory: "character"`（或反向）
+- 用 `categoryA: "scene"`, `categoryB: "character"`（或反向）
 
 **场景 ↔ 组织**（归属关系）：
-- 用 `fromCategory: "scene"`, `toCategory: "organization"`（或反向）
+- 用 `categoryA: "scene"`, `categoryB: "organization"`（或反向）
 
 **通用参数**：
-- `fromName`：关系起点实体名
-- `toName`：关系终点实体名
-- `relationType`：关系类型
+- `nameA`：实体 A 名称
+- `nameB`：实体 B 名称
+- `relation`：关系描述（自由文本）
 - `description`：关系的具体描述
 - `strength`：关系强度（1-5，可选）
 
@@ -169,10 +169,10 @@ get_scene_detail → 收集上下文 → update_scene → 评估关系影响 →
 | 修改内容 | 关系影响 | 处理方式 |
 |---------|---------|---------|
 | 外观描述、氛围等表面属性 | 通常无影响 | 直接 `update_scene` |
-| 地理位置、空间布局 | 影响与相邻场景的空间关系 | 检查并更新场景间的 relationType 和 description |
+| 地理位置、空间布局 | 影响与相邻场景的空间关系 | 检查并更新场景间的 relation 文本和 description |
 | 归属势力、控制权变更 | 影响场景与组织的关系 | 更新场景与组织的关系，可能需要新建或删除 |
 | 环境性质变化（如毁灭、重建） | 影响所有与该场景关联的关系 | 全面审查：角色是否需要迁移、组织是否失去据点 |
-| 可达性变化（封锁、开放） | 影响场景间通行关系 | 更新与相关场景的 relationType |
+| 可达性变化（封锁、开放） | 影响场景间通行关系 | 更新与相关场景的 relation 文本 |
 
 ---
 
@@ -250,10 +250,10 @@ get_scene_detail → query_character_relations → 评估影响 → 清理关系
 | `create_scene` | 创建场景 | `name`, `properties?` |
 | `update_scene` | 修改场景 | `sceneName`/`sceneId`, `properties` |
 | `delete_scene` | 删除场景 | `sceneName` 或 `sceneId` |
-| `query_character_relations` | 查询实体关系（支持所有类型） | `characterName?`（传入场景名）, `relationType?` |
-| `create_relation` | 创建关系 | `fromName`, `toName`, `relationType`, `description?`, `fromCategory?`, `toCategory?` |
-| `update_relation` | 更新关系 | `relationId` 或 `fromName`+`toName`+`relationType` |
-| `delete_relation` | 删除关系 | `relationId` 或 `fromName`+`toName`+`relationType` |
+| `query_character_relations` | 查询实体关系（支持所有类型） | `characterName?`（传入场景名）, `relation?` |
+| `create_relation` | 创建关系 | `nameA`, `nameB`, `relation`, `description?`, `categoryA?`, `categoryB?` |
+| `update_relation` | 更新关系 | `relationId` 或 `nameA`+`nameB`+`relation` |
+| `delete_relation` | 删除关系 | `relationId` 或 `nameA`+`nameB`+`relation` |
 | `get_plot_overview` | 获取剧情概览 | 无参数 |
 | `get_story_line_events` | 获取故事线事件 | `storyLineName` |
 | `search_across_chapters` | 搜索章节内容 | `keyword` |
@@ -364,18 +364,18 @@ Build creation parameters:
 Analyze the relationships that should exist between the new scene and other entities, and call `create_relation` for each:
 
 **Scene <-> Scene** (spatial relationships):
-- Use `fromCategory: "scene"`, `toCategory: "scene"` to specify the types
+- Use `categoryA: "scene"`, `categoryB: "scene"` to specify the types
 
 **Scene <-> Character** (activity relationships):
-- Use `fromCategory: "scene"`, `toCategory: "character"` (or reverse)
+- Use `categoryA: "scene"`, `categoryB: "character"` (or reverse)
 
 **Scene <-> Organization** (affiliation relationships):
-- Use `fromCategory: "scene"`, `toCategory: "organization"` (or reverse)
+- Use `categoryA: "scene"`, `categoryB: "organization"` (or reverse)
 
 **Common parameters**:
-- `fromName`: Source entity name of the relationship
-- `toName`: Target entity name of the relationship
-- `relationType`: Relationship type
+- `nameA`: Name of entity A
+- `nameB`: Name of entity B
+- `relation`: Relationship description (free-form text)
 - `description`: Specific description of the relationship
 - `strength`: Relationship strength (1-5, optional)
 
@@ -423,10 +423,10 @@ get_scene_detail -> gather context -> update_scene -> assess relationship impact
 | Modification | Relationship Impact | Handling Approach |
 |-------------|--------------------|--------------------|
 | Appearance descriptions, atmosphere, and other surface attributes | Usually no impact | Directly call `update_scene` |
-| Geographic location, spatial layout | Affects spatial relationships with adjacent scenes | Check and update relationType and description between scenes |
+| Geographic location, spatial layout | Affects spatial relationships with adjacent scenes | Check and update relation text and description between scenes |
 | Controlling faction, ownership changes | Affects scene-to-organization relationships | Update scene-to-organization relationships; may require creating or deleting |
 | Environmental nature changes (e.g., destruction, reconstruction) | Affects all relationships associated with the scene | Full review: whether characters need relocation, whether organizations lose their bases |
-| Accessibility changes (blockade, opening) | Affects transit relationships between scenes | Update relationType with related scenes |
+| Accessibility changes (blockade, opening) | Affects transit relationships between scenes | Update relation text with related scenes |
 
 ---
 
@@ -504,10 +504,10 @@ After completing the operation, provide a concise report to the user:
 | `create_scene` | Create a scene | `name`, `properties?` |
 | `update_scene` | Modify a scene | `sceneName`/`sceneId`, `properties` |
 | `delete_scene` | Delete a scene | `sceneName` or `sceneId` |
-| `query_character_relations` | Query entity relationships (supports all types) | `characterName?` (pass scene name), `relationType?` |
-| `create_relation` | Create a relationship | `fromName`, `toName`, `relationType`, `description?`, `fromCategory?`, `toCategory?` |
-| `update_relation` | Update a relationship | `relationId` or `fromName`+`toName`+`relationType` |
-| `delete_relation` | Delete a relationship | `relationId` or `fromName`+`toName`+`relationType` |
+| `query_character_relations` | Query entity relationships (supports all types) | `characterName?` (pass scene name), `relation?` |
+| `create_relation` | Create a relationship | `nameA`, `nameB`, `relation`, `description?`, `categoryA?`, `categoryB?` |
+| `update_relation` | Update a relationship | `relationId` or `nameA`+`nameB`+`relation` |
+| `delete_relation` | Delete a relationship | `relationId` or `nameA`+`nameB`+`relation` |
 | `get_plot_overview` | Get plot overview | No parameters |
 | `get_story_line_events` | Get storyline events | `storyLineName` |
 | `search_across_chapters` | Search chapter content | `keyword` |
