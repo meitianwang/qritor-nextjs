@@ -175,7 +175,7 @@ query_character_relations → 对比正文内容 → create_relation / update_re
 
 - 调用 `query_character_relations` 查看当前关系网络
 - 分析正文中体现的关系变化（新关系、关系强化/弱化、关系性质转变）
-- 新关系：调用 `create_relation`（参数：`nameA`, `nameB`, `relation`, `description`）
+- 新关系：调用 `create_relation`（参数：`nameA`, `nameB`, `relation`, `color`, `description`）
 - 关系变化：调用 `update_relation`（参数：`nameA`+`nameB`+`relation`, `newDescription` 等）
 
 #### 4.3 更新实体动态信息
@@ -271,7 +271,7 @@ list_pending_foreshadows → create_foreshadow / resolve_foreshadow
 | `get_scene_detail` | 获取场景详情 | `sceneId`/`sceneName` |
 | `update_chapter_entities` | 更新章节参与实体 | `chapterId`, `characterIds?`, `sceneIds?` 等 |
 | `query_character_relations` | 查询角色关系 | `characterName?`, `relation?` |
-| `create_relation` | 创建实体关系 | `nameA`, `nameB`, `relation`, `description?` |
+| `create_relation` | 创建实体关系 | `nameA`, `nameB`, `relation`, `color` |
 | `update_relation` | 修改实体关系 | `nameA`+`nameB`+`relation`, `newDescription?` 等 |
 
 #### 动态信息工具
@@ -461,7 +461,7 @@ query_character_relations → compare with body text → create_relation / updat
 
 - Call `query_character_relations` to view the current relationship network
 - Analyze relationship changes reflected in the body text (new relationships, strengthened/weakened relationships, changed relationship nature)
-- New relationships: call `create_relation` (params: `nameA`, `nameB`, `relation`, `description`)
+- New relationships: call `create_relation` (params: `nameA`, `nameB`, `relation`, `color`, `description`)
 - Changed relationships: call `update_relation` (params: `nameA`+`nameB`+`relation`, `newDescription`, etc.)
 
 #### 4.3 Update Entity Dynamic Info
@@ -557,7 +557,7 @@ After the review is complete, report the writing results to the user.
 | `get_scene_detail` | Get scene details | `sceneId`/`sceneName` |
 | `update_chapter_entities` | Update chapter participating entities | `chapterId`, `characterIds?`, `sceneIds?`, etc. |
 | `query_character_relations` | Query character relationships | `characterName?`, `relation?` |
-| `create_relation` | Create entity relationship | `nameA`, `nameB`, `relation`, `description?` |
+| `create_relation` | Create entity relationship | `nameA`, `nameB`, `relation`, `color` |
 | `update_relation` | Update entity relationship | `nameA`+`nameB`+`relation`, `newDescription?`, etc. |
 
 #### Dynamic Info Tools
