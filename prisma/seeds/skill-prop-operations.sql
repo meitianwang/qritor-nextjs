@@ -253,7 +253,7 @@ get_prop_detail → query_character_relations → 评估影响 → 清理关系 
 | `update_prop` | 修改道具 | `propName`/`propId`, `properties` |
 | `delete_prop` | 删除道具 | `propName` 或 `propId` |
 | `query_character_relations` | 查询实体关系（支持所有类型） | `characterName?`（传入道具名）, `relation?` |
-| `create_relation` | 创建关系 | `nameA`, `nameB`, `relation`, `color`, `categoryA?`, `categoryB?` |
+| `create_relation` | 创建关系 | `nameA`, `nameB`, `relation`, `categoryA?`, `categoryB?` |
 | `update_relation` | 更新关系 | `relationId` 或 `nameA`+`nameB`+`relation` |
 | `delete_relation` | 删除关系 | `relationId` 或 `nameA`+`nameB`+`relation` |
 | `get_plot_overview` | 获取剧情概览 | 无参数 |
@@ -510,7 +510,7 @@ After the operation is complete, provide a concise report to the user:
 | `update_prop` | Modify a prop | `propName`/`propId`, `properties` |
 | `delete_prop` | Delete a prop | `propName` or `propId` |
 | `query_character_relations` | Query entity relationships (supports all types) | `characterName?` (pass prop name), `relation?` |
-| `create_relation` | Create a relationship | `nameA`, `nameB`, `relation`, `color`, `categoryA?`, `categoryB?` |
+| `create_relation` | Create a relationship | `nameA`, `nameB`, `relation`, `categoryA?`, `categoryB?` |
 | `update_relation` | Update a relationship | `relationId` or `nameA`+`nameB`+`relation` |
 | `delete_relation` | Delete a relationship | `relationId` or `nameA`+`nameB`+`relation` |
 | `get_plot_overview` | Get plot overview | No parameters |

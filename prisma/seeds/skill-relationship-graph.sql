@@ -160,7 +160,6 @@ nameA                          nameB
 附加属性：
 - `description`：关系的具体描述
 - `strength`：关系强度（1-5）
-- `color`：关系颜色（用于可视化）
 
 **关系演变**：relation 是自由文本，可以记录关系的动态变化。例如两个角色的关系从"初识"发展为"好朋友"，直接用 `update_relation` 把 relation 更新为新的描述即可。
 
@@ -211,7 +210,6 @@ list_nodes / get_node_detail → 确认实体存在 → create_relation
 - `nameA`：实体 A 名称
 - `nameB`：实体 B 名称
 - `relation`：关系描述（自由文本，如"朋友"、"师徒"）
-- `color`：关系颜色（必填），根据语义选择：pink(亲密/血缘) green(合作/联盟) red(冲突/对抗) purple(师徒/上下级) blue(归属/地理) yellow(组织/从属) rose(爱情/浪漫) teal(友好/中性)
 - `description`：补充描述关系的具体情况
 - `strength`：关系强度 1-5，默认 3
 - `categoryA`/`categoryB`：通常不需要指定，系统会自动识别
@@ -243,7 +241,6 @@ get_node_detail → 找到关系 → update_relation
   - `newRelation`：新的关系文本
   - `newDescription`：新的描述
   - `newStrength`：新的关系强度
-  - `newColor`：新的关系颜色
 
 **关系演变**：
 - 剧情发展导致关系变化时，用 `newRelation` 更新 relation 文本（如"初识"→"好朋友"→"兄弟"→"仇人"）
@@ -383,7 +380,7 @@ Step 3: update_field_dynamic_info  → 记录各章节的变化
 | `create_node` | 创建新节点 | name, category |
 | `update_node` | 更新节点信息 | nodeId/nodeName + 修改字段 |
 | `delete_node` | 删除节点（级联删除关系） | nodeId 或 nodeName |
-| `create_relation` | 创建实体间关系 | nameA, nameB, relation, color |
+| `create_relation` | 创建实体间关系 | nameA, nameB, relation |
 | `update_relation` | 修改已有关系 | relationId 或 nameA+nameB+relation + 修改字段 |
 | `delete_relation` | 删除关系 | relationId 或 nameA+nameB+relation |
 | `get_field_dynamic_info` | 查询字段动态信息 | entityName |
@@ -541,7 +538,6 @@ nameA                                   nameB
 Additional attributes:
 - `description`: Specific description of the relationship
 - `strength`: Relationship strength (1-5)
-- `color`: Relationship color (for visualization)
 
 **Relationship evolution**: The relation field is free-form text that can describe relationship changes over time. For example, when two characters'' relationship evolves from "acquaintance" to "close friend", simply use `update_relation` to update the relation text.
 
@@ -592,7 +588,6 @@ list_nodes / get_node_detail → confirm entities exist → create_relation
 - `nameA`: Entity A name
 - `nameB`: Entity B name
 - `relation`: Relationship description (free-form text, e.g., "friend", "master-apprentice")
-- `color`: Relationship color (required), choose by semantics: pink(intimate/kinship) green(alliance) red(conflict/rivalry) purple(mentorship/hierarchy) blue(belonging/geographic) yellow(organizational) rose(romance) teal(friendly/neutral)
 - `description`: Additional context about the relationship
 - `strength`: Relationship strength 1-5, default 3
 - `categoryA`/`categoryB`: Usually not needed; the system auto-detects
@@ -624,7 +619,6 @@ get_node_detail → find the relation → update_relation
   - `newRelation`: New relation text
   - `newDescription`: New description
   - `newStrength`: New relationship strength
-  - `newColor`: New relationship color
 
 **Relationship evolution**:
 - When plot developments change a relationship, use `newRelation` to update the relation text (e.g., "acquaintance" → "close friend" → "brothers" → "enemy")
@@ -764,7 +758,7 @@ Step 3: update_field_dynamic_info  → record changes at each chapter
 | `create_node` | Create a new node | name, category |
 | `update_node` | Update node info | nodeId/nodeName + fields to modify |
 | `delete_node` | Delete a node (cascades to relations) | nodeId or nodeName |
-| `create_relation` | Create a relation between entities | nameA, nameB, relation, color |
+| `create_relation` | Create a relation between entities | nameA, nameB, relation |
 | `update_relation` | Modify an existing relation | relationId or nameA+nameB+relation + fields to modify |
 | `delete_relation` | Delete a relation | relationId or nameA+nameB+relation |
 | `get_field_dynamic_info` | Query field dynamic info | entityName |

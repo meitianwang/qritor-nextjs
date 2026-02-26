@@ -251,7 +251,7 @@ get_scene_detail → query_character_relations → 评估影响 → 清理关系
 | `update_scene` | 修改场景 | `sceneName`/`sceneId`, `properties` |
 | `delete_scene` | 删除场景 | `sceneName` 或 `sceneId` |
 | `query_character_relations` | 查询实体关系（支持所有类型） | `characterName?`（传入场景名）, `relation?` |
-| `create_relation` | 创建关系 | `nameA`, `nameB`, `relation`, `color`, `categoryA?`, `categoryB?` |
+| `create_relation` | 创建关系 | `nameA`, `nameB`, `relation`, `categoryA?`, `categoryB?` |
 | `update_relation` | 更新关系 | `relationId` 或 `nameA`+`nameB`+`relation` |
 | `delete_relation` | 删除关系 | `relationId` 或 `nameA`+`nameB`+`relation` |
 | `get_plot_overview` | 获取剧情概览 | 无参数 |
@@ -505,7 +505,7 @@ After completing the operation, provide a concise report to the user:
 | `update_scene` | Modify a scene | `sceneName`/`sceneId`, `properties` |
 | `delete_scene` | Delete a scene | `sceneName` or `sceneId` |
 | `query_character_relations` | Query entity relationships (supports all types) | `characterName?` (pass scene name), `relation?` |
-| `create_relation` | Create a relationship | `nameA`, `nameB`, `relation`, `color`, `categoryA?`, `categoryB?` |
+| `create_relation` | Create a relationship | `nameA`, `nameB`, `relation`, `categoryA?`, `categoryB?` |
 | `update_relation` | Update a relationship | `relationId` or `nameA`+`nameB`+`relation` |
 | `delete_relation` | Delete a relationship | `relationId` or `nameA`+`nameB`+`relation` |
 | `get_plot_overview` | Get plot overview | No parameters |
