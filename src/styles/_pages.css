@@ -426,115 +426,11 @@
     justify-content: center;
 }
 
-.preview-window {
+.preview-screenshot {
     width: 100%;
-    max-width: 500px;
-    background: #1a1a1a;
+    max-width: 560px;
     border-radius: var(--radius-xl);
-    overflow: hidden;
     box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
-}
-
-.preview-titlebar {
-    display: flex;
-    gap: 8px;
-    padding: 12px 16px;
-    background: #2a2a2a;
-}
-
-.preview-dot {
-    width: 12px;
-    height: 12px;
-    border-radius: 50%;
-}
-
-.preview-dot.red {
-    background: #ff5f56;
-}
-
-.preview-dot.yellow {
-    background: #ffbd2e;
-}
-
-.preview-dot.green {
-    background: #27ca40;
-}
-
-.preview-content {
-    display: grid;
-    grid-template-columns: 48px 1fr 140px;
-    height: 280px;
-}
-
-.preview-sidebar {
-    background: #1f1f1f;
-    padding: 12px 8px;
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-}
-
-.preview-nav-item {
-    width: 32px;
-    height: 32px;
-    background: #333;
-    border-radius: 6px;
-}
-
-.preview-nav-item.active {
-    background: linear-gradient(135deg, #0d9488 0%, #14b8a6 100%);
-}
-
-.preview-main {
-    padding: 20px;
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-}
-
-.preview-text-line {
-    height: 12px;
-    background: #333;
-    border-radius: 4px;
-}
-
-.preview-text-line.w40 {
-    width: 40%;
-}
-
-.preview-text-line.w60 {
-    width: 60%;
-}
-
-.preview-text-line.w70 {
-    width: 70%;
-}
-
-.preview-text-line.w80 {
-    width: 80%;
-}
-
-.preview-text-line.w90 {
-    width: 90%;
-}
-
-.preview-ai-panel {
-    background: #1f1f1f;
-    border-left: 1px solid #333;
-    padding: 12px;
-}
-
-.preview-ai-header {
-    height: 24px;
-    background: linear-gradient(90deg, #0d9488 0%, #14b8a6 100%);
-    border-radius: 6px;
-    margin-bottom: 12px;
-}
-
-.preview-ai-content {
-    height: 80px;
-    background: #2a2a2a;
-    border-radius: 6px;
 }
 
 /* 系统要求 */
