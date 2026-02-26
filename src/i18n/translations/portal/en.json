@@ -122,24 +122,29 @@
         "heroSubtitle": "AI empowers creativity, turning imagination into stories. Qritor helps you easily create novels, generate comics, and produce animated comics, unleashing unlimited creative potential.",
         "features": {
             "aiWriting": {
-                "tag": "Smart Writing",
+                "tag": "Core Engine",
                 "title": "AI Writing Assistant",
-                "description": "A powerful AI assistant understands your creative intent, intelligently continues plots, generates dialogue, and enriches details. Like having a creative partner who understands you, always inspiring."
+                "description": "The soul of the entire creation system. An AI engine deeply fine-tuned specifically for novel writing, functioning as the 'Claude' of the writing domain. It perfectly grasps narrative arcs, character traits, and generates vivid dialogue."
             },
-            "modular": {
-                "tag": "Structured Management",
-                "title": "Modular Creation",
-                "description": "Character profiles, world-building, plot outlines, chapter content - everything organized. Let AI understand your complete creative blueprint, generating more coherent and in-depth content."
+            "creationMethod": {
+                "tag": "Tailored",
+                "title": "Rich Creation Methods",
+                "description": "Say goodbye to generic templates. We offer rich, tailor-made creation methodologies designed for various novel genres (e.g., LitRPG, cultivation, romance). Meticulously customized to fit your specific niche."
             },
-            "comic": {
-                "tag": "Coming Soon",
-                "title": "Comic Generation",
-                "description": "Transform your text stories into beautiful comics. AI understands scenes, characters, emotions, automatically generating storyboards and visuals, bringing stories to life."
+            "plotEngine": {
+                "tag": "Plot Management",
+                "title": "Visual Timeline Management",
+                "description": "Intuitive vertical timeline system. Clear, item-based event nodes to easily manage main storylines and side plots. Combined with a dedicated foreshadowing view, it significantly reduces plot holes in endless serials."
             },
-            "animation": {
-                "tag": "Coming Soon",
-                "title": "Animated Comics",
-                "description": "Bring static comics to life! AI adds effects, voiceovers, background music to your comics, creating watchable animated comics reaching wider audiences."
+            "dynamicGraph": {
+                "tag": "Dynamic Ecosystem",
+                "title": "Real-time Knowledge Graph",
+                "description": "Automatically constructs intricate networks of character and faction relationships. As the story progresses, the graph dynamically updates relations, giving you a panoramic view of your vast world architecture."
+            },
+            "skillSystem": {
+                "tag": "Extensible",
+                "title": "AI Skill System",
+                "description": "A highly customizable AI workflow. Equip your AI assistant with specialized skills like 'witty dialogue', 'archaic prose', or 'hard sci-fi logic'. Solidify complex prompts into reusable skill modules."
             }
         },
         "ctaTitle": "Start Your Creative Journey",

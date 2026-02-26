@@ -11,11 +11,11 @@ interface Category {
 
 interface DeletingItem {
   type: string;
-  id: number;
+  id: string;
 }
 
 interface ModuleType {
-  id: number;
+  id: string;
   name: string;
   singleton: boolean;
   enableAi: boolean;
@@ -51,7 +51,7 @@ interface SidebarProps {
   moduleTypes: ModuleType[];
   fetchResources: () => Promise<void>;
   deletingItem: DeletingItem | null;
-  handleDelete: (type: string, id: number) => void;
+  handleDelete: (type: string, id: string) => void;
   onOpenModal?: () => void;
   showToast: (type: string, message: string) => void;
   isCollapsed: boolean;

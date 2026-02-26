@@ -218,6 +218,13 @@ export default function PricingPage() {
         <>
             {/* Page header - Qoder style */}
             <section className="page-header pricing-header">
+                {/* Glow background */}
+                <div className="pricing-header-glow">
+                    <div className="hero-glow-orb hero-glow-orb-1"></div>
+                    <div className="hero-glow-orb hero-glow-orb-2"></div>
+                    <div className="hero-glow-orb hero-glow-orb-3"></div>
+                </div>
+
                 <div className="container">
                     <h1 className="page-title animate-fade-in">{t('pricing.title')}</h1>
                     <div className="subtitle-row animate-fade-in delay-100">

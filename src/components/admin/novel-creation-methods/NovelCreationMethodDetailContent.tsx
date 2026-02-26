@@ -20,9 +20,9 @@ interface Method {
 }
 
 interface ModuleType {
-  id: number;
+  id: string;
   name: string;
-  novelCreationMethodId: number;
+  novelCreationMethodId: string;
   singleton: boolean;
   enableAi: boolean;
   entityCategory?: string;
@@ -31,7 +31,7 @@ interface ModuleType {
 
 interface DeletingItem {
   type: string;
-  id: number;
+  id: string;
 }
 
 function NovelCreationMethodDetailContent() {
@@ -111,7 +111,7 @@ function NovelCreationMethodDetailContent() {
     }
   };
 
-  const handleDelete = async (type: string, itemId: number) => {
+  const handleDelete = async (type: string, itemId: string) => {
     if (!window.confirm("确定要删除吗？")) return;
 
     setDeletingItem({ type, id: itemId });

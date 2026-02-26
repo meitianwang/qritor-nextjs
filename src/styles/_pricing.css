@@ -4,9 +4,28 @@
 
 /* --- 1. 页面头部 --- */
 .pricing-header {
+    position: relative;
     text-align: left !important;
     padding-top: calc(var(--navbar-height) + 160px) !important;
     padding-bottom: 24px !important;
+    overflow: hidden;
+    clip-path: inset(0);
+}
+
+.pricing-header-glow {
+    position: absolute;
+    top: 50%;
+    left: 45%;
+    transform: translate(-50%, -50%);
+    width: 800px;
+    height: 800px;
+    pointer-events: none;
+    z-index: 0;
+}
+
+.pricing-header .container {
+    position: relative;
+    z-index: 1;
 }
 
 .pricing-header .page-title {
