@@ -9,6 +9,33 @@ import { useDocumentMeta } from '@/hooks/useDocumentMeta'
  */
 const changelogData = [
     {
+        date: '2026-02-27',
+        version: 'v1.0.0',
+        title: 'changelog.entries.v1_0_0.title',
+        tags: ['new', 'improved'],
+        sections: [
+            {
+                type: 'new',
+                titleKey: 'changelog.sections.newFeatures',
+                items: [
+                    'changelog.entries.v1_0_0.new.item1',
+                    'changelog.entries.v1_0_0.new.item2',
+                    'changelog.entries.v1_0_0.new.item3',
+                    'changelog.entries.v1_0_0.new.item4',
+                    'changelog.entries.v1_0_0.new.item5'
+                ]
+            },
+            {
+                type: 'improved',
+                titleKey: 'changelog.sections.improvements',
+                items: [
+                    'changelog.entries.v1_0_0.improved.item1',
+                    'changelog.entries.v1_0_0.improved.item2'
+                ]
+            }
+        ]
+    },
+    {
         date: '2026-01-13',
         version: 'v0.3.0',
         title: 'changelog.entries.v0_3_0.title',
@@ -158,76 +185,76 @@ export default function ChangelogPage() {
 
     return (
         <main className="changelog-page">
-                {/* Hero area */}
-                <section className="changelog-hero">
-                    <div className="container">
-                        <div className="changelog-hero-content">
-                            <h1 className="changelog-hero-title">
-                                {t('changelog.heroTitle')}
-                            </h1>
-                            <p className="changelog-hero-subtitle">
-                                {t('changelog.heroSubtitle')}
-                            </p>
-                        </div>
+            {/* Hero area */}
+            <section className="changelog-hero">
+                <div className="container">
+                    <div className="changelog-hero-content">
+                        <h1 className="changelog-hero-title">
+                            {t('changelog.heroTitle')}
+                        </h1>
+                        <p className="changelog-hero-subtitle">
+                            {t('changelog.heroSubtitle')}
+                        </p>
                     </div>
-                </section>
+                </div>
+            </section>
 
-                {/* Timeline area */}
-                <section className="changelog-timeline">
-                    <div className="container">
-                        <div className="changelog-timeline-container">
-                            {changelogData.map((entry, index) => (
-                                <article key={index} className="changelog-entry">
-                                    {/* Header info: date, version, tags */}
-                                    <div className="changelog-entry-header">
-                                        <time className="changelog-date">{entry.date}</time>
-                                        <span className="changelog-version">{entry.version}</span>
-                                        <div className="changelog-tags">
-                                            {entry.tags.map((tag, tagIndex) => (
-                                                <span
-                                                    key={tagIndex}
-                                                    className={`changelog-tag changelog-tag-${tag}`}
-                                                >
-                                                    {getTagIcon(tag)}
-                                                    {t(`changelog.tags.${tag}`)}
-                                                </span>
-                                            ))}
-                                        </div>
-                                    </div>
-
-                                    {/* Update title */}
-                                    <h2 className="changelog-entry-title">
-                                        {t(entry.title)}
-                                    </h2>
-
-                                    {/* Update content */}
-                                    <div className="changelog-entry-content">
-                                        {entry.sections.map((section, sectionIndex) => (
-                                            <div key={sectionIndex} className="changelog-section">
-                                                <h3 className="changelog-section-title">
-                                                    <span className="changelog-section-icon">
-                                                        {getSectionIcon(section.type)}
-                                                    </span>
-                                                    {t(section.titleKey)}
-                                                </h3>
-                                                <ul className="changelog-list">
-                                                    {section.items.map((item, itemIndex) => (
-                                                        <li key={itemIndex} className="changelog-list-item">
-                                                            {t(item)}
-                                                        </li>
-                                                    ))}
-                                                </ul>
-                                                {sectionIndex < entry.sections.length - 1 && (
-                                                    <div className="changelog-divider" />
-                                                )}
-                                            </div>
+            {/* Timeline area */}
+            <section className="changelog-timeline">
+                <div className="container">
+                    <div className="changelog-timeline-container">
+                        {changelogData.map((entry, index) => (
+                            <article key={index} className="changelog-entry">
+                                {/* Header info: date, version, tags */}
+                                <div className="changelog-entry-header">
+                                    <time className="changelog-date">{entry.date}</time>
+                                    <span className="changelog-version">{entry.version}</span>
+                                    <div className="changelog-tags">
+                                        {entry.tags.map((tag, tagIndex) => (
+                                            <span
+                                                key={tagIndex}
+                                                className={`changelog-tag changelog-tag-${tag}`}
+                                            >
+                                                {getTagIcon(tag)}
+                                                {t(`changelog.tags.${tag}`)}
+                                            </span>
                                         ))}
                                     </div>
-                                </article>
-                            ))}
-                        </div>
+                                </div>
+
+                                {/* Update title */}
+                                <h2 className="changelog-entry-title">
+                                    {t(entry.title)}
+                                </h2>
+
+                                {/* Update content */}
+                                <div className="changelog-entry-content">
+                                    {entry.sections.map((section, sectionIndex) => (
+                                        <div key={sectionIndex} className="changelog-section">
+                                            <h3 className="changelog-section-title">
+                                                <span className="changelog-section-icon">
+                                                    {getSectionIcon(section.type)}
+                                                </span>
+                                                {t(section.titleKey)}
+                                            </h3>
+                                            <ul className="changelog-list">
+                                                {section.items.map((item, itemIndex) => (
+                                                    <li key={itemIndex} className="changelog-list-item">
+                                                        {t(item)}
+                                                    </li>
+                                                ))}
+                                            </ul>
+                                            {sectionIndex < entry.sections.length - 1 && (
+                                                <div className="changelog-divider" />
+                                            )}
+                                        </div>
+                                    ))}
+                                </div>
+                            </article>
+                        ))}
                     </div>
-                </section>
-            </main>
+                </div>
+            </section>
+        </main>
     )
 }
