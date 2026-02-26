@@ -1,5 +1,5 @@
 {
-    "build_command": "npx prisma generate && npm run build",
+    "build_command": "npm run build",
     "start_command": "npm start",
     "output_dir": null
 }
