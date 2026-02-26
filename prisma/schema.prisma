@@ -283,9 +283,7 @@ model novel_creation_method {
   novel_type         String?   @db.VarChar(50)
   language           String?   @db.VarChar(20)
   visible_categories String?   @db.Text
-  is_preset          Int       @db.SmallInt
   user_id            BigInt?
-  status             String    @db.VarChar(20)
   created_at         DateTime  @db.DateTime(0)
   updated_at         DateTime? @db.DateTime(0)
 
