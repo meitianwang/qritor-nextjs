@@ -55,9 +55,9 @@
             "breaking": "Breaking"
         },
         "sections": {
-            "newFeatures": "✨ New Features",
-            "improvements": "🚀 Improvements",
-            "bugFixes": "🐛 Bug Fixes"
+            "newFeatures": "New Features",
+            "improvements": "Improvements",
+            "bugFixes": "Bug Fixes"
         },
         "entries": {
             "v1_0_0": {
@@ -75,36 +75,36 @@
                 }
             },
             "v0_3_0": {
-                "title": "Comic Creation & Novel Tweeting Preview",
+                "title": "Comic Creation & Novel Tweet Preview",
                 "new": {
-                    "item1": "New Comic module: Storyboard scripting & full page generation with integrated AI image capability.",
-                    "item2": "New Novel Tweet feature: One-click export of great snippets as shareable community cards.",
-                    "item3": "Windows UX upgrade: Added native-style customizable window control buttons.",
-                    "item4": "Multi-language support: Added language filters to creation methods, genre configs support multi-language."
+                    "item1": "Added comic creation module: supports storyboard and full-page generation with AI image generation",
+                    "item2": "Added Novel Tweet feature: one-click sharing of highlights as social media cards",
+                    "item3": "Windows experience upgrade: added native-style custom window control buttons",
+                    "item4": "Multi-language support: language filter for creation methods, novel types support multi-language config"
                 },
                 "fixed": {
-                    "item1": "Fixed UI clipping issue in right-click context menus at the bottom of the screen.",
-                    "item2": "Fixed unresponsive window control buttons on Windows platform."
+                    "item1": "Fixed context menu being cut off at the bottom of the screen",
+                    "item2": "Fixed window control buttons not responding on Windows platform"
                 }
             },
             "v0_2_1": {
-                "title": "macOS Notarization & Build Optimization",
+                "title": "macOS Signing & Build Optimization",
                 "improved": {
-                    "item1": "Integrated macOS code signing and notarization workflow, enhancing app security.",
-                    "item2": "Optimized build artifact upload paths for clearer download structures.",
-                    "item3": "Automatically organize download resources by platform (macOS/Windows)."
+                    "item1": "Integrated macOS code signing and notarization flow for enhanced app security",
+                    "item2": "Optimized build artifact upload paths for cleaner download structure",
+                    "item3": "Automatically archive download resources by platform (macOS/Windows)"
                 }
             },
             "v0_2_0": {
                 "title": "Auto-update & Windows Compatibility Fixes",
                 "new": {
-                    "item1": "Added auto-update config: support custom check intervals, integrated with Cloudflare Worker latest release API.",
-                    "item2": "Introduced electron-log structured logging system to track and debug issues easily."
+                    "item1": "Added auto-update configuration: customizable check frequency, integrated Cloudflare Worker latest version API",
+                    "item2": "Introduced electron-log structured logging system for easier troubleshooting"
                 },
                 "fixed": {
-                    "item1": "Fixed complete black screen on Windows startup (optimized TitleBarStyle configuration).",
-                    "item2": "Fixed Windows packaging script compatibility issues.",
-                    "item3": "Fixed Portable version build configurations."
+                    "item1": "Fixed Windows platform startup black screen issue (TitleBarStyle configuration optimization)",
+                    "item2": "Fixed Windows packaging script compatibility issues",
+                    "item3": "Fixed portable build configuration"
                 }
             }
         }
@@ -972,57 +972,6 @@
             "messageTooLong": "Description cannot exceed 2000 characters",
             "submitFailed": "Failed to submit feedback. Please try again later.",
             "uploadFailed": "Failed to upload screenshot. Please try again."
-        }
-    },
-    "changelog": {
-        "heroTitle": "Changelog",
-        "heroSubtitle": "Explore the latest updates from Qritor, discover innovations and improvements we've brought to you.",
-        "tags": {
-            "new": "New",
-            "improved": "Improved",
-            "fixed": "Fixed",
-            "breaking": "Breaking"
-        },
-        "sections": {
-            "newFeatures": "New Features",
-            "improvements": "Improvements",
-            "bugFixes": "Bug Fixes"
-        },
-        "entries": {
-            "v1_2_0": {
-                "title": "Changelog Page Launch & Multiple Experience Improvements",
-                "new": {
-                    "item1": "Added changelog page to view version update history and feature changes",
-                    "item2": "Added changelog entry in portal footer",
-                    "item3": "Support timeline display for browsing updates by date"
-                },
-                "improved": {
-                    "item1": "Optimized page loading performance and response speed",
-                    "item2": "Improved mobile device adaptation"
-                }
-            },
-            "v1_1_0": {
-                "title": "Desktop Enhancements & Logging System Optimization",
-                "new": {
-                    "item1": "Desktop app supports user-configurable auto-update settings",
-                    "item2": "Added release script to automate version release process"
-                },
-                "fixed": {
-                    "item1": "Fixed IPC handler registration timing issues in some scenarios",
-                    "item2": "Fixed log file rotation configuration issues",
-                    "item3": "Fixed API endpoint configuration in development environment"
-                }
-            },
-            "v1_0_0": {
-                "title": "Qritor Official Release",
-                "new": {
-                    "item1": "AI Writing Assistant: Smart continuation, plot generation, dialogue generation",
-                    "item2": "Modular Creation: Character profiles, world-building, plot outlines",
-                    "item3": "Knowledge Base: Visual character relationships and story structure",
-                    "item4": "Multi-platform Support: macOS and Windows desktop apps",
-                    "item5": "Multi-language Support: 12 languages including Chinese and English"
-                }
-            }
         }
     }
 }

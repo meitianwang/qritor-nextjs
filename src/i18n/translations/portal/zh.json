@@ -55,9 +55,9 @@
             "breaking": "架构调整"
         },
         "sections": {
-            "newFeatures": "✨ 新功能",
-            "improvements": "🚀 优化改进",
-            "bugFixes": "🐛 问题修复"
+            "newFeatures": "新功能",
+            "improvements": "优化改进",
+            "bugFixes": "问题修复"
         },
         "entries": {
             "v1_0_0": {
@@ -77,34 +77,34 @@
             "v0_3_0": {
                 "title": "漫画创作与推文功能预览",
                 "new": {
-                    "item1": "新增漫画创作模块：支持分镜脚本与整页生成模式，集成 AI 生图能力。",
-                    "item2": "新增小说推文 (Novel Tweet) 功能：一键将精彩段落转化为社群分享卡片。",
-                    "item3": "Windows 体验升级：新增原生风格的自定义窗口控制按钮。",
-                    "item4": "多语言支持：创作方法页新增语言筛选，小说类型支持多语言配置。"
+                    "item1": "新增漫画创作模块：支持分镜脚本与整页生成模式，集成 AI 生图能力",
+                    "item2": "新增小说推文 (Novel Tweet) 功能：一键将精彩段落转化为社群分享卡片",
+                    "item3": "Windows 体验升级：新增原生风格的自定义窗口控制按钮",
+                    "item4": "多语言支持：创作方法页新增语言筛选，小说类型支持多语言配置"
                 },
                 "fixed": {
-                    "item1": "修复右键菜单在屏幕底部被截断的 UI 问题。",
-                    "item2": "修复 Windows 平台窗口控制按钮点击无响应的问题。"
+                    "item1": "修复右键菜单在屏幕底部被截断的 UI 问题",
+                    "item2": "修复 Windows 平台窗口控制按钮点击无响应的问题"
                 }
             },
             "v0_2_1": {
                 "title": "macOS 签名与构建优化",
                 "improved": {
-                    "item1": "集成 macOS 代码签名与公证 (Notarization) 流程，提升应用安全性。",
-                    "item2": "优化构建产物上传路径，下载结构更清晰。",
-                    "item3": "按平台 (macOS/Windows) 自动归档下载资源。"
+                    "item1": "集成 macOS 代码签名与公证 (Notarization) 流程，提升应用安全性",
+                    "item2": "优化构建产物上传路径，下载结构更清晰",
+                    "item3": "按平台 (macOS/Windows) 自动归档下载资源"
                 }
             },
             "v0_2_0": {
                 "title": "自动更新与 Windows 兼容性修复",
                 "new": {
-                    "item1": "新增自动更新配置：支持自定义检查频率，集成 Cloudflare Worker 最新版本接口。",
-                    "item2": "引入 electron-log 结构化日志系统，便于问题排查。"
+                    "item1": "新增自动更新配置：支持自定义检查频率，集成 Cloudflare Worker 最新版本接口",
+                    "item2": "引入 electron-log 结构化日志系统，便于问题排查"
                 },
                 "fixed": {
-                    "item1": "彻底修复 Windows 平台启动黑屏问题 (TitleBarStyle 配置优化)。",
-                    "item2": "修复 Windows 打包脚本兼容性问题。",
-                    "item3": "修复便携版 (Portable) 构建配置。"
+                    "item1": "彻底修复 Windows 平台启动黑屏问题 (TitleBarStyle 配置优化)",
+                    "item2": "修复 Windows 打包脚本兼容性问题",
+                    "item3": "修复便携版 (Portable) 构建配置"
                 }
             }
         }
@@ -972,56 +972,6 @@
             "messageTooLong": "反馈内容不能超过 2000 个字符",
             "submitFailed": "反馈提交失败，请稍后重试",
             "uploadFailed": "截图上传失败，请重试"
-        }
-    },
-    "changelog": {
-        "heroTitle": "更新日志",
-        "heroSubtitle": "探索 Qritor 的最新动态，了解我们为您带来的创新与优化。",
-        "tags": {
-            "new": "新功能",
-            "improved": "优化",
-            "fixed": "修复",
-            "breaking": "重大变更"
-        },
-        "sections": {
-            "newFeatures": "新功能",
-            "improvements": "优化改进",
-            "bugFixes": "问题修复"
-        },
-        "entries": {
-            "v0_3_0": {
-                "title": "漫画创作与推文功能预览",
-                "new": {
-                    "item1": "新增漫画创作模块：支持分镜脚本与整页生成模式，集成 AI 生图能力",
-                    "item2": "新增小说推文 (Novel Tweet) 功能：一键将精彩段落转化为社群分享卡片",
-                    "item3": "Windows 体验升级：新增原生风格的自定义窗口控制按钮",
-                    "item4": "多语言支持：创作方法页新增语言筛选，小说类型支持多语言配置"
-                },
-                "fixed": {
-                    "item1": "修复右键菜单在屏幕底部被截断的 UI 问题",
-                    "item2": "修复 Windows 平台窗口控制按钮点击无响应的问题"
-                }
-            },
-            "v0_2_1": {
-                "title": "macOS 签名与构建优化",
-                "improved": {
-                    "item1": "集成 macOS 代码签名与公证 (Notarization) 流程，提升应用安全性",
-                    "item2": "优化构建产物上传路径，下载结构更清晰",
-                    "item3": "按平台 (macOS/Windows) 自动归档下载资源"
-                }
-            },
-            "v0_2_0": {
-                "title": "自动更新与 Windows 兼容性修复",
-                "new": {
-                    "item1": "新增自动更新配置：支持自定义检查频率，集成 Cloudflare Worker 最新版本接口",
-                    "item2": "引入 electron-log 结构化日志系统，便于问题排查"
-                },
-                "fixed": {
-                    "item1": "彻底修复 Windows 平台启动黑屏问题 (TitleBarStyle 配置优化)",
-                    "item2": "修复 Windows 打包脚本兼容性问题",
-                    "item3": "修复便携版 (Portable) 构建配置"
-                }
-            }
         }
     }
 }

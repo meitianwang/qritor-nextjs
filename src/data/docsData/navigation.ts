@@ -19,28 +19,6 @@ export const docsNavigation: Record<string, DocsNavigation> = {
           path: "/docs/zh/user-guide/creation/novel-create",
         },
         {
-          id: "creation",
-          title: "创作功能",
-          path: "/docs/zh/user-guide/creation",
-          children: [
-            {
-              id: "module-tree",
-              title: "模块树操作",
-              path: "/docs/zh/user-guide/creation/module-tree",
-            },
-            {
-              id: "module-edit",
-              title: "模块编辑",
-              path: "/docs/zh/user-guide/creation/module-edit",
-            },
-            {
-              id: "chapter-edit",
-              title: "章节编辑",
-              path: "/docs/zh/user-guide/creation/chapter-edit",
-            },
-          ],
-        },
-        {
           id: "ai-mention",
           title: "@提及",
           path: "/docs/zh/user-guide/ai-mention",
@@ -184,28 +162,6 @@ export const docsNavigation: Record<string, DocsNavigation> = {
           id: "novel-create",
           title: "Create Novel",
           path: "/docs/en/user-guide/creation/novel-create",
-        },
-        {
-          id: "creation",
-          title: "Creation Features",
-          path: "/docs/en/user-guide/creation",
-          children: [
-            {
-              id: "module-tree",
-              title: "Module Tree Operations",
-              path: "/docs/en/user-guide/creation/module-tree",
-            },
-            {
-              id: "module-edit",
-              title: "Module Editing",
-              path: "/docs/en/user-guide/creation/module-edit",
-            },
-            {
-              id: "chapter-edit",
-              title: "Chapter Editing",
-              path: "/docs/en/user-guide/creation/chapter-edit",
-            },
-          ],
         },
         {
           id: "ai-mention",
