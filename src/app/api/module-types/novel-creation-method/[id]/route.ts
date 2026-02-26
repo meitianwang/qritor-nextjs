@@ -2,7 +2,7 @@ import { NextRequest } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { apiSuccess, apiError } from "@/lib/api-response";
 
-import type { module_type } from "@prisma/client";
+import type { module_type } from "@/generated/prisma/client";
 
 function serializeModuleType(mt: module_type) {
   return {
