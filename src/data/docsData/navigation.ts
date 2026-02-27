@@ -19,6 +19,21 @@ export const docsNavigation: Record<string, DocsNavigation> = {
           path: "/docs/zh/user-guide/creation/novel-create",
         },
         {
+          id: "creation-methods",
+          title: "创作方法",
+          path: "/docs/zh/user-guide/creation/creation-methods",
+        },
+        {
+          id: "novel-settings",
+          title: "小说设定",
+          path: "/docs/zh/user-guide/novel-settings",
+        },
+        {
+          id: "ai-modes",
+          title: "AI 模式",
+          path: "/docs/zh/user-guide/ai-modes",
+        },
+        {
           id: "ai-mention",
           title: "@提及",
           path: "/docs/zh/user-guide/ai-mention",
@@ -29,11 +44,6 @@ export const docsNavigation: Record<string, DocsNavigation> = {
           path: "/docs/zh/user-guide/ai-assistant",
           children: [
             {
-              id: "ai-modes",
-              title: "AI 模式",
-              path: "/docs/zh/user-guide/ai-assistant/ai-modes",
-            },
-            {
               id: "smart-write",
               title: "智能写作工具",
               path: "/docs/zh/user-guide/ai-assistant/smart-write",
@@ -43,12 +53,12 @@ export const docsNavigation: Record<string, DocsNavigation> = {
               title: "编辑器工具栏",
               path: "/docs/zh/user-guide/ai-assistant/editor-toolbar",
             },
-            {
-              id: "chat-history",
-              title: "对话历史",
-              path: "/docs/zh/user-guide/ai-assistant/chat-history",
-            },
           ],
+        },
+        {
+          id: "chat-history",
+          title: "对话管理",
+          path: "/docs/zh/user-guide/chat-history",
         },
         {
           id: "ai-models",
@@ -56,43 +66,39 @@ export const docsNavigation: Record<string, DocsNavigation> = {
           path: "/docs/zh/user-guide/ai-models",
         },
         {
-          id: "worldbuilding",
-          title: "世界观管理",
-          path: "/docs/zh/user-guide/worldbuilding",
-          children: [
-            {
-              id: "entity-types",
-              title: "实体类型",
-              path: "/docs/zh/user-guide/worldbuilding/entity-types",
-            },
-            {
-              id: "relation-graph",
-              title: "关系图谱",
-              path: "/docs/zh/user-guide/worldbuilding/relation-graph",
-            },
-            {
-              id: "dynamic-info",
-              title: "动态信息",
-              path: "/docs/zh/user-guide/worldbuilding/dynamic-info",
-            },
-          ],
+          id: "characters",
+          title: "角色",
+          path: "/docs/zh/user-guide/characters",
+        },
+        {
+          id: "scenes",
+          title: "场景",
+          path: "/docs/zh/user-guide/scenes",
+        },
+        {
+          id: "props",
+          title: "道具",
+          path: "/docs/zh/user-guide/props",
+        },
+        {
+          id: "organizations",
+          title: "组织",
+          path: "/docs/zh/user-guide/organizations",
+        },
+        {
+          id: "dynamic-info",
+          title: "动态信息",
+          path: "/docs/zh/user-guide/dynamic-info",
+        },
+        {
+          id: "relation-graph",
+          title: "关系图谱",
+          path: "/docs/zh/user-guide/relation-graph",
         },
         {
           id: "plot-management",
           title: "剧情管理",
           path: "/docs/zh/user-guide/plot-management",
-          children: [
-            {
-              id: "storylines",
-              title: "故事线与事件",
-              path: "/docs/zh/user-guide/plot-management/storylines",
-            },
-            {
-              id: "foreshadowing",
-              title: "伏笔系统",
-              path: "/docs/zh/user-guide/plot-management/foreshadowing",
-            },
-          ],
         },
         {
           id: "skills",
@@ -164,6 +170,21 @@ export const docsNavigation: Record<string, DocsNavigation> = {
           path: "/docs/en/user-guide/creation/novel-create",
         },
         {
+          id: "creation-methods",
+          title: "Creation Methods",
+          path: "/docs/en/user-guide/creation/creation-methods",
+        },
+        {
+          id: "novel-settings",
+          title: "Novel Settings",
+          path: "/docs/en/user-guide/novel-settings",
+        },
+        {
+          id: "ai-modes",
+          title: "AI Modes",
+          path: "/docs/en/user-guide/ai-modes",
+        },
+        {
           id: "ai-mention",
           title: "@Mention",
           path: "/docs/en/user-guide/ai-mention",
@@ -174,11 +195,6 @@ export const docsNavigation: Record<string, DocsNavigation> = {
           path: "/docs/en/user-guide/ai-assistant",
           children: [
             {
-              id: "ai-modes",
-              title: "AI Modes",
-              path: "/docs/en/user-guide/ai-assistant/ai-modes",
-            },
-            {
               id: "smart-write",
               title: "Smart Writing Tools",
               path: "/docs/en/user-guide/ai-assistant/smart-write",
@@ -188,12 +204,12 @@ export const docsNavigation: Record<string, DocsNavigation> = {
               title: "Editor Toolbar",
               path: "/docs/en/user-guide/ai-assistant/editor-toolbar",
             },
-            {
-              id: "chat-history",
-              title: "Chat History",
-              path: "/docs/en/user-guide/ai-assistant/chat-history",
-            },
           ],
+        },
+        {
+          id: "chat-history",
+          title: "Conversations",
+          path: "/docs/en/user-guide/chat-history",
         },
         {
           id: "ai-models",
@@ -201,43 +217,39 @@ export const docsNavigation: Record<string, DocsNavigation> = {
           path: "/docs/en/user-guide/ai-models",
         },
         {
-          id: "worldbuilding",
-          title: "Worldbuilding",
-          path: "/docs/en/user-guide/worldbuilding",
-          children: [
-            {
-              id: "entity-types",
-              title: "Entity Types",
-              path: "/docs/en/user-guide/worldbuilding/entity-types",
-            },
-            {
-              id: "relation-graph",
-              title: "Relation Graph",
-              path: "/docs/en/user-guide/worldbuilding/relation-graph",
-            },
-            {
-              id: "dynamic-info",
-              title: "Dynamic Info",
-              path: "/docs/en/user-guide/worldbuilding/dynamic-info",
-            },
-          ],
+          id: "characters",
+          title: "Characters",
+          path: "/docs/en/user-guide/characters",
+        },
+        {
+          id: "scenes",
+          title: "Scenes",
+          path: "/docs/en/user-guide/scenes",
+        },
+        {
+          id: "props",
+          title: "Props",
+          path: "/docs/en/user-guide/props",
+        },
+        {
+          id: "organizations",
+          title: "Organizations",
+          path: "/docs/en/user-guide/organizations",
+        },
+        {
+          id: "dynamic-info",
+          title: "Dynamic Info",
+          path: "/docs/en/user-guide/dynamic-info",
+        },
+        {
+          id: "relation-graph",
+          title: "Relation Graph",
+          path: "/docs/en/user-guide/relation-graph",
         },
         {
           id: "plot-management",
           title: "Plot Management",
           path: "/docs/en/user-guide/plot-management",
-          children: [
-            {
-              id: "storylines",
-              title: "Storylines & Events",
-              path: "/docs/en/user-guide/plot-management/storylines",
-            },
-            {
-              id: "foreshadowing",
-              title: "Foreshadowing",
-              path: "/docs/en/user-guide/plot-management/foreshadowing",
-            },
-          ],
         },
         {
           id: "skills",
