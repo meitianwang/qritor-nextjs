@@ -56,7 +56,18 @@ class StripeService {
 
     if (user?.stripe_customer_id) {
       try {
-        await stripe.customers.retrieve(user.stripe_customer_id);
+        const existing = await stripe.customers.retrieve(
+          user.stripe_customer_id,
+        );
+        if (!existing.deleted && !existing.name && user.nickname) {
+          try {
+            await stripe.customers.update(user.stripe_customer_id, {
+              name: user.nickname,
+            });
+          } catch {
+            // Non-fatal: name sync failure should not disrupt payment flow
+          }
+        }
         return user.stripe_customer_id;
       } catch {
         // Customer ID invalid (e.g. test mode ID used in live mode), clear and recreate
@@ -69,6 +80,7 @@ class StripeService {
 
     const customer = await stripe.customers.create({
       email,
+      name: user?.nickname || undefined,
       metadata: { user_id: String(userId) },
     });
 
@@ -229,9 +241,7 @@ class StripeService {
   // Billing address
   // -------------------------------------------------------------------------
 
-  async getCustomerAddress(
-    customerId: string,
-  ): Promise<{
+  async getCustomerAddress(customerId: string): Promise<{
     country: string;
     state: string;
     city: string;
