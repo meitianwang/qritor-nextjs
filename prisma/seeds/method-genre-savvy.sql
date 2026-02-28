@@ -2,7 +2,7 @@
 -- Genre Savvy / Exploiting Narratives Creation Method Initialization SQL
 -- -----------------------------------------------------------------------------
 
-SET @method_id = 76; 
+SET @method_id = 105; 
 SET @method_name = 'Genre Savvy / Exploiting Narratives';
 SET @method_desc = 'A meta-aware storytelling method where characters understand they are in a heroic epic or system game, and actively exploit narrative laws (e.g., villains die when monologuing) for their own survival or agenda. Known for dark humor, subversion of tropes, and ruthless pragmatism.';
 SET @novel_type = 'Meta Fiction';
@@ -19,13 +19,13 @@ ON DUPLICATE KEY UPDATE
   language = VALUES(language), visible_categories = VALUES(visible_categories), is_preset = VALUES(is_preset), status = VALUES(status), updated_at = NOW();
 
 -- Module IDs preset
-SET @m_hook_id  = 8170501760000000001;
-SET @m_rule_id  = 8170501760000000002;
-SET @m_style_id = 8170501760000000003;
-SET @m_char_id  = 8170501760000000004;
-SET @m_scene_id = 8170501760000000005;
-SET @m_prop_id  = 8170501760000000006;
-SET @m_org_id   = 8170501760000000007;
+SET @m_hook_id  = 8170501105000000001;
+SET @m_rule_id  = 8170501105000000002;
+SET @m_style_id = 8170501105000000003;
+SET @m_char_id  = 8170501105000000004;
+SET @m_scene_id = 8170501105000000005;
+SET @m_prop_id  = 8170501105000000006;
+SET @m_org_id   = 8170501105000000007;
 
 -- -------------------------
 -- 3.1 Subverted Trope Hook (setting) - Singleton

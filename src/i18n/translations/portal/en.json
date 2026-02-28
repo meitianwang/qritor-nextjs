@@ -60,6 +60,16 @@
             "bugFixes": "Bug Fixes"
         },
         "entries": {
+            "v1_0_1": {
+                "title": "UX Polish & Refinements",
+                "improved": {
+                    "item1": "Smoother interactions across multiple UI elements.",
+                    "item2": "Better information display so key details are easier to find."
+                },
+                "fixed": {
+                    "item1": "Fixed various visual glitches and localization issues."
+                }
+            },
             "v1_0_0": {
                 "title": "Qritor 1.0 is Officially Released!",
                 "new": {
