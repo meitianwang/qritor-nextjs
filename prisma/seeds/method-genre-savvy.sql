@@ -11,12 +11,12 @@ SET @visible_categories = '["setting", "character", "scene", "prop", "organizati
 
 -- 1. Create Method
 INSERT INTO novel_creation_method 
-  (id, name, description, novel_type, language, visible_categories, is_preset, status, created_at, updated_at)
+  (id, name, description, novel_type, language, visible_categories, created_at, updated_at)
 VALUES
-  (@method_id, @method_name, @method_desc, @novel_type, @language, @visible_categories, 1, 'active', NOW(), NOW())
+  (@method_id, @method_name, @method_desc, @novel_type, @language, @visible_categories, NOW(), NOW())
 ON DUPLICATE KEY UPDATE
   name = VALUES(name), description = VALUES(description), novel_type = VALUES(novel_type), 
-  language = VALUES(language), visible_categories = VALUES(visible_categories), is_preset = VALUES(is_preset), status = VALUES(status), updated_at = NOW();
+  language = VALUES(language), visible_categories = VALUES(visible_categories), updated_at = NOW();
 
 -- Module IDs preset
 SET @m_hook_id  = 8170501105000000001;

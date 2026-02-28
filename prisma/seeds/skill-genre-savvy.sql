@@ -2,7 +2,7 @@
 -- Genre Savvy / Exploiting Narratives AI Generation Skills Layer 3 SQL
 -- -----------------------------------------------------------------------------
 
-SET @method_id = 76; 
+SET @method_id = 105; 
 
 -- ============================================================================
 -- 1. Setting Gen Skills (-setting-gen)

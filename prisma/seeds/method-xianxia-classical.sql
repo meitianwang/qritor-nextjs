@@ -1,9 +1,9 @@
 -- -----------------------------------------------------------------------------
--- 传统古典仙侠 (Classical Xianxia) 创作方法初始化 SQL
+-- 传统古典仙侠 创作方法初始化 SQL
 -- -----------------------------------------------------------------------------
 
-SET @method_id = 84; 
-SET @method_name = '传统古典仙侠 (Classical Xianxia)';
+SET @method_id = 107; 
+SET @method_name = '传统古典仙侠';
 SET @method_desc = '具有极强“仙气”与东方古典美学的正统仙侠流派。讲究名门正派的剑仙风骨、红颜知己的情道羁绊、除魔卫道的侠义精神，以及斩断凡尘飞升九天的缥缈超脱感。不重戾气夺宝，重悟道与境界拔高。';
 SET @novel_type = '东方玄幻';
 SET @language = 'zh';
@@ -11,21 +11,21 @@ SET @visible_categories = '["setting", "character", "scene", "prop", "organizati
 
 -- 1. 创建创作方法
 INSERT INTO novel_creation_method 
-  (id, name, description, novel_type, language, visible_categories, is_preset, status, created_at, updated_at)
+  (id, name, description, novel_type, language, visible_categories, created_at, updated_at)
 VALUES
-  (@method_id, @method_name, @method_desc, @novel_type, @language, @visible_categories, 1, 'active', NOW(), NOW())
+  (@method_id, @method_name, @method_desc, @novel_type, @language, @visible_categories, NOW(), NOW())
 ON DUPLICATE KEY UPDATE
   name = VALUES(name), description = VALUES(description), novel_type = VALUES(novel_type), 
-  language = VALUES(language), visible_categories = VALUES(visible_categories), is_preset = VALUES(is_preset), status = VALUES(status), updated_at = NOW();
+  language = VALUES(language), visible_categories = VALUES(visible_categories), updated_at = NOW();
 
 -- 模块ID预设
-SET @m_hook_id  = 8170501840000000001;
-SET @m_world_id = 8170501840000000002;
-SET @m_style_id = 8170501840000000003;
-SET @m_char_id  = 8170501840000000004;
-SET @m_scene_id = 8170501840000000005;
-SET @m_prop_id  = 8170501840000000006;
-SET @m_org_id   = 8170501840000000007;
+SET @m_hook_id  = 8170501107000000001;
+SET @m_world_id = 8170501107000000002;
+SET @m_style_id = 8170501107000000003;
+SET @m_char_id  = 8170501107000000004;
+SET @m_scene_id = 8170501107000000005;
+SET @m_prop_id  = 8170501107000000006;
+SET @m_org_id   = 8170501107000000007;
 
 -- -------------------------
 -- 3.1 凡尘破局与仙缘钩子 (setting) - 单例

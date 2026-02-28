@@ -2,7 +2,7 @@
 -- Hybrid Romantasy / Thriller Creation Method Initialization SQL
 -- -----------------------------------------------------------------------------
 
-SET @method_id = 78; 
+SET @method_id = 106; 
 SET @method_name = 'Hybrid Romantasy / Thriller';
 SET @method_desc = 'A trending genre blending epic romance with mind-bending thriller, crime, or sci-fi elements. The protagonist navigates complex conspiracies, royal intrigues, or dystopian futures while confronting a fatal, undeniable attraction to a dangerous or morally gray counterpart.';
 SET @novel_type = 'Romantasy';
@@ -11,21 +11,21 @@ SET @visible_categories = '["setting", "character", "scene", "prop", "organizati
 
 -- 1. Create Novel Creation Method
 INSERT INTO novel_creation_method 
-  (id, name, description, novel_type, language, visible_categories, is_preset, status, created_at, updated_at)
+  (id, name, description, novel_type, language, visible_categories, created_at, updated_at)
 VALUES
-  (@method_id, @method_name, @method_desc, @novel_type, @language, @visible_categories, 1, 'active', NOW(), NOW())
+  (@method_id, @method_name, @method_desc, @novel_type, @language, @visible_categories, NOW(), NOW())
 ON DUPLICATE KEY UPDATE
   name = VALUES(name), description = VALUES(description), novel_type = VALUES(novel_type), 
-  language = VALUES(language), visible_categories = VALUES(visible_categories), is_preset = VALUES(is_preset), status = VALUES(status), updated_at = NOW();
+  language = VALUES(language), visible_categories = VALUES(visible_categories), updated_at = NOW();
 
 -- Preset Module IDs
-SET @m_hook_id  = 8170501780000000001;
-SET @m_world_id = 8170501780000000002;
-SET @m_style_id = 8170501780000000003;
-SET @m_char_id  = 8170501780000000004;
-SET @m_scene_id = 8170501780000000005;
-SET @m_prop_id  = 8170501780000000006;
-SET @m_org_id   = 8170501780000000007;
+SET @m_hook_id  = 8170501106000000001;
+SET @m_world_id = 8170501106000000002;
+SET @m_style_id = 8170501106000000003;
+SET @m_char_id  = 8170501106000000004;
+SET @m_scene_id = 8170501106000000005;
+SET @m_prop_id  = 8170501106000000006;
+SET @m_org_id   = 8170501106000000007;
 
 -- -------------------------
 -- 3.1 Hook (setting) - Singleton

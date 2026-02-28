@@ -2,7 +2,7 @@
 -- Hybrid Romantasy / Thriller AI Generation Skills Layer 3 SQL
 -- -----------------------------------------------------------------------------
 
-SET @method_id = 78; 
+SET @method_id = 106; 
 
 -- ============================================================================
 -- 1. Setting Content Generation Skills (-setting-gen)
