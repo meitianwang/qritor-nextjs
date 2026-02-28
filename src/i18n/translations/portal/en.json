@@ -61,13 +61,19 @@
         },
         "entries": {
             "v1_0_1": {
-                "title": "UX Polish & Refinements",
+                "title": "Credits Management & UX Improvements",
+                "new": {
+                    "item1": "View credit usage breakdown by category right from the desktop user menu.",
+                    "item2": "One-click upgrade when running low on credits.",
+                    "item3": "Added User Guide, FAQ, and Contact Us pages."
+                },
                 "improved": {
-                    "item1": "Smoother interactions across multiple UI elements.",
-                    "item2": "Better information display so key details are easier to find."
+                    "item1": "Smoother WeChat payment flow — no need to manually enter your name.",
+                    "item2": "Polished various UI interactions and information display."
                 },
                 "fixed": {
-                    "item1": "Fixed various visual glitches and localization issues."
+                    "item1": "Fixed desktop app login callback occasionally failing.",
+                    "item2": "Fixed various visual glitches and localization issues."
                 }
             },
             "v1_0_0": {

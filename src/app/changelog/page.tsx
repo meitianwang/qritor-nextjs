@@ -12,8 +12,17 @@ const changelogData = [
     date: "2026-02-28",
     version: "v1.0.1",
     title: "changelog.entries.v1_0_1.title",
-    tags: ["improved", "fixed"],
+    tags: ["new", "improved", "fixed"],
     sections: [
+      {
+        type: "new",
+        titleKey: "changelog.sections.newFeatures",
+        items: [
+          "changelog.entries.v1_0_1.new.item1",
+          "changelog.entries.v1_0_1.new.item2",
+          "changelog.entries.v1_0_1.new.item3",
+        ],
+      },
       {
         type: "improved",
         titleKey: "changelog.sections.improvements",
@@ -25,7 +34,10 @@ const changelogData = [
       {
         type: "fixed",
         titleKey: "changelog.sections.bugFixes",
-        items: ["changelog.entries.v1_0_1.fixed.item1"],
+        items: [
+          "changelog.entries.v1_0_1.fixed.item1",
+          "changelog.entries.v1_0_1.fixed.item2",
+        ],
       },
     ],
   },
