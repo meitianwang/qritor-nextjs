@@ -42,18 +42,16 @@ export const docsNavigation: Record<string, DocsNavigation> = {
           id: "ai-assistant",
           title: "聊天",
           path: "/docs/zh/user-guide/ai-assistant",
-          children: [
-            {
-              id: "smart-write",
-              title: "智能写作工具",
-              path: "/docs/zh/user-guide/ai-assistant/smart-write",
-            },
-            {
-              id: "editor-toolbar",
-              title: "编辑器工具栏",
-              path: "/docs/zh/user-guide/ai-assistant/editor-toolbar",
-            },
-          ],
+        },
+        {
+          id: "smart-write",
+          title: "智能写作工具",
+          path: "/docs/zh/user-guide/smart-write",
+        },
+        {
+          id: "editor-toolbar",
+          title: "编辑器工具栏",
+          path: "/docs/zh/user-guide/editor-toolbar",
         },
         {
           id: "chat-history",
@@ -105,11 +103,6 @@ export const docsNavigation: Record<string, DocsNavigation> = {
           title: "技能",
           path: "/docs/zh/user-guide/skills",
         },
-        {
-          id: "configuration",
-          title: "系统配置",
-          path: "/docs/zh/user-guide/configuration",
-        },
       ],
     },
     pricing: {
@@ -123,7 +116,11 @@ export const docsNavigation: Record<string, DocsNavigation> = {
     configuration: {
       title: "配置",
       items: [
-        { id: "llm-config", title: "LLM 配置", path: "/docs/zh/config/llm" },
+        {
+          id: "configuration",
+          title: "系统配置",
+          path: "/docs/zh/config/configuration",
+        },
         {
           id: "module-config",
           title: "模块配置",
@@ -193,18 +190,16 @@ export const docsNavigation: Record<string, DocsNavigation> = {
           id: "ai-assistant",
           title: "Chat",
           path: "/docs/en/user-guide/ai-assistant",
-          children: [
-            {
-              id: "smart-write",
-              title: "Smart Writing Tools",
-              path: "/docs/en/user-guide/ai-assistant/smart-write",
-            },
-            {
-              id: "editor-toolbar",
-              title: "Editor Toolbar",
-              path: "/docs/en/user-guide/ai-assistant/editor-toolbar",
-            },
-          ],
+        },
+        {
+          id: "smart-write",
+          title: "Smart Writing Tools",
+          path: "/docs/en/user-guide/smart-write",
+        },
+        {
+          id: "editor-toolbar",
+          title: "Editor Toolbar",
+          path: "/docs/en/user-guide/editor-toolbar",
         },
         {
           id: "chat-history",
@@ -256,11 +251,6 @@ export const docsNavigation: Record<string, DocsNavigation> = {
           title: "Skills",
           path: "/docs/en/user-guide/skills",
         },
-        {
-          id: "configuration",
-          title: "System Configuration",
-          path: "/docs/en/user-guide/configuration",
-        },
       ],
     },
     pricing: {
@@ -275,9 +265,9 @@ export const docsNavigation: Record<string, DocsNavigation> = {
       title: "Configuration",
       items: [
         {
-          id: "llm-config",
-          title: "LLM Configuration",
-          path: "/docs/en/config/llm",
+          id: "configuration",
+          title: "System Configuration",
+          path: "/docs/en/config/configuration",
         },
         {
           id: "module-config",
