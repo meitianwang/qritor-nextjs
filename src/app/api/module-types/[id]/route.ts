@@ -2,26 +2,8 @@ import { NextRequest } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getCurrentAdminUser } from "@/lib/middleware/auth-middleware";
 import { apiSuccess, apiError, apiNotFound } from "@/lib/api-response";
-import type { module_type } from "@/generated/prisma/client";
-
-function serializeModuleType(mt: module_type) {
-  return {
-    id: String(mt.id),
-    name: mt.name,
-    description: mt.description,
-    jsonSchema: mt.json_schema,
-    temperature: mt.temperature,
-    novelCreationMethodId: mt.novel_creation_method_id
-      ? String(mt.novel_creation_method_id)
-      : null,
-    enableAi: mt.enable_ai === 1,
-    singleton: mt.singleton === 1,
-    builtIn: mt.built_in === 1,
-    entityCategory: mt.entity_category,
-    createdAt: mt.created_at.toISOString(),
-    updatedAt: mt.updated_at?.toISOString() || null,
-  };
-}
+import { serializeModuleType } from "@/lib/serializers/module-type";
+import { parseBigIntId } from "@/lib/serializers/validate";
 
 export async function GET(
   request: NextRequest,
@@ -29,8 +11,11 @@ export async function GET(
 ) {
   try {
     const { id } = await params;
+    const numericId = parseBigIntId(id);
+    if (!numericId) return apiError(400, "无效的 ID 格式");
+
     const moduleType = await prisma.module_type.findUnique({
-      where: { id: BigInt(id) },
+      where: { id: numericId },
     });
 
     if (!moduleType) {
@@ -50,22 +35,35 @@ export async function PUT(
   try {
     await getCurrentAdminUser(request);
     const { id } = await params;
+    const numericId = parseBigIntId(id);
+    if (!numericId) return apiError(400, "无效的 ID 格式");
+
     const body = await request.json();
 
     const existing = await prisma.module_type.findUnique({
-      where: { id: BigInt(id) },
+      where: { id: numericId },
     });
 
     if (!existing) {
       return apiNotFound("模块类型不存在");
     }
 
-    const updateData: Record<string, any> = { updated_at: new Date() };
+    const updateData: Record<string, unknown> = { updated_at: new Date() };
 
     if (body.name !== undefined) updateData.name = body.name;
+    if (body.nameZh !== undefined) updateData.name_zh = body.nameZh;
+    if (body.nameEn !== undefined) updateData.name_en = body.nameEn;
     if (body.description !== undefined)
       updateData.description = body.description;
+    if (body.descriptionZh !== undefined)
+      updateData.description_zh = body.descriptionZh;
+    if (body.descriptionEn !== undefined)
+      updateData.description_en = body.descriptionEn;
     if (body.jsonSchema !== undefined) updateData.json_schema = body.jsonSchema;
+    if (body.jsonSchemaZh !== undefined)
+      updateData.json_schema_zh = body.jsonSchemaZh;
+    if (body.jsonSchemaEn !== undefined)
+      updateData.json_schema_en = body.jsonSchemaEn;
     if (body.temperature !== undefined)
       updateData.temperature = body.temperature;
     if (body.novelCreationMethodId !== undefined)
@@ -81,7 +79,7 @@ export async function PUT(
       updateData.entity_category = body.entityCategory;
 
     const updated = await prisma.module_type.update({
-      where: { id: BigInt(id) },
+      where: { id: numericId },
       data: updateData,
     });
 
@@ -98,16 +96,18 @@ export async function DELETE(
   try {
     await getCurrentAdminUser(request);
     const { id } = await params;
+    const numericId = parseBigIntId(id);
+    if (!numericId) return apiError(400, "无效的 ID 格式");
 
     const existing = await prisma.module_type.findUnique({
-      where: { id: BigInt(id) },
+      where: { id: numericId },
     });
 
     if (!existing) {
       return apiNotFound("模块类型不存在");
     }
 
-    await prisma.module_type.delete({ where: { id: BigInt(id) } });
+    await prisma.module_type.delete({ where: { id: numericId } });
 
     return apiSuccess(null, "删除成功");
   } catch (error) {

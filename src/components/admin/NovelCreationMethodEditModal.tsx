@@ -8,7 +8,6 @@ interface NovelCreationMethod {
     name: string
     description?: string
     novelType?: string
-    language?: string
 }
 
 interface NovelCreationMethodEditModalProps {
@@ -17,11 +16,6 @@ interface NovelCreationMethodEditModalProps {
     method: NovelCreationMethod | null
     onSave: () => void
     showToast: (type: string, message: string) => void
-}
-
-interface EnumOption {
-    value: string
-    name: string
 }
 
 export default function NovelCreationMethodEditModal({
@@ -35,28 +29,8 @@ export default function NovelCreationMethodEditModal({
         name: '',
         description: '',
         novelType: '',
-        language: '',
     })
     const [loading, setLoading] = useState(false)
-    const [languages, setLanguages] = useState<EnumOption[]>([])
-
-    useEffect(() => {
-        if (isOpen) {
-            fetchLanguages()
-        }
-    }, [isOpen, method])
-
-    const fetchLanguages = async () => {
-        try {
-            const response = await authFetch('/api/novel-creation-methods/languages')
-            const data = await response.json()
-            if (data.code === 200) {
-                setLanguages(data.data || [])
-            }
-        } catch (error) {
-            console.error('获取语言列表失败:', error)
-        }
-    }
 
     useEffect(() => {
         if (isOpen) {
@@ -65,14 +39,12 @@ export default function NovelCreationMethodEditModal({
                     name: method.name || '',
                     description: method.description || '',
                     novelType: method.novelType || '',
-                    language: method.language || '',
                 })
             } else {
                 setFormData({
                     name: '',
                     description: '',
                     novelType: '',
-                    language: '',
                 })
             }
         }
@@ -88,7 +60,6 @@ export default function NovelCreationMethodEditModal({
                 name: formData.name,
                 description: formData.description,
                 novelType: formData.novelType || null,
-                language: formData.language || null
             }
 
             let response
@@ -179,24 +150,6 @@ export default function NovelCreationMethodEditModal({
                             placeholder="例如: 灵异、悬疑、修仙"
                             disabled={loading}
                         />
-                    </div>
-
-                    <div className="admin-form-group">
-                        <label className="admin-form-label">语言</label>
-                        <select
-                            value={formData.language}
-                            onChange={(e) => setFormData({ ...formData, language: e.target.value })}
-                            className="admin-form-input"
-                            disabled={loading}
-                            style={{ cursor: 'pointer' }}
-                        >
-                            <option value="">请选择语言</option>
-                            {languages.map(lang => (
-                                <option key={lang.value} value={lang.value}>
-                                    {lang.name}
-                                </option>
-                            ))}
-                        </select>
                     </div>
 
                     <div style={{ display: 'flex', gap: '12px', justifyContent: 'flex-end', marginTop: '24px' }}>

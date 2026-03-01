@@ -2,26 +2,7 @@ import { NextRequest } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getCurrentAdminUser } from "@/lib/middleware/auth-middleware";
 import { apiSuccess, apiError, apiValidationError } from "@/lib/api-response";
-import type { module_type } from "@/generated/prisma/client";
-
-function serializeModuleType(mt: module_type) {
-  return {
-    id: String(mt.id),
-    name: mt.name,
-    description: mt.description,
-    jsonSchema: mt.json_schema,
-    temperature: mt.temperature,
-    novelCreationMethodId: mt.novel_creation_method_id
-      ? String(mt.novel_creation_method_id)
-      : null,
-    enableAi: mt.enable_ai === 1,
-    singleton: mt.singleton === 1,
-    builtIn: mt.built_in === 1,
-    entityCategory: mt.entity_category,
-    createdAt: mt.created_at.toISOString(),
-    updatedAt: mt.updated_at?.toISOString() || null,
-  };
-}
+import { serializeModuleType } from "@/lib/serializers/module-type";
 
 export async function GET() {
   try {
@@ -47,8 +28,14 @@ export async function POST(request: NextRequest) {
     const moduleType = await prisma.module_type.create({
       data: {
         name: body.name,
+        name_zh: body.nameZh || null,
+        name_en: body.nameEn || null,
         description: body.description || null,
+        description_zh: body.descriptionZh || null,
+        description_en: body.descriptionEn || null,
         json_schema: body.jsonSchema || null,
+        json_schema_zh: body.jsonSchemaZh || null,
+        json_schema_en: body.jsonSchemaEn || null,
         temperature: body.temperature ?? null,
         novel_creation_method_id: body.novelCreationMethodId
           ? BigInt(body.novelCreationMethodId)

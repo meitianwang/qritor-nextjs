@@ -13,7 +13,6 @@ interface Method {
   name: string;
   description: string;
   novelType: string;
-  language: string;
   visibleCategories: string[] | null;
   plotConfig: string | Record<string, any> | null;
   [key: string]: any;
@@ -77,10 +76,6 @@ function NovelCreationMethodDetailContent() {
       const response = await authFetch(`/api/novel-creation-methods/${id}`, {
         method: "PUT",
         body: {
-          name: method.name,
-          description: method.description,
-          novelType: method.novelType,
-          language: method.language,
           visibleCategories: categories,
         },
       });
@@ -384,16 +379,6 @@ function MethodOverview({
           <h3 className="text-sm font-semibold text-white/70 mb-4">方法信息</h3>
           <div className="grid grid-cols-2 gap-x-8 gap-y-3">
             <InfoRow label="类型" value={method.novelType || "-"} />
-            <InfoRow
-              label="语言"
-              value={
-                method.language === "zh"
-                  ? "简体中文"
-                  : method.language === "en"
-                    ? "English"
-                    : method.language || "-"
-              }
-            />
             <InfoRow label="创建时间" value={formatDate(method.createdAt)} />
             <InfoRow label="更新时间" value={formatDate(method.updatedAt)} />
           </div>
