@@ -34,7 +34,8 @@ export async function POST(request: NextRequest) {
         name_en: body.nameEn || null,
         description_zh: body.descriptionZh || null,
         description_en: body.descriptionEn || null,
-        novel_type: body.novelType || null,
+        novel_type_zh: body.novelTypeZh || null,
+        novel_type_en: body.novelTypeEn || null,
         visible_categories: body.visibleCategories
           ? JSON.stringify(body.visibleCategories)
           : null,

@@ -64,7 +64,10 @@ export async function PUT(
       updateData.description_zh = body.descriptionZh;
     if (body.descriptionEn !== undefined)
       updateData.description_en = body.descriptionEn;
-    if (body.novelType !== undefined) updateData.novel_type = body.novelType;
+    if (body.novelTypeZh !== undefined)
+      updateData.novel_type_zh = body.novelTypeZh;
+    if (body.novelTypeEn !== undefined)
+      updateData.novel_type_en = body.novelTypeEn;
     if (body.visibleCategories !== undefined)
       updateData.visible_categories = body.visibleCategories
         ? JSON.stringify(body.visibleCategories)
