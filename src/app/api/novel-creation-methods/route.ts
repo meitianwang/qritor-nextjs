@@ -27,8 +27,8 @@ export async function POST(request: NextRequest) {
     const { searchParams } = new URL(request.url);
     const templateMethodId = searchParams.get("templateMethodId");
 
-    if (!body.name) {
-      return apiValidationError("名称不能为空");
+    if (!body.nameZh) {
+      return apiValidationError("中文名称不能为空");
     }
 
     const result = await prisma.$transaction(async (tx) => {
@@ -45,13 +45,11 @@ export async function POST(request: NextRequest) {
 
         const newMethod = await tx.novel_creation_method.create({
           data: {
-            name: body.name || template.name,
             slug: null,
-            name_zh: template.name_zh,
-            name_en: template.name_en,
-            description: body.description ?? template.description,
-            description_zh: template.description_zh,
-            description_en: template.description_en,
+            name_zh: body.nameZh || template.name_zh,
+            name_en: body.nameEn ?? template.name_en,
+            description_zh: body.descriptionZh ?? template.description_zh,
+            description_en: body.descriptionEn ?? template.description_en,
             novel_type: body.novelType ?? template.novel_type,
             visible_categories: template.visible_categories,
             created_at: new Date(),
@@ -65,13 +63,10 @@ export async function POST(request: NextRequest) {
         for (const mt of templateModuleTypes) {
           await tx.module_type.create({
             data: {
-              name: mt.name,
               name_zh: mt.name_zh,
               name_en: mt.name_en,
-              description: mt.description,
               description_zh: mt.description_zh,
               description_en: mt.description_en,
-              json_schema: mt.json_schema,
               json_schema_zh: mt.json_schema_zh,
               json_schema_en: mt.json_schema_en,
               temperature: mt.temperature,
@@ -89,8 +84,10 @@ export async function POST(request: NextRequest) {
       } else {
         const newMethod = await tx.novel_creation_method.create({
           data: {
-            name: body.name,
-            description: body.description || null,
+            name_zh: body.nameZh,
+            name_en: body.nameEn || null,
+            description_zh: body.descriptionZh || null,
+            description_en: body.descriptionEn || null,
             novel_type: body.novelType || null,
             visible_categories: body.visibleCategories
               ? JSON.stringify(body.visibleCategories)

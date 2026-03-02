@@ -53,7 +53,6 @@ export async function PUT(
       updated_at: new Date(),
     };
 
-    if (body.name !== undefined) updateData.name = body.name;
     if (body.slug !== undefined) {
       const slugResult = validateSlug(body.slug);
       if (!slugResult.valid) return slugResult.error;
@@ -61,8 +60,6 @@ export async function PUT(
     }
     if (body.nameZh !== undefined) updateData.name_zh = body.nameZh;
     if (body.nameEn !== undefined) updateData.name_en = body.nameEn;
-    if (body.description !== undefined)
-      updateData.description = body.description;
     if (body.descriptionZh !== undefined)
       updateData.description_zh = body.descriptionZh;
     if (body.descriptionEn !== undefined)

@@ -21,19 +21,16 @@ export async function POST(request: NextRequest) {
     await getCurrentAdminUser(request);
     const body = await request.json();
 
-    if (!body.name) {
-      return apiValidationError("名称不能为空");
+    if (!body.nameZh) {
+      return apiValidationError("中文名称不能为空");
     }
 
     const moduleType = await prisma.module_type.create({
       data: {
-        name: body.name,
         name_zh: body.nameZh || null,
         name_en: body.nameEn || null,
-        description: body.description || null,
         description_zh: body.descriptionZh || null,
         description_en: body.descriptionEn || null,
-        json_schema: body.jsonSchema || null,
         json_schema_zh: body.jsonSchemaZh || null,
         json_schema_en: body.jsonSchemaEn || null,
         temperature: body.temperature ?? null,

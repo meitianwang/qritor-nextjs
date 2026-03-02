@@ -5,8 +5,8 @@ import { authFetch } from "@/lib/auth-utils";
 
 interface ModuleTypeData {
   id?: number;
-  name?: string;
-  description?: string;
+  nameZh?: string;
+  descriptionZh?: string;
   temperature?: number;
   enableAi?: boolean;
   singleton?: boolean;
@@ -16,8 +16,8 @@ interface ModuleTypeData {
 }
 
 interface FormData {
-  name: string;
-  description: string;
+  nameZh: string;
+  descriptionZh: string;
   temperature: number;
   enableAi: boolean;
   singleton: boolean;
@@ -45,8 +45,8 @@ const ModuleTypeEditModal = forwardRef<
   const [loading, setLoading] = useState(false);
   const [entityCategories, setEntityCategories] = useState<string[]>([]);
   const [formData, setFormData] = useState<FormData>({
-    name: "",
-    description: "",
+    nameZh: "",
+    descriptionZh: "",
     temperature: 0.7,
     enableAi: true,
     singleton: false,
@@ -139,8 +139,8 @@ const ModuleTypeEditModal = forwardRef<
       if (isEdit && data) {
         // 编辑模式：从现有数据填充表单
         setFormData({
-          name: data.name || "",
-          description: data.description || "",
+          nameZh: data.nameZh || "",
+          descriptionZh: data.descriptionZh || "",
           temperature: data.temperature !== undefined ? data.temperature : 0.7,
           enableAi: data.enableAi !== undefined ? data.enableAi : true,
           singleton: data.singleton || false,
@@ -151,8 +151,8 @@ const ModuleTypeEditModal = forwardRef<
       } else {
         // 新建模式：使用默认值，但保留传入的 novelCreationMethodId
         setFormData({
-          name: "",
-          description: "",
+          nameZh: "",
+          descriptionZh: "",
           temperature: 0.7,
           enableAi: true,
           singleton: false,
@@ -261,9 +261,9 @@ const ModuleTypeEditModal = forwardRef<
             </label>
             <input
               type="text"
-              value={formData.name}
+              value={formData.nameZh}
               onChange={(e) =>
-                setFormData({ ...formData, name: e.target.value })
+                setFormData({ ...formData, nameZh: e.target.value })
               }
               className="admin-form-input"
               placeholder="请输入模块类型名称"
@@ -275,9 +275,9 @@ const ModuleTypeEditModal = forwardRef<
           <div className="admin-form-group">
             <label className="admin-form-label">描述</label>
             <textarea
-              value={formData.description}
+              value={formData.descriptionZh}
               onChange={(e) =>
-                setFormData({ ...formData, description: e.target.value })
+                setFormData({ ...formData, descriptionZh: e.target.value })
               }
               className="admin-form-input"
               placeholder="请输入模块类型描述"

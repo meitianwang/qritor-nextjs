@@ -50,16 +50,12 @@ export async function PUT(
 
     const updateData: Record<string, unknown> = { updated_at: new Date() };
 
-    if (body.name !== undefined) updateData.name = body.name;
     if (body.nameZh !== undefined) updateData.name_zh = body.nameZh;
     if (body.nameEn !== undefined) updateData.name_en = body.nameEn;
-    if (body.description !== undefined)
-      updateData.description = body.description;
     if (body.descriptionZh !== undefined)
       updateData.description_zh = body.descriptionZh;
     if (body.descriptionEn !== undefined)
       updateData.description_en = body.descriptionEn;
-    if (body.jsonSchema !== undefined) updateData.json_schema = body.jsonSchema;
     if (body.jsonSchemaZh !== undefined)
       updateData.json_schema_zh = body.jsonSchemaZh;
     if (body.jsonSchemaEn !== undefined)

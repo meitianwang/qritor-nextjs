@@ -18,8 +18,10 @@ import {
 
 interface NovelCreationMethod {
   id: string;
-  name: string;
-  description?: string;
+  nameZh?: string;
+  nameEn?: string;
+  descriptionZh?: string;
+  descriptionEn?: string;
   novelType?: string;
 }
 
@@ -89,10 +91,13 @@ export default function NovelCreationMethodListPage() {
   };
 
   const filteredMethods = methods.filter((method) => {
+    if (!searchQuery) return true;
+    const q = searchQuery.toLowerCase();
     return (
-      !searchQuery ||
-      method.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      method.description?.toLowerCase().includes(searchQuery.toLowerCase())
+      method.nameZh?.toLowerCase().includes(q) ||
+      method.nameEn?.toLowerCase().includes(q) ||
+      method.descriptionZh?.toLowerCase().includes(q) ||
+      method.descriptionEn?.toLowerCase().includes(q)
     );
   });
 
@@ -215,11 +220,13 @@ export default function NovelCreationMethodListPage() {
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 mb-1 flex-wrap">
                         <h3 className="text-lg font-semibold text-text-primary truncate group-hover:text-white transition-colors">
-                          {method.name}
+                          {method.nameZh || method.nameEn}
                         </h3>
                       </div>
                       <p className="text-sm text-text-tertiary line-clamp-2">
-                        {method.description || "暂无描述"}
+                        {method.descriptionZh ||
+                          method.descriptionEn ||
+                          "暂无描述"}
                       </p>
                     </div>
                   </div>
@@ -247,7 +254,10 @@ export default function NovelCreationMethodListPage() {
                       <button
                         onClick={(e) => {
                           e.stopPropagation();
-                          openDeleteConfirm(method.id, method.name);
+                          openDeleteConfirm(
+                            method.id,
+                            method.nameZh || method.nameEn || "",
+                          );
                         }}
                         className="p-1.5 text-text-tertiary hover:text-red-400 hover:bg-red-500/10 rounded-lg transition-colors"
                         title="删除"

@@ -3,13 +3,10 @@ import type { module_type } from "@/generated/prisma/client";
 export function serializeModuleType(mt: module_type) {
   return {
     id: String(mt.id),
-    name: mt.name,
     nameZh: mt.name_zh,
     nameEn: mt.name_en,
-    description: mt.description,
     descriptionZh: mt.description_zh,
     descriptionEn: mt.description_en,
-    jsonSchema: mt.json_schema,
     jsonSchemaZh: mt.json_schema_zh,
     jsonSchemaEn: mt.json_schema_en,
     temperature: mt.temperature,

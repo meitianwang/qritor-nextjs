@@ -83,13 +83,10 @@ model llm_config {
 
 model module_type {
   id                       BigInt    @id @default(autoincrement())
-  name                     String    @db.VarChar(200)
   name_zh                  String?   @db.VarChar(200)
   name_en                  String?   @db.VarChar(200)
-  description              String?   @db.Text
   description_zh           String?   @db.Text
   description_en           String?   @db.Text
-  json_schema              String?   @db.Text
   json_schema_zh           String?   @db.Text
   json_schema_en           String?   @db.Text
   temperature              Float?    @db.Float
@@ -101,7 +98,6 @@ model module_type {
   created_at               DateTime  @db.DateTime(0)
   updated_at               DateTime? @db.DateTime(0)
 
-  @@index([name], map: "idx_module_type_name")
   @@index([id], map: "ix_module_type_id")
 }
 
@@ -285,10 +281,8 @@ model image_generation_task {
 model novel_creation_method {
   id                 BigInt    @id @default(autoincrement())
   slug               String?   @unique @db.VarChar(100)
-  name               String    @db.VarChar(100)
   name_zh            String?   @db.VarChar(200)
   name_en            String?   @db.VarChar(200)
-  description        String?   @db.Text
   description_zh     String?   @db.Text
   description_en     String?   @db.Text
   novel_type         String?   @db.VarChar(50)

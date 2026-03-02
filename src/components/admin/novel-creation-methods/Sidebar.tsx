@@ -16,7 +16,8 @@ interface DeletingItem {
 
 interface ModuleType {
   id: string;
-  name: string;
+  nameZh?: string;
+  nameEn?: string;
   singleton: boolean;
   enableAi: boolean;
   [key: string]: any;
@@ -264,14 +265,14 @@ const Sidebar: React.FC<SidebarProps> = ({
         {/* 标题 - 渐变色 */}
         <h1
           className="text-lg font-semibold truncate pr-10 mb-2 bg-clip-text text-transparent bg-gradient-to-r from-teal-400 to-cyan-400"
-          title={method?.name}
+          title={method?.nameZh || method?.nameEn}
         >
-          {method ? method.name : "加载中..."}
+          {method ? method.nameZh || method.nameEn : "加载中..."}
         </h1>
 
         {/* 描述 */}
         <p className="text-xs text-white/50 line-clamp-2 leading-relaxed">
-          {method?.description || "暂无描述"}
+          {method?.descriptionZh || method?.descriptionEn || "暂无描述"}
         </p>
 
         {plotConfig && (
@@ -332,7 +333,7 @@ const Sidebar: React.FC<SidebarProps> = ({
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-1.5 min-w-0">
                         <span className="font-medium text-white/80 truncate">
-                          {mt.name}
+                          {mt.nameZh || mt.nameEn}
                         </span>
                         {mt.entityCategory &&
                           CATEGORY_STYLES[mt.entityCategory] && (

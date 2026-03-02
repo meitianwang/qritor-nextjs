@@ -1,10 +1,8 @@
 export function serializeMethod(method: {
   id: bigint;
   slug: string | null;
-  name: string;
   name_zh: string | null;
   name_en: string | null;
-  description: string | null;
   description_zh: string | null;
   description_en: string | null;
   novel_type: string | null;
@@ -24,10 +22,8 @@ export function serializeMethod(method: {
   return {
     id: Number(method.id),
     slug: method.slug,
-    name: method.name,
     nameZh: method.name_zh,
     nameEn: method.name_en,
-    description: method.description,
     descriptionZh: method.description_zh,
     descriptionEn: method.description_en,
     novelType: method.novel_type,

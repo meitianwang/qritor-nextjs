@@ -10,8 +10,10 @@ import ToastNotification from "@/components/ToastNotification";
 
 interface Method {
   id: number;
-  name: string;
-  description: string;
+  nameZh?: string;
+  nameEn?: string;
+  descriptionZh?: string;
+  descriptionEn?: string;
   novelType: string;
   visibleCategories: string[] | null;
   plotConfig: string | Record<string, any> | null;
@@ -20,7 +22,8 @@ interface Method {
 
 interface ModuleType {
   id: string;
-  name: string;
+  nameZh?: string;
+  nameEn?: string;
   novelCreationMethodId: string;
   singleton: boolean;
   enableAi: boolean;
@@ -306,10 +309,10 @@ function MethodOverview({
         {/* Header */}
         <div>
           <h2 className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-teal-400 via-cyan-500 to-teal-500 mb-2">
-            {method.name}
+            {method.nameZh || method.nameEn}
           </h2>
           <p className="text-white/50 text-sm leading-relaxed max-w-2xl">
-            {method.description || "暂无描述"}
+            {method.descriptionZh || method.descriptionEn || "暂无描述"}
           </p>
         </div>
 
@@ -418,7 +421,7 @@ function MethodOverview({
                           className="flex items-center justify-between p-3 bg-white/[0.02] border border-white/[0.04] rounded-lg hover:bg-white/[0.04] hover:border-white/[0.08] transition-all"
                         >
                           <span className="text-sm text-white/80 truncate">
-                            {mt.name}
+                            {mt.nameZh || mt.nameEn}
                           </span>
                           <div className="flex items-center gap-1.5 flex-shrink-0 ml-2">
                             {mt.singleton && (

@@ -5,8 +5,8 @@ import { authFetch } from '@/lib/auth-utils'
 
 interface NovelCreationMethod {
     id: string
-    name: string
-    description?: string
+    nameZh?: string
+    descriptionZh?: string
     novelType?: string
 }
 
@@ -26,8 +26,8 @@ export default function NovelCreationMethodEditModal({
     showToast
 }: NovelCreationMethodEditModalProps) {
     const [formData, setFormData] = useState({
-        name: '',
-        description: '',
+        nameZh: '',
+        descriptionZh: '',
         novelType: '',
     })
     const [loading, setLoading] = useState(false)
@@ -36,14 +36,14 @@ export default function NovelCreationMethodEditModal({
         if (isOpen) {
             if (method) {
                 setFormData({
-                    name: method.name || '',
-                    description: method.description || '',
+                    nameZh: method.nameZh || '',
+                    descriptionZh: method.descriptionZh || '',
                     novelType: method.novelType || '',
                 })
             } else {
                 setFormData({
-                    name: '',
-                    description: '',
+                    nameZh: '',
+                    descriptionZh: '',
                     novelType: '',
                 })
             }
@@ -57,8 +57,8 @@ export default function NovelCreationMethodEditModal({
             setLoading(true)
 
             const methodData = {
-                name: formData.name,
-                description: formData.description,
+                nameZh: formData.nameZh,
+                descriptionZh: formData.descriptionZh,
                 novelType: formData.novelType || null,
             }
 
@@ -118,8 +118,8 @@ export default function NovelCreationMethodEditModal({
                         <input
                             type="text"
                             required
-                            value={formData.name}
-                            onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                            value={formData.nameZh}
+                            onChange={(e) => setFormData({ ...formData, nameZh: e.target.value })}
                             className="admin-form-input"
                             placeholder="例如: 民间灵异故事创作"
                             disabled={loading}
@@ -130,8 +130,8 @@ export default function NovelCreationMethodEditModal({
                     <div className="admin-form-group">
                         <label className="admin-form-label">描述</label>
                         <textarea
-                            value={formData.description}
-                            onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                            value={formData.descriptionZh}
+                            onChange={(e) => setFormData({ ...formData, descriptionZh: e.target.value })}
                             className="admin-form-input"
                             placeholder="例如: 为民间灵异故事专门设计的创作方法"
                             disabled={loading}
