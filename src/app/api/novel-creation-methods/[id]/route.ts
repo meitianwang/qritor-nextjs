@@ -101,9 +101,6 @@ export async function DELETE(
     }
 
     await prisma.$transaction(async (tx) => {
-      await tx.skill.deleteMany({
-        where: { novel_creation_method_id: numericId },
-      });
       await tx.module_type.deleteMany({
         where: { novel_creation_method_id: numericId },
       });
