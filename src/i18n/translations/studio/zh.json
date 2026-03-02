@@ -14,8 +14,6 @@
     "aiParamsEditor": {
         "editTitle": "AI 参数设置",
         "description": "为此模块类型配置 AI 生成参数。这些参数将影响 AI 生成内容的质量和风格。",
-        "temperature": "Temperature",
-        "temperatureDesc": "控制 AI 输出的创造性。值越高越有创意但可能不太准确，值越低越保守但更可靠。推荐 0.7。",
         "llmConfig": "LLM 配置",
         "useDefaultConfig": "使用系统默认配置",
         "llmConfigDesc": "为此模块类型指定特定的 LLM 模型。留空将使用系统默认模型。",
@@ -29,7 +27,6 @@
     },
     "moduleTypeModal": {
         "singleton": "单例模式",
-        "builtIn": "内置类型",
         "saveChanges": "保存更改",
         "createNow": "创建"
     },

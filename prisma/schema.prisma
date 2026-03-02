@@ -89,11 +89,9 @@ model module_type {
   description_en           String?   @db.Text
   json_schema_zh           String?   @db.Text
   json_schema_en           String?   @db.Text
-  temperature              Float?    @db.Float
   novel_creation_method_id BigInt?
   enable_ai                Int       @db.SmallInt
   singleton                Int       @db.SmallInt
-  built_in                 Int       @db.SmallInt
   entity_category          String?   @db.VarChar(50)
   created_at               DateTime  @db.DateTime(0)
   updated_at               DateTime? @db.DateTime(0)

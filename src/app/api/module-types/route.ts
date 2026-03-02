@@ -12,6 +12,7 @@ export async function GET() {
 
     return apiSuccess(moduleTypes.map(serializeModuleType));
   } catch (error) {
+    console.error("[module-types GET]", error);
     return apiError(500, "获取模块类型列表失败");
   }
 }
@@ -24,29 +25,53 @@ export async function POST(request: NextRequest) {
     if (!body.nameZh) {
       return apiValidationError("中文名称不能为空");
     }
+    if (!body.nameEn) {
+      return apiValidationError("英文名称不能为空");
+    }
+    if (!body.descriptionZh) {
+      return apiValidationError("中文描述不能为空");
+    }
+    if (!body.descriptionEn) {
+      return apiValidationError("英文描述不能为空");
+    }
+    if (!body.entityCategory) {
+      return apiValidationError("实体分类不能为空");
+    }
+    if (!body.novelCreationMethodId) {
+      return apiValidationError("创作方法 ID 不能为空");
+    }
+    if (!body.jsonSchemaZh) {
+      return apiValidationError("中文 JSON Schema 不能为空");
+    }
+    if (!body.jsonSchemaEn) {
+      return apiValidationError("英文 JSON Schema 不能为空");
+    }
+    if (body.enableAi === undefined || body.enableAi === null) {
+      return apiValidationError("是否启用 AI 不能为空");
+    }
+    if (body.singleton === undefined || body.singleton === null) {
+      return apiValidationError("是否单例不能为空");
+    }
 
     const moduleType = await prisma.module_type.create({
       data: {
-        name_zh: body.nameZh || null,
-        name_en: body.nameEn || null,
-        description_zh: body.descriptionZh || null,
-        description_en: body.descriptionEn || null,
-        json_schema_zh: body.jsonSchemaZh || null,
-        json_schema_en: body.jsonSchemaEn || null,
-        temperature: body.temperature ?? null,
-        novel_creation_method_id: body.novelCreationMethodId
-          ? BigInt(body.novelCreationMethodId)
-          : null,
+        name_zh: body.nameZh,
+        name_en: body.nameEn,
+        description_zh: body.descriptionZh,
+        description_en: body.descriptionEn,
+        json_schema_zh: body.jsonSchemaZh,
+        json_schema_en: body.jsonSchemaEn,
+        novel_creation_method_id: BigInt(body.novelCreationMethodId),
         enable_ai: body.enableAi ? 1 : 0,
         singleton: body.singleton ? 1 : 0,
-        built_in: body.builtIn ? 1 : 0,
-        entity_category: body.entityCategory || null,
+        entity_category: body.entityCategory,
         created_at: new Date(),
       },
     });
 
     return apiSuccess(serializeModuleType(moduleType));
   } catch (error) {
+    console.error("[module-types POST]", error);
     return apiError(500, "创建模块类型失败");
   }
 }

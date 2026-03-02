@@ -14,8 +14,6 @@
     "aiParamsEditor": {
         "editTitle": "AI Parameters",
         "description": "Configure AI generation parameters for this module type. These parameters affect the quality and style of AI-generated content.",
-        "temperature": "Temperature",
-        "temperatureDesc": "Controls the creativity of AI output. Higher values are more creative but less accurate, lower values are more conservative but reliable. Recommended: 0.7.",
         "llmConfig": "LLM Config",
         "useDefaultConfig": "Use default config",
         "llmConfigDesc": "Specify a particular LLM model for this module type. Leave empty to use the system default.",
@@ -29,7 +27,6 @@
     },
     "moduleTypeModal": {
         "singleton": "Singleton",
-        "builtIn": "Built-in",
         "saveChanges": "Save Changes",
         "createNow": "Create"
     },

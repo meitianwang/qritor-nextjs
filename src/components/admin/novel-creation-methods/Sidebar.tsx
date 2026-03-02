@@ -317,13 +317,8 @@ const Sidebar: React.FC<SidebarProps> = ({
                 />
               </svg>
             }
-            onAdd={() => {
-              onOpenModal?.();
-              moduleTypeModalRef.current?.open({
-                novelCreationMethodId: method?.id,
-              });
-            }}
-            addTitle="新建模块类型"
+            onAdd={undefined}
+            addTitle={undefined}
           />
           {isModuleTypesOpen && (
             <div className="space-y-1">

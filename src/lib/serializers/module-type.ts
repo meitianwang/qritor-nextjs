@@ -9,13 +9,11 @@ export function serializeModuleType(mt: module_type) {
     descriptionEn: mt.description_en,
     jsonSchemaZh: mt.json_schema_zh,
     jsonSchemaEn: mt.json_schema_en,
-    temperature: mt.temperature,
     novelCreationMethodId: mt.novel_creation_method_id
       ? String(mt.novel_creation_method_id)
       : null,
     enableAi: mt.enable_ai === 1,
     singleton: mt.singleton === 1,
-    builtIn: mt.built_in === 1,
     entityCategory: mt.entity_category,
     createdAt: mt.created_at.toISOString(),
     updatedAt: mt.updated_at?.toISOString() || null,

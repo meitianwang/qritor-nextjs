@@ -7,10 +7,8 @@ interface ModuleTypeData {
   id?: number;
   nameZh?: string;
   descriptionZh?: string;
-  temperature?: number;
   enableAi?: boolean;
   singleton?: boolean;
-  builtIn?: boolean;
   novelCreationMethodId?: number | null;
   entityCategory?: string | null;
 }
@@ -18,10 +16,8 @@ interface ModuleTypeData {
 interface FormData {
   nameZh: string;
   descriptionZh: string;
-  temperature: number;
   enableAi: boolean;
   singleton: boolean;
-  builtIn: boolean;
   novelCreationMethodId: number | null;
   entityCategory: string | null;
 }
@@ -32,7 +28,7 @@ interface ModuleTypeEditModalProps {
 }
 
 export interface ModuleTypeEditModalRef {
-  open: (data?: ModuleTypeData | null) => void;
+  open: (data: ModuleTypeData) => void;
   close: () => void;
 }
 
@@ -47,10 +43,8 @@ const ModuleTypeEditModal = forwardRef<
   const [formData, setFormData] = useState<FormData>({
     nameZh: "",
     descriptionZh: "",
-    temperature: 0.7,
     enableAi: true,
     singleton: false,
-    builtIn: false,
     novelCreationMethodId: null,
     entityCategory: null,
   });
@@ -123,44 +117,20 @@ const ModuleTypeEditModal = forwardRef<
   };
 
   useImperativeHandle(ref, () => ({
-    open: (data: ModuleTypeData | null = null) => {
-      // 判断是编辑模式还是新建模式：有 id 表示编辑已有模块类型
-      const isEdit = data && data.id;
-      setModuleType(isEdit ? data : null);
+    open: (data: ModuleTypeData) => {
+      setModuleType(data);
 
-      // 获取 novelCreationMethodId：编辑模式从现有数据获取，新建模式从传入参数获取
-      let methodId: number | null = null;
-      if (data) {
-        methodId = data.novelCreationMethodId || null;
-      }
-
+      const methodId = data.novelCreationMethodId || null;
       fetchEntityCategories(methodId);
 
-      if (isEdit && data) {
-        // 编辑模式：从现有数据填充表单
-        setFormData({
-          nameZh: data.nameZh || "",
-          descriptionZh: data.descriptionZh || "",
-          temperature: data.temperature !== undefined ? data.temperature : 0.7,
-          enableAi: data.enableAi !== undefined ? data.enableAi : true,
-          singleton: data.singleton || false,
-          builtIn: data.builtIn || false,
-          novelCreationMethodId: methodId,
-          entityCategory: data.entityCategory || null,
-        });
-      } else {
-        // 新建模式：使用默认值，但保留传入的 novelCreationMethodId
-        setFormData({
-          nameZh: "",
-          descriptionZh: "",
-          temperature: 0.7,
-          enableAi: true,
-          singleton: false,
-          builtIn: false,
-          novelCreationMethodId: methodId, // 保留传入的 novelCreationMethodId
-          entityCategory: null,
-        });
-      }
+      setFormData({
+        nameZh: data.nameZh || "",
+        descriptionZh: data.descriptionZh || "",
+        enableAi: data.enableAi !== undefined ? data.enableAi : true,
+        singleton: data.singleton || false,
+        novelCreationMethodId: methodId,
+        entityCategory: data.entityCategory || null,
+      });
       setIsOpen(true);
     },
     close: () => {
@@ -174,12 +144,8 @@ const ModuleTypeEditModal = forwardRef<
     setLoading(true);
 
     try {
-      const url = moduleType
-        ? `/api/module-types/${moduleType.id}`
-        : "/api/module-types";
-
-      const response = await authFetch(url, {
-        method: moduleType ? "PUT" : "POST",
+      const response = await authFetch(`/api/module-types/${moduleType!.id}`, {
+        method: "PUT",
         body: formData,
       });
 
@@ -187,7 +153,7 @@ const ModuleTypeEditModal = forwardRef<
 
       if (result.code === 200) {
         if (showToast) {
-          showToast("success", moduleType ? "更新成功" : "创建成功");
+          showToast("success", "更新成功");
         }
         setIsOpen(false);
         setModuleType(null);
@@ -243,7 +209,7 @@ const ModuleTypeEditModal = forwardRef<
                 d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01"
               />
             </svg>
-            {moduleType ? "编辑模块类型" : "新建模块类型"}
+            编辑模块类型
           </h3>
           <button
             className="admin-modal-close"
@@ -362,27 +328,6 @@ const ModuleTypeEditModal = forwardRef<
                 />
                 单例模式
               </label>
-              <label
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  gap: "8px",
-                  color: "rgba(255,255,255,0.8)",
-                  fontSize: "14px",
-                  cursor: "pointer",
-                }}
-              >
-                <input
-                  type="checkbox"
-                  checked={formData.builtIn}
-                  onChange={(e) =>
-                    setFormData({ ...formData, builtIn: e.target.checked })
-                  }
-                  disabled={loading}
-                  style={{ width: "16px", height: "16px" }}
-                />
-                内置
-              </label>
             </div>
           </div>
 
@@ -407,7 +352,7 @@ const ModuleTypeEditModal = forwardRef<
               className="admin-btn admin-btn-primary"
               disabled={loading}
             >
-              {loading ? "保存中..." : moduleType ? "保存修改" : "立即创建"}
+              {loading ? "保存中..." : "保存修改"}
             </button>
           </div>
         </form>

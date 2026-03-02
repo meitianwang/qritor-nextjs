@@ -24,6 +24,7 @@ export async function GET(
 
     return apiSuccess(serializeModuleType(moduleType));
   } catch (error) {
+    console.error("[module-types]", error);
     return apiError(500, "获取模块类型失败");
   }
 }
@@ -60,8 +61,6 @@ export async function PUT(
       updateData.json_schema_zh = body.jsonSchemaZh;
     if (body.jsonSchemaEn !== undefined)
       updateData.json_schema_en = body.jsonSchemaEn;
-    if (body.temperature !== undefined)
-      updateData.temperature = body.temperature;
     if (body.novelCreationMethodId !== undefined)
       updateData.novel_creation_method_id = body.novelCreationMethodId
         ? BigInt(body.novelCreationMethodId)
@@ -70,7 +69,6 @@ export async function PUT(
       updateData.enable_ai = body.enableAi ? 1 : 0;
     if (body.singleton !== undefined)
       updateData.singleton = body.singleton ? 1 : 0;
-    if (body.builtIn !== undefined) updateData.built_in = body.builtIn ? 1 : 0;
     if (body.entityCategory !== undefined)
       updateData.entity_category = body.entityCategory;
 
@@ -81,6 +79,7 @@ export async function PUT(
 
     return apiSuccess(serializeModuleType(updated));
   } catch (error) {
+    console.error("[module-types]", error);
     return apiError(500, "更新模块类型失败");
   }
 }
@@ -107,6 +106,7 @@ export async function DELETE(
 
     return apiSuccess(null, "删除成功");
   } catch (error) {
+    console.error("[module-types]", error);
     return apiError(500, "删除模块类型失败");
   }
 }
