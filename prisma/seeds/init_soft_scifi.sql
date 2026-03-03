@@ -3,33 +3,30 @@
 -- Usage: mysql -u root -p qritor_dev < init_soft_scifi.sql
 
 -- 1. 创建创作方法
-INSERT INTO novel_creation_method (name, description, novel_type, language, visible_categories, is_preset, user_id, status, created_at)
+INSERT INTO novel_creation_method (name_zh, name_en, description_zh, novel_type_zh, novel_type_en, language, visible_categories, created_at)
 VALUES (
   '软科幻小说',
+  'Soft Sci-Fi Novel',
   '科技不是舞台的主角，人类才是。以近未来或遥远文明为背景，探索技术跃迁如何重塑社会结构、权力关系与人的本质——当生物改造、AI统治或星际殖民成为现实，欲望、自由与身份认同将如何被重新定义。心理学、社会学、政治哲学是这个类型的灵魂，科学细节只是盛放这些问题的容器。',
   '科幻',
+  'Sci-Fi',
   'zh',
   '["setting","character","scene","prop"]',
-  1,
-  NULL,
-  'published',
   NOW()
 )
 ON DUPLICATE KEY UPDATE
-  description = VALUES(description),
-  novel_type = VALUES(novel_type),
-  language = VALUES(language),
-  visible_categories = VALUES(visible_categories),
-  is_preset = VALUES(is_preset),
-  status = VALUES(status);
+  description_zh = VALUES(description_zh),
+  novel_type_zh = VALUES(novel_type_zh),
+  visible_categories = VALUES(visible_categories);
 
 -- 获取创作方法 ID
-SET @method_id = (SELECT id FROM novel_creation_method WHERE name = '软科幻小说' LIMIT 1);
+SET @method_id = (SELECT id FROM novel_creation_method WHERE name_zh = '软科幻小说' LIMIT 1);
 
--- 2. 文明设定（setting, singleton=1, temp=1.0）
-INSERT INTO module_type (name, description, json_schema, temperature, novel_creation_method_id, enable_ai, singleton, built_in, entity_category, created_at)
+-- 2. 文明设定（setting, singleton=1）
+INSERT INTO module_type (name_zh, name_en, description_zh, json_schema_zh, novel_creation_method_id, enable_ai, singleton, entity_category, created_at)
 VALUES (
   '文明设定',
+  'Civilization',
   '世界的物理与历史底座：时代背景、技术核心、地理范围、文明历史与核心危机',
   '{
   "type": "object",
@@ -57,24 +54,23 @@ VALUES (
   },
   "required": ["文明名称", "时代背景", "技术核心"]
 }',
-  1.0,
   @method_id,
-  1, 1, 0,
+  1, 1,
   'setting',
   NOW()
 )
 ON DUPLICATE KEY UPDATE
-  description = VALUES(description),
-  json_schema = VALUES(json_schema),
-  temperature = VALUES(temperature),
+  description_zh = VALUES(description_zh),
+  json_schema_zh = VALUES(json_schema_zh),
   enable_ai = VALUES(enable_ai),
   singleton = VALUES(singleton),
   entity_category = VALUES(entity_category);
 
--- 3. 社会体制（setting, singleton=1, temp=1.0）
-INSERT INTO module_type (name, description, json_schema, temperature, novel_creation_method_id, enable_ai, singleton, built_in, entity_category, created_at)
+-- 3. 社会体制（setting, singleton=1）
+INSERT INTO module_type (name_zh, name_en, description_zh, json_schema_zh, novel_creation_method_id, enable_ai, singleton, entity_category, created_at)
 VALUES (
   '社会体制',
+  'Social System',
   '权力结构与阶级关系：政治形态、经济形态、阶级结构、权力核心与社会核心矛盾',
   '{
   "type": "object",
@@ -102,24 +98,23 @@ VALUES (
   },
   "required": ["体制名称", "政治形态", "阶级结构"]
 }',
-  1.0,
   @method_id,
-  1, 1, 0,
+  1, 1,
   'setting',
   NOW()
 )
 ON DUPLICATE KEY UPDATE
-  description = VALUES(description),
-  json_schema = VALUES(json_schema),
-  temperature = VALUES(temperature),
+  description_zh = VALUES(description_zh),
+  json_schema_zh = VALUES(json_schema_zh),
   enable_ai = VALUES(enable_ai),
   singleton = VALUES(singleton),
   entity_category = VALUES(entity_category);
 
--- 4. 控制与异化（setting, singleton=1, temp=1.0）
-INSERT INTO module_type (name, description, json_schema, temperature, novel_creation_method_id, enable_ai, singleton, built_in, entity_category, created_at)
+-- 4. 控制与异化（setting, singleton=1）
+INSERT INTO module_type (name_zh, name_en, description_zh, json_schema_zh, novel_creation_method_id, enable_ai, singleton, entity_category, created_at)
 VALUES (
   '控制与异化',
+  'Control & Alienation',
   '社会如何塑造、驯化和异化个体：控制手段、异化形式、反抗可能性与制度自洽性',
   '{
   "type": "object",
@@ -144,24 +139,23 @@ VALUES (
   },
   "required": ["控制体系名称", "主要控制手段", "主要异化形式"]
 }',
-  1.0,
   @method_id,
-  1, 1, 0,
+  1, 1,
   'setting',
   NOW()
 )
 ON DUPLICATE KEY UPDATE
-  description = VALUES(description),
-  json_schema = VALUES(json_schema),
-  temperature = VALUES(temperature),
+  description_zh = VALUES(description_zh),
+  json_schema_zh = VALUES(json_schema_zh),
   enable_ai = VALUES(enable_ai),
   singleton = VALUES(singleton),
   entity_category = VALUES(entity_category);
 
--- 5. 故事钩子（setting, singleton=1, temp=1.2）
-INSERT INTO module_type (name, description, json_schema, temperature, novel_creation_method_id, enable_ai, singleton, built_in, entity_category, created_at)
+-- 5. 故事钩子（setting, singleton=1）
+INSERT INTO module_type (name_zh, name_en, description_zh, json_schema_zh, novel_creation_method_id, enable_ai, singleton, entity_category, created_at)
 VALUES (
   '故事钩子',
+  'Story Hook',
   '叙事驱动力：核心矛盾、切入事件、主角社会位置、思想主题与结局基调',
   '{
   "type": "object",
@@ -184,24 +178,23 @@ VALUES (
   },
   "required": ["核心矛盾", "思想主题"]
 }',
-  1.2,
   @method_id,
-  1, 1, 0,
+  1, 1,
   'setting',
   NOW()
 )
 ON DUPLICATE KEY UPDATE
-  description = VALUES(description),
-  json_schema = VALUES(json_schema),
-  temperature = VALUES(temperature),
+  description_zh = VALUES(description_zh),
+  json_schema_zh = VALUES(json_schema_zh),
   enable_ai = VALUES(enable_ai),
   singleton = VALUES(singleton),
   entity_category = VALUES(entity_category);
 
--- 6. 文风设定（setting, singleton=1, temp=NULL）
-INSERT INTO module_type (name, description, json_schema, temperature, novel_creation_method_id, enable_ai, singleton, built_in, entity_category, created_at)
+-- 6. 文风设定（setting, singleton=1）
+INSERT INTO module_type (name_zh, name_en, description_zh, json_schema_zh, novel_creation_method_id, enable_ai, singleton, entity_category, created_at)
 VALUES (
   '文风设定',
+  'Writing Style',
   '叙事风格与表达方式：叙事视角、文风基调、时间尺度、技术细节呈现与意象系统',
   '{
   "type": "object",
@@ -232,24 +225,23 @@ VALUES (
   },
   "required": ["叙事视角", "文风基调"]
 }',
-  NULL,
   @method_id,
-  1, 1, 0,
+  1, 1,
   'setting',
   NOW()
 )
 ON DUPLICATE KEY UPDATE
-  description = VALUES(description),
-  json_schema = VALUES(json_schema),
-  temperature = VALUES(temperature),
+  description_zh = VALUES(description_zh),
+  json_schema_zh = VALUES(json_schema_zh),
   enable_ai = VALUES(enable_ai),
   singleton = VALUES(singleton),
   entity_category = VALUES(entity_category);
 
--- 7. 角色（character, singleton=0, temp=1.0）
-INSERT INTO module_type (name, description, json_schema, temperature, novel_creation_method_id, enable_ai, singleton, built_in, entity_category, created_at)
+-- 7. 角色（character, singleton=0）
+INSERT INTO module_type (name_zh, name_en, description_zh, json_schema_zh, novel_creation_method_id, enable_ai, singleton, entity_category, created_at)
 VALUES (
   '角色',
+  'Character',
   '社会体制下的个体：阶层身份、意识形态立场、异化程度与内心冲突',
   '{
   "type": "object",
@@ -276,24 +268,23 @@ VALUES (
   },
   "required": ["姓名", "意识形态立场", "异化程度"]
 }',
-  1.0,
   @method_id,
-  1, 0, 0,
+  1, 0,
   'character',
   NOW()
 )
 ON DUPLICATE KEY UPDATE
-  description = VALUES(description),
-  json_schema = VALUES(json_schema),
-  temperature = VALUES(temperature),
+  description_zh = VALUES(description_zh),
+  json_schema_zh = VALUES(json_schema_zh),
   enable_ai = VALUES(enable_ai),
   singleton = VALUES(singleton),
   entity_category = VALUES(entity_category);
 
--- 8. 社会场景（scene, singleton=0, temp=1.0）
-INSERT INTO module_type (name, description, json_schema, temperature, novel_creation_method_id, enable_ai, singleton, built_in, entity_category, created_at)
+-- 8. 社会场景（scene, singleton=0）
+INSERT INTO module_type (name_zh, name_en, description_zh, json_schema_zh, novel_creation_method_id, enable_ai, singleton, entity_category, created_at)
 VALUES (
   '社会场景',
+  'Social Scene',
   '社会结构的具象化空间：劳动场所、控制机构、底层社区、精英空间等',
   '{
   "type": "object",
@@ -316,24 +307,23 @@ VALUES (
   },
   "required": ["场景名称", "场景类型"]
 }',
-  1.0,
   @method_id,
-  1, 0, 0,
+  1, 0,
   'scene',
   NOW()
 )
 ON DUPLICATE KEY UPDATE
-  description = VALUES(description),
-  json_schema = VALUES(json_schema),
-  temperature = VALUES(temperature),
+  description_zh = VALUES(description_zh),
+  json_schema_zh = VALUES(json_schema_zh),
   enable_ai = VALUES(enable_ai),
   singleton = VALUES(singleton),
   entity_category = VALUES(entity_category);
 
--- 9. 制度文物（prop, singleton=0, temp=1.0）
-INSERT INTO module_type (name, description, json_schema, temperature, novel_creation_method_id, enable_ai, singleton, built_in, entity_category, created_at)
+-- 9. 制度文物（prop, singleton=0）
+INSERT INTO module_type (name_zh, name_en, description_zh, json_schema_zh, novel_creation_method_id, enable_ai, singleton, entity_category, created_at)
 VALUES (
   '制度文物',
+  'Institutional Artifact',
   '社会隐喻的物质载体：技术产品、制度机构、符号标志、药物或文化产物',
   '{
   "type": "object",
@@ -356,16 +346,14 @@ VALUES (
   },
   "required": ["名称", "物件类型"]
 }',
-  1.0,
   @method_id,
-  1, 0, 0,
+  1, 0,
   'prop',
   NOW()
 )
 ON DUPLICATE KEY UPDATE
-  description = VALUES(description),
-  json_schema = VALUES(json_schema),
-  temperature = VALUES(temperature),
+  description_zh = VALUES(description_zh),
+  json_schema_zh = VALUES(json_schema_zh),
   enable_ai = VALUES(enable_ai),
   singleton = VALUES(singleton),
   entity_category = VALUES(entity_category);
