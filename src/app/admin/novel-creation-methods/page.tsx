@@ -22,8 +22,7 @@ interface NovelCreationMethod {
   nameEn?: string;
   descriptionZh?: string;
   descriptionEn?: string;
-  novelTypeZh?: string;
-  novelTypeEn?: string;
+  novelGenre?: string;
 }
 
 export default function NovelCreationMethodListPage() {

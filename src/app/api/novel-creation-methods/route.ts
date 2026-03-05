@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { getCurrentAdminUser } from "@/lib/middleware/auth-middleware";
 import { apiSuccess, apiError, apiValidationError } from "@/lib/api-response";
 import { serializeMethod } from "@/lib/serializers/novel-creation-method";
+import { isValidGenreKey, getGenreLabel } from "@/lib/constants/novel-genres";
 
 export async function GET() {
   try {
@@ -28,14 +29,20 @@ export async function POST(request: NextRequest) {
       return apiValidationError("中文名称不能为空");
     }
 
+    const genre = body.novelGenre || null;
+    if (genre && !isValidGenreKey(genre)) {
+      return apiValidationError("无效的小说类型");
+    }
+
     const newMethod = await prisma.novel_creation_method.create({
       data: {
         name_zh: body.nameZh,
         name_en: body.nameEn || null,
         description_zh: body.descriptionZh || null,
         description_en: body.descriptionEn || null,
-        novel_type_zh: body.novelTypeZh || null,
-        novel_type_en: body.novelTypeEn || null,
+        novel_genre: genre,
+        novel_type_zh: genre ? getGenreLabel(genre, "zh") : null,
+        novel_type_en: genre ? getGenreLabel(genre, "en") : null,
         visible_categories: body.visibleCategories
           ? JSON.stringify(body.visibleCategories)
           : null,

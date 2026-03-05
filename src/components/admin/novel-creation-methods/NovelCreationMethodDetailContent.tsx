@@ -7,6 +7,7 @@ import Sidebar from "./Sidebar";
 import { authFetch } from "@/lib/auth-utils";
 import { useToast } from "@/hooks/useToast";
 import ToastNotification from "@/components/ToastNotification";
+import { getGenreLabel } from "@/lib/constants/novel-genres";
 
 interface Method {
   id: number;
@@ -14,8 +15,7 @@ interface Method {
   nameEn?: string;
   descriptionZh?: string;
   descriptionEn?: string;
-  novelTypeZh?: string;
-  novelTypeEn?: string;
+  novelGenre?: string;
   visibleCategories: string[] | null;
   plotConfig: string | Record<string, any> | null;
   [key: string]: any;
@@ -382,8 +382,14 @@ function MethodOverview({
         <div className="bg-white/[0.03] border border-white/[0.06] rounded-xl p-5">
           <h3 className="text-sm font-semibold text-white/70 mb-4">方法信息</h3>
           <div className="grid grid-cols-2 gap-x-8 gap-y-3">
-            <InfoRow label="类型（中文）" value={method.novelTypeZh || "-"} />
-            <InfoRow label="类型（英文）" value={method.novelTypeEn || "-"} />
+            <InfoRow
+              label="小说类型"
+              value={
+                method.novelGenre
+                  ? `${getGenreLabel(method.novelGenre, "zh")} / ${getGenreLabel(method.novelGenre, "en")}`
+                  : "-"
+              }
+            />
             <InfoRow label="创建时间" value={formatDate(method.createdAt)} />
             <InfoRow label="更新时间" value={formatDate(method.updatedAt)} />
           </div>

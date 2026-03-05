@@ -283,6 +283,7 @@ model novel_creation_method {
   name_en            String?   @db.VarChar(200)
   description_zh     String?   @db.Text
   description_en     String?   @db.Text
+  novel_genre        String?   @db.VarChar(50)
   novel_type_zh      String?   @db.VarChar(50)
   novel_type_en      String?   @db.VarChar(50)
   language           String?   @db.VarChar(20)

@@ -1,9 +1,15 @@
 import { NextRequest } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getCurrentAdminUser } from "@/lib/middleware/auth-middleware";
-import { apiSuccess, apiError, apiNotFound } from "@/lib/api-response";
+import {
+  apiSuccess,
+  apiError,
+  apiNotFound,
+  apiValidationError,
+} from "@/lib/api-response";
 import { serializeMethod } from "@/lib/serializers/novel-creation-method";
 import { parseBigIntId, validateSlug } from "@/lib/serializers/validate";
+import { isValidGenreKey, getGenreLabel } from "@/lib/constants/novel-genres";
 
 export async function GET(
   _request: NextRequest,
@@ -64,10 +70,15 @@ export async function PUT(
       updateData.description_zh = body.descriptionZh;
     if (body.descriptionEn !== undefined)
       updateData.description_en = body.descriptionEn;
-    if (body.novelTypeZh !== undefined)
-      updateData.novel_type_zh = body.novelTypeZh;
-    if (body.novelTypeEn !== undefined)
-      updateData.novel_type_en = body.novelTypeEn;
+    if (body.novelGenre !== undefined) {
+      const genre = body.novelGenre || null;
+      if (genre && !isValidGenreKey(genre)) {
+        return apiValidationError("无效的小说类型");
+      }
+      updateData.novel_genre = genre;
+      updateData.novel_type_zh = genre ? getGenreLabel(genre, "zh") : null;
+      updateData.novel_type_en = genre ? getGenreLabel(genre, "en") : null;
+    }
     if (body.visibleCategories !== undefined)
       updateData.visible_categories = body.visibleCategories
         ? JSON.stringify(body.visibleCategories)

@@ -5,6 +5,7 @@ export function serializeMethod(method: {
   name_en: string | null;
   description_zh: string | null;
   description_en: string | null;
+  novel_genre: string | null;
   novel_type_zh: string | null;
   novel_type_en: string | null;
   visible_categories: string | null;
@@ -27,6 +28,7 @@ export function serializeMethod(method: {
     nameEn: method.name_en,
     descriptionZh: method.description_zh,
     descriptionEn: method.description_en,
+    novelGenre: method.novel_genre,
     novelTypeZh: method.novel_type_zh,
     novelTypeEn: method.novel_type_en,
     visibleCategories: parsedCategories,

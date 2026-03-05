@@ -2,13 +2,13 @@
 
 import { useState, useEffect } from "react";
 import { authFetch } from "@/lib/auth-utils";
+import { NOVEL_GENRES } from "@/lib/constants/novel-genres";
 
 interface NovelCreationMethod {
   id: string;
   nameZh?: string;
   descriptionZh?: string;
-  novelTypeZh?: string;
-  novelTypeEn?: string;
+  novelGenre?: string;
 }
 
 interface NovelCreationMethodEditModalProps {
@@ -29,8 +29,7 @@ export default function NovelCreationMethodEditModal({
   const [formData, setFormData] = useState({
     nameZh: "",
     descriptionZh: "",
-    novelTypeZh: "",
-    novelTypeEn: "",
+    novelGenre: "",
   });
   const [loading, setLoading] = useState(false);
 
@@ -40,15 +39,13 @@ export default function NovelCreationMethodEditModal({
         setFormData({
           nameZh: method.nameZh || "",
           descriptionZh: method.descriptionZh || "",
-          novelTypeZh: method.novelTypeZh || "",
-          novelTypeEn: method.novelTypeEn || "",
+          novelGenre: method.novelGenre || "",
         });
       } else {
         setFormData({
           nameZh: "",
           descriptionZh: "",
-          novelTypeZh: "",
-          novelTypeEn: "",
+          novelGenre: "",
         });
       }
     }
@@ -63,8 +60,7 @@ export default function NovelCreationMethodEditModal({
       const methodData = {
         nameZh: formData.nameZh,
         descriptionZh: formData.descriptionZh,
-        novelTypeZh: formData.novelTypeZh || null,
-        novelTypeEn: formData.novelTypeEn || null,
+        novelGenre: formData.novelGenre || null,
       };
 
       let response;
@@ -157,31 +153,22 @@ export default function NovelCreationMethodEditModal({
           </div>
 
           <div className="admin-form-group">
-            <label className="admin-form-label">小说类型（中文）</label>
-            <input
-              type="text"
-              value={formData.novelTypeZh}
+            <label className="admin-form-label">小说类型</label>
+            <select
+              value={formData.novelGenre}
               onChange={(e) =>
-                setFormData({ ...formData, novelTypeZh: e.target.value })
+                setFormData({ ...formData, novelGenre: e.target.value })
               }
               className="admin-form-input"
-              placeholder="例如: 悬疑灵异、东方玄幻"
               disabled={loading}
-            />
-          </div>
-
-          <div className="admin-form-group">
-            <label className="admin-form-label">小说类型（英文）</label>
-            <input
-              type="text"
-              value={formData.novelTypeEn}
-              onChange={(e) =>
-                setFormData({ ...formData, novelTypeEn: e.target.value })
-              }
-              className="admin-form-input"
-              placeholder="e.g. Supernatural Mystery, Eastern Fantasy"
-              disabled={loading}
-            />
+            >
+              <option value="">-- 请选择类型 --</option>
+              {NOVEL_GENRES.map((genre) => (
+                <option key={genre.key} value={genre.key}>
+                  {genre.zh} / {genre.en}
+                </option>
+              ))}
+            </select>
           </div>
 
           <div
