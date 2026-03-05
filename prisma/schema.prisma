@@ -284,9 +284,6 @@ model novel_creation_method {
   description_zh     String?   @db.Text
   description_en     String?   @db.Text
   novel_genre        String?   @db.VarChar(50)
-  novel_type_zh      String?   @db.VarChar(50)
-  novel_type_en      String?   @db.VarChar(50)
-  language           String?   @db.VarChar(20)
   visible_categories String?   @db.Text
   user_id            BigInt?
   created_at         DateTime  @db.DateTime(0)

@@ -6,8 +6,6 @@ export function serializeMethod(method: {
   description_zh: string | null;
   description_en: string | null;
   novel_genre: string | null;
-  novel_type_zh: string | null;
-  novel_type_en: string | null;
   visible_categories: string | null;
   created_at: Date;
   updated_at: Date | null;
@@ -29,8 +27,6 @@ export function serializeMethod(method: {
     descriptionZh: method.description_zh,
     descriptionEn: method.description_en,
     novelGenre: method.novel_genre,
-    novelTypeZh: method.novel_type_zh,
-    novelTypeEn: method.novel_type_en,
     visibleCategories: parsedCategories,
     createdAt: method.created_at.toISOString(),
     updatedAt: method.updated_at?.toISOString() || null,

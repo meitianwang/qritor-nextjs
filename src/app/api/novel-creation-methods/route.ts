@@ -3,7 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { getCurrentAdminUser } from "@/lib/middleware/auth-middleware";
 import { apiSuccess, apiError, apiValidationError } from "@/lib/api-response";
 import { serializeMethod } from "@/lib/serializers/novel-creation-method";
-import { isValidGenreKey, getGenreLabel } from "@/lib/constants/novel-genres";
+import { isValidGenreKey } from "@/lib/constants/novel-genres";
 
 export async function GET() {
   try {
@@ -41,8 +41,6 @@ export async function POST(request: NextRequest) {
         description_zh: body.descriptionZh || null,
         description_en: body.descriptionEn || null,
         novel_genre: genre,
-        novel_type_zh: genre ? getGenreLabel(genre, "zh") : null,
-        novel_type_en: genre ? getGenreLabel(genre, "en") : null,
         visible_categories: body.visibleCategories
           ? JSON.stringify(body.visibleCategories)
           : null,
