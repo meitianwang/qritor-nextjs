@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, useRef } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
 import { docsContent } from "@/data/docsData";
@@ -140,10 +140,22 @@ export default function DocsContentPage() {
     [content],
   );
 
+  // Use a ref to temporarily disable scroll updates during click jumps
+  const isClickScrolling = useRef(false);
+
   useEffect(() => {
     if (!content || headings.length === 0) return;
 
     const handleScroll = () => {
+      if (isClickScrolling.current) return;
+
+      // Check if we reached the bottom of the page
+      const isBottom = window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - 50;
+      if (isBottom) {
+        setActiveId(headings[headings.length - 1].id);
+        return;
+      }
+
       const scrollPosition = window.scrollY + 120; // Offset for fixed header
 
       let current = "";
@@ -158,6 +170,7 @@ export default function DocsContentPage() {
           break;
         }
       }
+
       if (current) setActiveId(current);
       else if (headings.length > 0) setActiveId(headings[0].id);
     };
@@ -266,12 +279,19 @@ export default function DocsContentPage() {
                   onClick={(e) => {
                     e.preventDefault();
                     setActiveId(heading.id);
+                    isClickScrolling.current = true;
+
                     const el = document.getElementById(heading.id);
                     if (el) {
-                      const y =
-                        el.getBoundingClientRect().top + window.scrollY - 80;
-                      window.scrollTo({ top: y, behavior: "smooth" });
+                      el.scrollIntoView({ behavior: "smooth" });
                       window.history.pushState(null, "", `#${heading.id}`);
+
+                      // Re-enable scroll listener after animation completes
+                      setTimeout(() => {
+                        isClickScrolling.current = false;
+                      }, 800);
+                    } else {
+                      isClickScrolling.current = false;
                     }
                   }}
                 >
