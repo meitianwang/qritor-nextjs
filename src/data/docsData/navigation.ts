@@ -8,6 +8,7 @@ export const docsNavigation: Record<string, DocsNavigation> = {
       items: [
         { id: "overview", title: "产品概述", path: "/docs/zh/" },
         { id: "quick-start", title: "快速开始", path: "/docs/zh/quick-start" },
+        { id: "best-practices", title: "最佳实践", path: "/docs/zh/best-practices" },
       ],
     },
     userGuide: {
@@ -155,6 +156,11 @@ export const docsNavigation: Record<string, DocsNavigation> = {
           id: "quick-start",
           title: "Getting Started",
           path: "/docs/en/quick-start",
+        },
+        {
+          id: "best-practices",
+          title: "Best Practices",
+          path: "/docs/en/best-practices",
         },
       ],
     },
