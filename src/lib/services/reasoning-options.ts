@@ -11,6 +11,8 @@ export interface ModelRequestPolicy {
   allowTools: boolean;
   /** 服务端决定的温度，不依赖桌面端传入 */
   temperature: number;
+  topP?: number;
+  topK?: number;
 }
 
 /**
@@ -58,9 +60,28 @@ function createProviderOptions(
 function getTemperature(provider: string): number {
   switch (provider) {
     case "moonshotai":
+    case "google":
       return 1.0;
     default:
       return 0.7;
+  }
+}
+
+function getTopP(provider: string): number | undefined {
+  switch (provider) {
+    case "google":
+      return 0.95;
+    default:
+      return undefined;
+  }
+}
+
+function getTopK(provider: string): number | undefined {
+  switch (provider) {
+    case "google":
+      return 64;
+    default:
+      return undefined;
   }
 }
 
@@ -76,13 +97,12 @@ export function resolveModelRequestPolicy(
     maxTokens: providerOptions ? 16000 : undefined,
     allowTools: true,
     temperature: getTemperature(normalizedProvider),
+    topP: getTopP(normalizedProvider),
+    topK: getTopK(normalizedProvider),
   };
 }
 
-export function shouldSendTools(
-  modelName: string,
-  provider: string,
-): boolean {
+export function shouldSendTools(modelName: string, provider: string): boolean {
   return resolveModelRequestPolicy(modelName, provider).allowTools;
 }
 

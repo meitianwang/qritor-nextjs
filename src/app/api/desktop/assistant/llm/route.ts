@@ -127,6 +127,8 @@ export async function POST(request: NextRequest) {
         rawTools: body.tools,
         temperature: modelPolicy.temperature,
         maxTokens: modelPolicy.maxTokens,
+        topP: modelPolicy.topP,
+        topK: modelPolicy.topK,
         userId: user.id,
         configId,
       });

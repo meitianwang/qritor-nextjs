@@ -314,6 +314,8 @@ export interface StreamGoogleOptions {
   tools?: FunctionDeclaration[];
   temperature?: number;
   maxTokens?: number;
+  topP?: number;
+  topK?: number;
   thinkingConfig?: GoogleThinkingConfig;
 }
 
@@ -327,6 +329,8 @@ export async function* streamGoogleContent(
       : {}),
     ...(opts.temperature != null ? { temperature: opts.temperature } : {}),
     ...(opts.maxTokens ? { maxOutputTokens: opts.maxTokens } : {}),
+    ...(opts.topP != null ? { topP: opts.topP } : {}),
+    ...(opts.topK != null ? { topK: opts.topK } : {}),
     ...(opts.thinkingConfig ? { thinkingConfig: opts.thinkingConfig } : {}),
   };
 
