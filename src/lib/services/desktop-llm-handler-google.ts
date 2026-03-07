@@ -62,6 +62,7 @@ export async function handleGoogleStream(
       let reasoningPartId = "";
       let textPartId = "";
       let hasError = false;
+      let lastThoughtSignature: string | undefined;
 
       writer.write({ type: "start" });
       writer.write({ type: "start-step" });
@@ -80,23 +81,20 @@ export async function handleGoogleStream(
         })) {
           switch (event.type) {
             case "reasoning-delta": {
+              if (event.thoughtSignature) {
+                lastThoughtSignature = event.thoughtSignature;
+              }
               if (!reasoningPartId) {
                 reasoningPartId = generateId();
                 writer.write({
                   type: "reasoning-start",
                   id: reasoningPartId,
-                  providerMetadata: event.thoughtSignature
-                    ? { google: { thoughtSignature: event.thoughtSignature } }
-                    : undefined,
                 });
               }
               writer.write({
                 type: "reasoning-delta",
                 id: reasoningPartId,
                 delta: event.text,
-                providerMetadata: event.thoughtSignature
-                  ? { google: { thoughtSignature: event.thoughtSignature } }
-                  : undefined,
               });
               break;
             }
@@ -104,7 +102,13 @@ export async function handleGoogleStream(
             case "text-delta": {
               // 从 reasoning 过渡到 text 时，关闭 reasoning part
               if (reasoningPartId) {
-                writer.write({ type: "reasoning-end", id: reasoningPartId });
+                writer.write({
+                  type: "reasoning-end",
+                  id: reasoningPartId,
+                  providerMetadata: lastThoughtSignature
+                    ? { google: { thoughtSignature: lastThoughtSignature } }
+                    : undefined,
+                });
                 reasoningPartId = "";
               }
               if (!textPartId) {
@@ -126,7 +130,13 @@ export async function handleGoogleStream(
                 textPartId = "";
               }
               if (reasoningPartId) {
-                writer.write({ type: "reasoning-end", id: reasoningPartId });
+                writer.write({
+                  type: "reasoning-end",
+                  id: reasoningPartId,
+                  providerMetadata: lastThoughtSignature
+                    ? { google: { thoughtSignature: lastThoughtSignature } }
+                    : undefined,
+                });
                 reasoningPartId = "";
               }
               writer.write({
@@ -148,7 +158,13 @@ export async function handleGoogleStream(
                 textPartId = "";
               }
               if (reasoningPartId) {
-                writer.write({ type: "reasoning-end", id: reasoningPartId });
+                writer.write({
+                  type: "reasoning-end",
+                  id: reasoningPartId,
+                  providerMetadata: lastThoughtSignature
+                    ? { google: { thoughtSignature: lastThoughtSignature } }
+                    : undefined,
+                });
                 reasoningPartId = "";
               }
 
