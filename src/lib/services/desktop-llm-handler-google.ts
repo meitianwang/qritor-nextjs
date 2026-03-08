@@ -22,7 +22,7 @@ export interface HandleGoogleStreamParams {
     string,
     { description?: string; inputSchema?: Record<string, unknown> }
   >;
-  temperature: number;
+  temperature: number | undefined;
   maxTokens?: number;
   topP?: number;
   topK?: number;

@@ -2,7 +2,10 @@ import { NextRequest, NextResponse } from "next/server";
 import { jsonSchema } from "ai";
 import { getCurrentUser } from "@/lib/middleware/auth-middleware";
 import { getConfigById } from "@/lib/services/ai-service";
-import { resolveModelRequestPolicy } from "@/lib/services/reasoning-options";
+import {
+  resolveModelRequestPolicy,
+  calibrateTemperatureForProvider,
+} from "@/lib/services/reasoning-options";
 import {
   calculateCredits,
   estimateMessagesTokens,
@@ -112,19 +115,11 @@ export async function POST(request: NextRequest) {
     // 透传给 AI Gateway，积分在 onFinish 回调中扣减
     const systemPrompt: string | undefined = body.systemPrompt || body.system;
 
-    // 采样参数由桌面端按场景传入，服务端校验范围后透传
-    const temperature: number =
-      typeof body.temperature === "number"
-        ? Math.max(0, Math.min(2, body.temperature))
-        : 0.7;
-    const topP: number | undefined =
-      typeof body.topP === "number"
-        ? Math.max(0, Math.min(1, body.topP))
-        : undefined;
-    const topK: number | undefined =
-      typeof body.topK === "number" && body.topK > 0
-        ? Math.floor(body.topK)
-        : undefined;
+    // 采样参数：按模型名称设置固定值
+    const calibrated = calibrateTemperatureForProvider(config.model_name);
+    const temperature: number | undefined = calibrated.temperature;
+    const topP: number | undefined = calibrated.topP;
+    const topK: number | undefined = calibrated.topK;
 
     // 校验 tool-call / tool-result 配对，移除孤立项（所有平台通用）
     sanitizeToolMessages(messages);
@@ -182,7 +177,6 @@ export async function POST(request: NextRequest) {
       tools: toolsForModel,
       providerOptions: modelPolicy.providerOptions,
       maxTokens: modelPolicy.maxTokens,
-      allowTemperature: true,
       temperature,
       userId: user.id,
       configId,

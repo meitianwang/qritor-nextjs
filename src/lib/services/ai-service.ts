@@ -6,7 +6,10 @@ import {
   estimateMessagesTokens,
   getConfigParams,
 } from "./token-calculator";
-import { resolveModelRequestPolicy } from "./reasoning-options";
+import {
+  resolveModelRequestPolicy,
+  calibrateTemperatureForProvider,
+} from "./reasoning-options";
 import { AI_ERROR_CODE, type AIErrorCode } from "./ai-error-codes";
 import { classifyAIError } from "./ai-error-classifier";
 
@@ -195,7 +198,6 @@ class GatewayAIService {
     prompt: string,
     systemPrompt?: string,
     configId?: number,
-    sceneParams?: { temperature?: number; topP?: number; topK?: number },
   ): AsyncGenerator<StreamEvent> {
     const config = await getConfigById(configId);
     if (!config) {
@@ -213,6 +215,12 @@ class GatewayAIService {
       config.model_name,
       config.provider,
     );
+
+    // 按模型名称设置固定采样参数
+    const calibrated = calibrateTemperatureForProvider(config.model_name);
+    const calTemperature = calibrated.temperature;
+    const calTopP = calibrated.topP;
+    const calTopK = calibrated.topK;
 
     const messages: Array<{ role: "system" | "user"; content: string }> = [];
     if (systemPrompt) {
@@ -232,9 +240,9 @@ class GatewayAIService {
           systemInstruction: systemPrompt,
           thinkingConfig: { includeThoughts: true, thinkingLevel: "HIGH" },
           maxTokens: modelPolicy.maxTokens,
-          temperature: sceneParams?.temperature,
-          topP: sceneParams?.topP,
-          topK: sceneParams?.topK,
+          temperature: calTemperature,
+          topP: calTopP,
+          topK: calTopK,
         })) {
           switch (event.type) {
             case "text-delta":
@@ -284,7 +292,7 @@ class GatewayAIService {
           input,
           instructions: systemPrompt,
           maxTokens: modelPolicy.maxTokens,
-          temperature: sceneParams?.temperature,
+          temperature: calTemperature,
           reasoning: { effort: "high", summary: "detailed" },
         })) {
           switch (event.type) {
@@ -331,7 +339,7 @@ class GatewayAIService {
             ? [{ type: "text", text: systemPrompt }]
             : [],
           maxTokens: modelPolicy.maxTokens ?? 16000,
-          temperature: sceneParams?.temperature,
+          temperature: calTemperature,
           thinking: {
             type: "enabled",
             budget_tokens: Math.max(1024, (modelPolicy.maxTokens ?? 16000) - 1),
@@ -380,9 +388,7 @@ class GatewayAIService {
           ? { providerOptions: modelPolicy.providerOptions }
           : {}),
         ...(modelPolicy.maxTokens ? { maxTokens: modelPolicy.maxTokens } : {}),
-        ...(sceneParams?.temperature != null
-          ? { temperature: sceneParams.temperature }
-          : {}),
+        ...(calTemperature != null ? { temperature: calTemperature } : {}),
       });
 
       for await (const part of result.fullStream) {
@@ -434,7 +440,6 @@ class AIGenerateService {
     llmConfigId?: number,
     modelTier?: string,
     userId?: number,
-    sceneParams?: { temperature?: number; topP?: number; topK?: number },
   ): AsyncGenerator<GenerateEvent> {
     console.log(
       `桌面端提示词直传生成: 模块=${moduleTitle}, model_tier=${modelTier}`,
@@ -521,7 +526,6 @@ class AIGenerateService {
       prompt,
       undefined,
       actualConfigId,
-      sceneParams,
     )) {
       if (item.type === "chunk") {
         fullContent += item.content;

@@ -24,18 +24,6 @@ export async function POST(request: NextRequest) {
     const moduleTitle = body.module_title || body.moduleTitle || "未命名模块";
     const configId = body.llm_config_id ?? body.llmConfigId;
     const modelTier = body.model_tier || body.modelTier;
-    const temperature: number | undefined =
-      typeof body.temperature === "number"
-        ? Math.max(0, Math.min(2, body.temperature))
-        : undefined;
-    const topP: number | undefined =
-      typeof body.topP === "number"
-        ? Math.max(0, Math.min(1, body.topP))
-        : undefined;
-    const topK: number | undefined =
-      typeof body.topK === "number" && body.topK > 0
-        ? Math.floor(body.topK)
-        : undefined;
 
     if (!prompt) {
       return apiError(400, "缺少 prompt");
@@ -50,7 +38,6 @@ export async function POST(request: NextRequest) {
             configId,
             modelTier,
             Number(user.id),
-            { temperature, topP, topK },
           )) {
             controller.enqueue(sseEvent(event.event, event.data));
           }
