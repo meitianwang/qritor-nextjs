@@ -1,8 +1,8 @@
 import type { DocsContentEntry } from "../../types";
 
 export const zhModuleEdit: DocsContentEntry = {
-    title: "模块编辑",
-    body: `
+  title: "模块编辑",
+  body: `
 ## 概述
 
 在 Qritor 中，**非章节模块**（角色、场景、组织、道具、设定等）通过**表单界面**进行编辑。每种模块类型都有由创作方法预定义的字段结构，系统会根据 JSON Schema 自动生成对应的编辑表单。
@@ -40,13 +40,13 @@ export const zhModuleEdit: DocsContentEntry = {
 如果模块类型启用了 AI 生成，您可以：
 1. 在 AI 助手中使用 **Agent 模式**。
 2. 让 AI 根据上下文自动填充模块字段。
-3. 也可以使用编辑器工具栏的"提取实体"功能，从已写好的章节中自动提取信息到模块中。
+3. 也可以使用 AI 助手工具栏的"提取实体"功能，从已写好的章节中自动提取信息到模块中。
         `,
-  };
+};
 
 export const enModuleEdit: DocsContentEntry = {
-    title: "Module Editing",
-    body: `
+  title: "Module Editing",
+  body: `
 ## Overview
 
 In Qritor, **non-chapter modules** (characters, scenes, organizations, props, settings, etc.) are edited through a **form interface**. Each module type has a field structure predefined by the creation method, and the system automatically generates the corresponding edit form based on JSON Schema.
@@ -84,6 +84,6 @@ View the relationships between this entity and others.
 If AI generation is enabled for the module type:
 1. Use **Agent mode** in the AI Assistant.
 2. Let AI automatically fill module fields based on context.
-3. You can also use the "Extract Entities" tool in the editor toolbar to auto-extract information from written chapters into modules.
+3. You can also use the "Extract Entities" button in the AI assistant toolbar to auto-extract information from written chapters into modules.
         `,
-  };
+};

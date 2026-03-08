@@ -1,10 +1,10 @@
 import type { DocsContentEntry } from "../../types";
 
 export const zhRelationGraph: DocsContentEntry = {
-    title: "关系图谱",
-    description:
-      "以可视化网络图展示作品中所有实体的关系网络，支持图谱视图、列表视图和时间轴模式。",
-    body: `
+  title: "关系图谱",
+  description:
+    "以可视化网络图展示作品中所有实体的关系网络，支持图谱视图、列表视图和时间轴模式。",
+  body: `
 ## 什么是关系图谱
 
 写长篇小说时，角色之间的师徒、敌对、恋人关系，组织之间的隶属和同盟关系，往往错综复杂。当人物和势力越来越多，光靠记忆很难理清"谁跟谁是什么关系"。
@@ -93,7 +93,7 @@ export const zhRelationGraph: DocsContentEntry = {
 
 ### AI 自动提取
 
-这是最高效的方式。在章节编辑器工具栏中，点击 **「提取实体关系」** 按钮：
+这是最高效的方式。选中章节后，在右侧 AI 助手工具栏中点击 **「提取实体关系」** 按钮：
 
 1. AI 分析当前章节正文，自动识别实体之间的关系
 2. 提取结果在 AI 助手中展示，每条关系显示两端实体、关系类型和描述
@@ -121,13 +121,13 @@ AI 会自动调用对应的创建、更新或删除操作。
 - **搭配动态信息使用**：关系图谱与 [动态信息](/docs/zh/user-guide/dynamic-info) 配合，完整追踪实体的关系变化和状态变迁
 - **AI 创作参考**：AI 在续写时会参考关系图谱，确保不会写出"已是敌人的角色还在亲密合作"这类矛盾
         `,
-  };
+};
 
 export const enRelationGraph: DocsContentEntry = {
-    title: "Relation Graph",
-    description:
-      "Visualize all entity relationships in your work as an interactive network graph, with graph view, list view, and timeline mode.",
-    body: `
+  title: "Relation Graph",
+  description:
+    "Visualize all entity relationships in your work as an interactive network graph, with graph view, list view, and timeline mode.",
+  body: `
 ## What Is the Relation Graph
 
 When writing long-form fiction, the relationships between characters — mentorships, rivalries, romances — along with alliances and hierarchies between organizations, can become incredibly complex. As the cast and factions grow, it becomes impossible to keep track of "who is related to whom and how" by memory alone.
@@ -216,7 +216,7 @@ The system provides several preset relationship types to choose from: Stranger, 
 
 ### AI Auto-Extraction
 
-This is the most efficient method. In the chapter editor toolbar, click the **"Extract Relations"** button:
+This is the most efficient method. After selecting a chapter, click the **"Extract Relations"** button in the AI assistant toolbar on the right:
 
 1. AI analyzes the current chapter text and automatically identifies relationships between entities
 2. Extracted results are displayed in the AI assistant, showing both entities, relationship type, and description for each
@@ -244,4 +244,4 @@ In the module editing interface, switch to the **"Relations"** tab to manually a
 - **Use with Dynamic Info**: The Relation Graph works together with [Dynamic Info](/docs/en/user-guide/dynamic-info) to fully track relationship changes and state transitions
 - **AI Writing Reference**: AI references the Relation Graph when continuing your story, ensuring it won't write contradictions like "characters who are enemies suddenly cooperating closely"
         `,
-  };
+};

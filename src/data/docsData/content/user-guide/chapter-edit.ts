@@ -1,8 +1,8 @@
 import type { DocsContentEntry } from "../../types";
 
 export const zhChapterEdit: DocsContentEntry = {
-    title: "章节编辑",
-    body: `
+  title: "章节编辑",
+  body: `
 ## 基本操作
 选中一个章节模块后，切换到 **"Editor"** 视图即可开始写作。
 
@@ -38,13 +38,13 @@ export const zhChapterEdit: DocsContentEntry = {
 
 ## AI 辅助
 - **选中润色**：选中文本后，AI 可帮您优化措辞。
-- **更多工具**：详见 [编辑器工具栏](/docs/zh/user-guide/editor-toolbar)。
+- **更多工具**：选中章节后，AI 助手工具栏会显示续写、提取实体、质量评估等功能按钮，详见 [AI 助手](/docs/zh/user-guide/ai-assistant)。
         `,
-  };
+};
 
 export const enChapterEdit: DocsContentEntry = {
-    title: "Chapter Editing",
-    body: `
+  title: "Chapter Editing",
+  body: `
 ## Basic Operations
 Select a chapter module, then switch to the **"Editor"** view to start writing.
 
@@ -80,6 +80,6 @@ When AI makes targeted edits to existing content, the editor enters **Modify Mod
 
 ## AI Assistance
 - **Select & Polish**: Select text to have AI optimize your wording.
-- **More Tools**: See [Editor Toolbar](/docs/en/user-guide/editor-toolbar) for details.
+- **More Tools**: When a chapter is selected, the AI assistant toolbar displays buttons for continuation, entity extraction, quality assessment, and more. See [AI Assistant](/docs/en/user-guide/ai-assistant) for details.
         `,
-  };
+};

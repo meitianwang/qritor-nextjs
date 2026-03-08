@@ -8,7 +8,11 @@ export const docsNavigation: Record<string, DocsNavigation> = {
       items: [
         { id: "overview", title: "产品概述", path: "/docs/zh/" },
         { id: "quick-start", title: "快速开始", path: "/docs/zh/quick-start" },
-        { id: "best-practices", title: "最佳实践", path: "/docs/zh/best-practices" },
+        {
+          id: "best-practices",
+          title: "最佳实践",
+          path: "/docs/zh/best-practices",
+        },
       ],
     },
     userGuide: {
@@ -51,7 +55,7 @@ export const docsNavigation: Record<string, DocsNavigation> = {
         },
         {
           id: "editor-toolbar",
-          title: "编辑器工具栏",
+          title: "编辑器基础工具",
           path: "/docs/zh/user-guide/editor-toolbar",
         },
         {
@@ -204,7 +208,7 @@ export const docsNavigation: Record<string, DocsNavigation> = {
         },
         {
           id: "editor-toolbar",
-          title: "Editor Toolbar",
+          title: "Editor Basics",
           path: "/docs/en/user-guide/editor-toolbar",
         },
         {

@@ -1,10 +1,10 @@
 import type { DocsContentEntry } from "../../types";
 
 export const zhPlotManagement: DocsContentEntry = {
-    title: "剧情管理",
-    description:
-      "用故事线、剧情事件和伏笔系统从宏观层面把控故事的节奏和结构，支持手动管理和 AI 自动提取。",
-    body: `
+  title: "剧情管理",
+  description:
+    "用故事线、剧情事件和伏笔系统从宏观层面把控故事的节奏和结构，支持手动管理和 AI 自动提取。",
+  body: `
 ## 概述
 
 写长篇小说最怕的就是"写着写着就乱了"——剧情线索纠缠不清、伏笔埋了就忘、节奏忽快忽慢。Qritor 的剧情管理工具帮您从宏观层面掌控全局，把复杂的故事拆解为清晰的结构。
@@ -23,7 +23,7 @@ export const zhPlotManagement: DocsContentEntry = {
 
 面板支持按章节筛选——在顶部选择具体章节后，面板只显示与该章节关联的事件，方便您聚焦当前正在编辑的部分。
 
-此外，在章节编辑器工具栏中有一个 **「剧情整理」** 按钮，这个按钮的作用是让 AI 分析当前章节并自动提取剧情事件（详见下文"AI 自动提取事件"）。
+此外，选中章节时右侧 AI 助手工具栏中会出现 **「剧情整理」** 按钮，用于让 AI 分析当前章节并自动提取剧情事件（详见下文"AI 自动提取事件"）。
 
 ## 故事线
 
@@ -71,7 +71,7 @@ export const zhPlotManagement: DocsContentEntry = {
 
 这是更高效的方式——让 AI 帮您从已写好的章节中自动识别关键剧情节点：
 
-1. 在章节编辑器工具栏中，点击 **「剧情整理」** 按钮
+1. 选中章节后，在右侧 AI 助手工具栏中点击 **「剧情整理」** 按钮
 2. AI 分析当前章节正文，自动提取关键情节点、伏笔、冲突和转折
 3. 提取结果在 AI 助手中展示，每个事件显示名称、类型、所属故事线
 4. 您可以勾选要保留的事件，点击 **「应用事件」** 批量添加到剧情管理中
@@ -136,13 +136,13 @@ export const zhPlotManagement: DocsContentEntry = {
 
 这对于长篇连载尤为重要——避免"挖坑不填"是读者最在意的事情之一。
         `,
-  };
+};
 
 export const enPlotManagement: DocsContentEntry = {
-    title: "Plot Management",
-    description:
-      "Use storylines, plot events, and the foreshadowing system to control your story's rhythm and structure from a macro level, with both manual management and AI auto-extraction.",
-    body: `
+  title: "Plot Management",
+  description:
+    "Use storylines, plot events, and the foreshadowing system to control your story's rhythm and structure from a macro level, with both manual management and AI auto-extraction.",
+  body: `
 ## Overview
 
 The biggest fear when writing a long novel is losing track of things — tangled plot threads, forgotten foreshadowing, uneven pacing. Qritor's plot management tools help you maintain control at the macro level, breaking complex stories into clear structures.
@@ -161,7 +161,7 @@ Click the **"Plot Management"** tab in the tab bar at the bottom of the editor t
 
 The panel supports chapter filtering — select a specific chapter at the top to show only events linked to that chapter, making it easy to focus on the section you're currently editing.
 
-Additionally, in the chapter editor toolbar there is a **"Plot Organization"** button. This button triggers AI to analyze the current chapter and automatically extract plot events (see "AI Auto-extraction" below).
+Additionally, when a chapter is selected, the AI assistant toolbar on the right displays a **"Plot Organization"** button. This button triggers AI to analyze the current chapter and automatically extract plot events (see "AI Auto-extraction" below).
 
 ## Storylines
 
@@ -209,7 +209,7 @@ Plot events are key nodes in your story. Each event belongs to a storyline and c
 
 This is the more efficient approach — let AI automatically identify key plot points from your written chapters:
 
-1. In the chapter editor toolbar, click the **"Plot Organization"** button
+1. Select a chapter, then click the **"Plot Organization"** button in the AI assistant toolbar
 2. AI analyzes the current chapter text, automatically extracting key plot points, foreshadowing, conflicts, and turning points
 3. Extracted results are displayed in the AI assistant, showing each event's name, type, and storyline
 4. Check the events you want to keep, then click **"Apply Events"** to batch-add them to plot management
@@ -274,4 +274,4 @@ Click the **"Foreshadowing Only"** filter button to quickly check:
 
 This is especially critical for serialized long novels — avoiding "digging holes without filling them" is one of the things readers care about most.
         `,
-  };
+};
