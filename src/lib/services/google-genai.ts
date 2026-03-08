@@ -79,10 +79,6 @@ export function convertMessagesToGoogleContents(
 ): ConvertResult {
   let systemInstruction: string | undefined;
   const contents: Content[] = [];
-  // Track tool call IDs that were converted to text (no thoughtSignature).
-  // For Google thinking models, functionCall parts without thoughtSignature cause 400 errors.
-  // Injected (slash-command) fake tool calls never have thoughtSignature, so they fall back to text.
-  const textConvertedToolCallIds = new Set<string>();
 
   for (const msg of messages) {
     if (msg.role === "system") {
@@ -95,10 +91,7 @@ export function convertMessagesToGoogleContents(
 
     if (msg.role === "tool") {
       // AI SDK tool role → Google user role with functionResponse parts
-      const parts = convertToolResultParts(
-        msg.content,
-        textConvertedToolCallIds,
-      );
+      const parts = convertToolResultParts(msg.content);
       // Merge into last user message or create new one
       const last = contents[contents.length - 1];
       if (last?.role === "user") {
@@ -110,11 +103,7 @@ export function convertMessagesToGoogleContents(
     }
 
     const googleRole = msg.role === "assistant" ? "model" : "user";
-    const parts = convertContentParts(
-      msg.content,
-      msg.providerOptions,
-      textConvertedToolCallIds,
-    );
+    const parts = convertContentParts(msg.content, msg.providerOptions);
     contents.push({ role: googleRole, parts });
   }
 
@@ -122,11 +111,7 @@ export function convertMessagesToGoogleContents(
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-function convertContentParts(
-  content: any,
-  msgProviderOptions?: any,
-  textConvertedToolCallIds?: Set<string>,
-): Part[] {
+function convertContentParts(content: any, msgProviderOptions?: any): Part[] {
   if (typeof content === "string") {
     return content ? [{ text: content }] : [{ text: " " }];
   }
@@ -155,33 +140,19 @@ function convertContentParts(
       }
 
       case "tool-call": {
+        // Always send as functionCall (same as @ai-sdk/google).
+        // thoughtSignature is optional — include when available, omit when not.
         const sig =
           part.providerOptions?.google?.thoughtSignature ??
           msgProviderOptions?.google?.thoughtSignature ??
           undefined;
-        if (sig) {
-          // Real model-generated tool call: include thoughtSignature as required by Google thinking models
-          parts.push({
-            functionCall: {
-              name: part.toolName,
-              args: part.input ?? part.args ?? {},
-            },
-            thoughtSignature: sig,
-          });
-        } else {
-          // No thoughtSignature (e.g. slash-command injected fake tool calls).
-          // Google thinking models reject functionCall parts without thoughtSignature (HTTP 400).
-          // Fall back to natural-language description so the model still sees what was called.
-          // IMPORTANT: Use a descriptive system-note format, NOT "[Tool call: ...]" which models
-          // tend to mimic by outputting tool calls as plain text instead of using function calling.
-          const argsStr = JSON.stringify(part.input ?? part.args ?? {});
-          parts.push({
-            text: `[System note: the tool "${part.toolName}" was invoked with arguments ${argsStr}]`,
-          });
-          if (textConvertedToolCallIds && part.toolCallId) {
-            textConvertedToolCallIds.add(part.toolCallId);
-          }
-        }
+        parts.push({
+          functionCall: {
+            name: part.toolName,
+            args: part.input ?? part.args ?? {},
+          },
+          ...(sig ? { thoughtSignature: sig } : {}),
+        });
         break;
       }
 
@@ -231,10 +202,7 @@ function unwrapToolResult(raw: any): any {
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-function convertToolResultParts(
-  content: any,
-  textConvertedToolCallIds?: Set<string>,
-): Part[] {
+function convertToolResultParts(content: any): Part[] {
   if (!Array.isArray(content)) {
     return [
       {
@@ -252,30 +220,17 @@ function convertToolResultParts(
 
     // result field for AI SDK format, output field for desktop AgentChatMessage format
     const rawResult = unwrapToolResult(p.result ?? p.output);
-
-    if (textConvertedToolCallIds?.has(p.toolCallId)) {
-      // Corresponding tool-call was converted to text; convert result to text too
-      // so that Google doesn't see an orphaned functionResponse without a matching functionCall
-      const resultStr =
-        typeof rawResult === "string"
-          ? rawResult
-          : JSON.stringify(rawResult ?? "");
-      parts.push({
-        text: `[System note: tool "${p.toolName}" returned: ${resultStr}]`,
-      });
-    } else {
-      const responseData =
-        typeof rawResult === "string"
-          ? { result: rawResult }
-          : (rawResult ?? { result: "" });
-      parts.push({
-        functionResponse: {
-          name: p.toolName,
-          id: p.toolCallId,
-          response: responseData as Record<string, unknown>,
-        },
-      });
-    }
+    const responseData =
+      typeof rawResult === "string"
+        ? { result: rawResult }
+        : (rawResult ?? { result: "" });
+    parts.push({
+      functionResponse: {
+        name: p.toolName,
+        id: p.toolCallId,
+        response: responseData as Record<string, unknown>,
+      },
+    });
   }
   return parts;
 }
@@ -365,23 +320,7 @@ export async function* streamGoogleContent(
             thoughtSignature: part.thoughtSignature,
           };
         } else if (part.text) {
-          // Detect when the model outputs a tool call as plain text instead of using function calling.
-          // This happens when the model mimics text-format tool calls seen in conversation history.
-          const recoveredToolCall = parseTextToolCall(part.text);
-          if (recoveredToolCall) {
-            console.warn(
-              `[Google GenAI] Recovered text-format tool call: ${recoveredToolCall.toolName} (model output tool call as text instead of function call)`,
-            );
-            hasToolCalls = true;
-            yield {
-              type: "tool-call",
-              toolCallId: crypto.randomUUID(),
-              toolName: recoveredToolCall.toolName,
-              args: recoveredToolCall.args,
-            };
-          } else {
-            yield { type: "text-delta", text: part.text };
-          }
+          yield { type: "text-delta", text: part.text };
         }
 
         if (part.functionCall?.name) {
@@ -584,28 +523,6 @@ function extractErrorMessage(raw: string): string | null {
     }
   } catch {
     // message 不是 JSON，忽略
-  }
-  return null;
-}
-
-/**
- * 检测模型是否以文本形式输出了 tool call（而非使用 function calling 机制）。
- * Gemini 有时会模仿对话历史中的文本格式 tool call，输出类似
- * "[Tool call: toolName({...})]" 的纯文本，导致 agent 循环意外终止。
- */
-function parseTextToolCall(
-  text: string,
-): { toolName: string; args: Record<string, unknown> } | null {
-  const match = text.match(/^\s*\[Tool call:\s*(\w+)\(([\s\S]+)\)\]\s*$/);
-  if (!match) return null;
-  const [, toolName, argsStr] = match;
-  try {
-    const args = JSON.parse(argsStr);
-    if (typeof args === "object" && args !== null && !Array.isArray(args)) {
-      return { toolName, args };
-    }
-  } catch {
-    // Not valid JSON, not a tool call
   }
   return null;
 }
