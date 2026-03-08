@@ -1,118 +1,124 @@
-import 'dotenv/config'
+import "dotenv/config";
 
-import { PrismaClient } from '../src/generated/prisma/client'
-import { PrismaMariaDb } from '@prisma/adapter-mariadb'
-import { createGateway, generateText, jsonSchema, streamText } from 'ai'
-import { createAnthropic } from '@ai-sdk/anthropic'
-import { resolveModelRequestPolicy, type ReasoningProviderOptions } from '../src/lib/services/reasoning-options'
-import { streamGoogleContent, generateGoogleContent } from '../src/lib/services/google-genai'
+import { PrismaClient } from "../src/generated/prisma/client";
+import { PrismaMariaDb } from "@prisma/adapter-mariadb";
+import { createGateway, generateText, jsonSchema, streamText } from "ai";
+import { createAnthropic } from "@ai-sdk/anthropic";
+import {
+  resolveModelRequestPolicy,
+  type ReasoningProviderOptions,
+} from "../src/lib/services/reasoning-options";
+import {
+  streamGoogleContent,
+  generateGoogleContent,
+} from "../src/lib/services/google-genai";
 
 interface CliOptions {
-  noTools: boolean
-  includeDisabled: boolean
-  modelFilter?: string
-  limit?: number
+  noTools: boolean;
+  includeDisabled: boolean;
+  modelFilter?: string;
+  limit?: number;
 }
 
 interface StreamSmokeResult {
-  ok: boolean
-  latencyMs: number
-  textChars: number
-  reasoningChars: number
-  reasoningTokens: number
-  sourceParts: number
-  error?: string
+  ok: boolean;
+  latencyMs: number;
+  textChars: number;
+  reasoningChars: number;
+  reasoningTokens: number;
+  sourceParts: number;
+  error?: string;
 }
 
 interface ToolSmokeResult {
-  status: 'ok' | 'failed' | 'skipped' | 'disabled' | 'inconclusive'
-  latencyMs: number
-  toolCallCount: number
-  error?: string
+  status: "ok" | "failed" | "skipped" | "disabled" | "inconclusive";
+  latencyMs: number;
+  toolCallCount: number;
+  error?: string;
 }
 
 interface ModelSmokeResult {
-  modelId: bigint
-  modelName: string
-  provider: string
-  allowTools: boolean
-  allowTemperature: boolean
-  stream: StreamSmokeResult
-  tool: ToolSmokeResult
+  modelId: bigint;
+  modelName: string;
+  provider: string;
+  allowTools: boolean;
+  allowTemperature: boolean;
+  stream: StreamSmokeResult;
+  tool: ToolSmokeResult;
 }
 
 function parseArgs(argv: string[]): CliOptions {
   const options: CliOptions = {
     noTools: false,
     includeDisabled: false,
-  }
+  };
 
   for (let i = 0; i < argv.length; i += 1) {
-    const arg = argv[i]
-    if (arg === '--no-tools') {
-      options.noTools = true
-      continue
+    const arg = argv[i];
+    if (arg === "--no-tools") {
+      options.noTools = true;
+      continue;
     }
-    if (arg === '--include-disabled') {
-      options.includeDisabled = true
-      continue
+    if (arg === "--include-disabled") {
+      options.includeDisabled = true;
+      continue;
     }
-    if (arg === '--model') {
-      options.modelFilter = argv[i + 1]
-      i += 1
-      continue
+    if (arg === "--model") {
+      options.modelFilter = argv[i + 1];
+      i += 1;
+      continue;
     }
-    if (arg === '--limit') {
-      const value = Number(argv[i + 1] ?? '')
+    if (arg === "--limit") {
+      const value = Number(argv[i + 1] ?? "");
       if (Number.isFinite(value) && value > 0) {
-        options.limit = Math.floor(value)
+        options.limit = Math.floor(value);
       }
-      i += 1
-      continue
+      i += 1;
+      continue;
     }
   }
 
-  return options
+  return options;
 }
 
 function toErrorMessage(error: unknown): string {
-  if (error instanceof Error) return `${error.name}: ${error.message}`
-  return String(error)
+  if (error instanceof Error) return `${error.name}: ${error.message}`;
+  return String(error);
 }
 
 function compactErrorMessage(message: string, maxLen = 240): string {
-  const normalized = message.replace(/\s+/g, ' ').trim()
-  if (normalized.length <= maxLen) return normalized
-  return `${normalized.slice(0, maxLen - 3)}...`
+  const normalized = message.replace(/\s+/g, " ").trim();
+  if (normalized.length <= maxLen) return normalized;
+  return `${normalized.slice(0, maxLen - 3)}...`;
 }
 
 function fixed(value: number): string {
-  return value.toString().padStart(2, '0')
+  return value.toString().padStart(2, "0");
 }
 
 function nowClock(): string {
-  const d = new Date()
-  return `${fixed(d.getHours())}:${fixed(d.getMinutes())}:${fixed(d.getSeconds())}`
+  const d = new Date();
+  return `${fixed(d.getHours())}:${fixed(d.getMinutes())}:${fixed(d.getSeconds())}`;
 }
 
 function getProvider(modelName: string): string {
-  const [provider = 'unknown'] = modelName.split('/')
-  return provider
+  const [provider = "unknown"] = modelName.split("/");
+  return provider;
 }
 
 function sleep(ms: number): Promise<void> {
   return new Promise((resolve) => {
-    setTimeout(resolve, ms)
-  })
+    setTimeout(resolve, ms);
+  });
 }
 
 function isRetryableGatewayError(error: unknown): boolean {
-  const message = toErrorMessage(error)
+  const message = toErrorMessage(error);
   return (
     /statusCode["':\s]+(429|500|502|503|504)/i.test(message) ||
     /service temporarily unavailable/i.test(message) ||
     /timeout/i.test(message)
-  )
+  );
 }
 
 async function withRetry<T>(
@@ -120,48 +126,49 @@ async function withRetry<T>(
   fn: () => Promise<T>,
   maxAttempts = 3,
 ): Promise<T> {
-  let attempt = 1
+  let attempt = 1;
   while (true) {
     try {
-      return await fn()
+      return await fn();
     } catch (error) {
       if (attempt >= maxAttempts || !isRetryableGatewayError(error)) {
-        throw error
+        throw error;
       }
 
-      const waitMs = attempt * 1200
+      const waitMs = attempt * 1200;
       console.log(
         `[${nowClock()}] ${label} retry ${attempt}/${maxAttempts - 1} after ${waitMs}ms`,
-      )
-      await sleep(waitMs)
-      attempt += 1
+      );
+      await sleep(waitMs);
+      attempt += 1;
     }
   }
 }
 
 function parseToolCallCount(output: unknown): number {
-  const result = output as Record<string, unknown> | null
-  if (!result || typeof result !== 'object') return 0
+  const result = output as Record<string, unknown> | null;
+  if (!result || typeof result !== "object") return 0;
 
-  let count = 0
+  let count = 0;
 
-  const toolCalls = result.toolCalls
-  if (Array.isArray(toolCalls)) count += toolCalls.length
+  const toolCalls = result.toolCalls;
+  if (Array.isArray(toolCalls)) count += toolCalls.length;
 
-  const steps = result.steps
+  const steps = result.steps;
   if (Array.isArray(steps)) {
     for (const step of steps) {
       if (
         step &&
-        typeof step === 'object' &&
+        typeof step === "object" &&
         Array.isArray((step as Record<string, unknown>).toolCalls)
       ) {
-        count += ((step as Record<string, unknown>).toolCalls as unknown[]).length
+        count += ((step as Record<string, unknown>).toolCalls as unknown[])
+          .length;
       }
     }
   }
 
-  return count
+  return count;
 }
 
 async function runStreamSmoke(
@@ -173,7 +180,7 @@ async function runStreamSmoke(
   maxTokens: number | undefined,
   allowTemperature: boolean,
 ): Promise<StreamSmokeResult> {
-  const startedAt = Date.now()
+  const startedAt = Date.now();
 
   try {
     const payload = await withRetry(
@@ -183,41 +190,41 @@ async function runStreamSmoke(
           model: modelResolver(modelName, platform),
           messages: [
             {
-              role: 'user',
+              role: "user",
               content:
-                '请先进行必要推理，然后用一句中文回答”冒烟测试通过”，并补 1 个 10 字以内短句。',
+                "请先进行必要推理，然后用一句中文回答”冒烟测试通过”，并补 1 个 10 字以内短句。",
             },
           ],
           ...(providerOptions ? { providerOptions } : {}),
           ...(maxTokens ? { maxTokens } : {}),
           ...(allowTemperature ? { temperature: 0.2 } : {}),
-        })
+        });
 
-        let textChars = 0
-        let reasoningChars = 0
-        let sourceParts = 0
-        let reasoningTokens = 0
+        let textChars = 0;
+        let reasoningChars = 0;
+        let sourceParts = 0;
+        let reasoningTokens = 0;
 
         for await (const part of result.fullStream) {
-          if (part.type === 'text-delta') {
-            textChars += part.text.length
-          } else if (part.type === 'reasoning-delta') {
-            reasoningChars += part.text.length
-          } else if (part.type === 'source') {
-            sourceParts += 1
-          } else if (part.type === 'finish') {
+          if (part.type === "text-delta") {
+            textChars += part.text.length;
+          } else if (part.type === "reasoning-delta") {
+            reasoningChars += part.text.length;
+          } else if (part.type === "source") {
+            sourceParts += 1;
+          } else if (part.type === "finish") {
             reasoningTokens =
               part.totalUsage.outputTokenDetails?.reasoningTokens ??
               part.totalUsage.reasoningTokens ??
-              0
-          } else if (part.type === 'error') {
+              0;
+          } else if (part.type === "error") {
             throw new Error(
               compactErrorMessage(
-                typeof part.error === 'string'
+                typeof part.error === "string"
                   ? part.error
                   : JSON.stringify(part.error),
               ),
-            )
+            );
           }
         }
 
@@ -226,10 +233,10 @@ async function runStreamSmoke(
           reasoningChars,
           sourceParts,
           reasoningTokens,
-        }
+        };
       },
       3,
-    )
+    );
 
     return {
       ok: true,
@@ -238,7 +245,7 @@ async function runStreamSmoke(
       reasoningChars: payload.reasoningChars,
       reasoningTokens: payload.reasoningTokens,
       sourceParts: payload.sourceParts,
-    }
+    };
   } catch (error) {
     return {
       ok: false,
@@ -248,7 +255,7 @@ async function runStreamSmoke(
       reasoningTokens: 0,
       sourceParts: 0,
       error: compactErrorMessage(toErrorMessage(error)),
-    }
+    };
   }
 }
 
@@ -264,18 +271,18 @@ async function runToolSmoke(
   noTools: boolean,
 ): Promise<ToolSmokeResult> {
   if (noTools) {
-    return { status: 'skipped', latencyMs: 0, toolCallCount: 0 }
+    return { status: "skipped", latencyMs: 0, toolCallCount: 0 };
   }
   if (!allowTools) {
-    return { status: 'disabled', latencyMs: 0, toolCallCount: 0 }
+    return { status: "disabled", latencyMs: 0, toolCallCount: 0 };
   }
 
-  const startedAt = Date.now()
+  const startedAt = Date.now();
 
   const invokeToolTest = async (
     required: boolean,
   ): Promise<{
-    toolCallCount: number
+    toolCallCount: number;
   }> => {
     const toolOutput = await withRetry(
       `${modelName} tool`,
@@ -284,99 +291,99 @@ async function runToolSmoke(
           model: modelResolver(modelName, platform),
           messages: [
             {
-              role: 'user',
+              role: "user",
               content:
                 '必须调用 ping 工具一次，参数 value 传 "ok"。工具返回后，仅输出 done。',
             },
           ],
           tools: {
             ping: {
-              description: 'Ping test tool',
+              description: "Ping test tool",
               inputSchema: jsonSchema({
-                type: 'object',
-                properties: { value: { type: 'string' } },
-                required: ['value'],
+                type: "object",
+                properties: { value: { type: "string" } },
+                required: ["value"],
                 additionalProperties: false,
               }),
               execute: async ({
                 value,
               }: {
-                value: string
+                value: string;
               }): Promise<{ pong: string }> => ({ pong: value }),
             },
           },
-          ...(required ? { toolChoice: 'required' as const } : {}),
+          ...(required ? { toolChoice: "required" as const } : {}),
           maxOutputTokens: 40,
           ...(providerOptions ? { providerOptions } : {}),
           ...(allowTemperature ? { temperature: 0.2 } : {}),
         }),
       3,
-    )
+    );
 
     return {
       toolCallCount: parseToolCallCount(toolOutput),
-    }
-  }
+    };
+  };
 
   try {
-    const strict = await invokeToolTest(true)
+    const strict = await invokeToolTest(true);
     if (strict.toolCallCount > 0) {
       return {
-        status: 'ok',
+        status: "ok",
         latencyMs: Date.now() - startedAt,
         toolCallCount: strict.toolCallCount,
-      }
+      };
     }
 
-    const relaxed = await invokeToolTest(false)
+    const relaxed = await invokeToolTest(false);
     if (relaxed.toolCallCount > 0) {
       return {
-        status: 'ok',
+        status: "ok",
         latencyMs: Date.now() - startedAt,
         toolCallCount: relaxed.toolCallCount,
-      }
+      };
     }
 
     return {
-      status: 'inconclusive',
+      status: "inconclusive",
       latencyMs: Date.now() - startedAt,
       toolCallCount: 0,
-      error: 'no tool call returned (required and auto both yielded none)',
-    }
+      error: "no tool call returned (required and auto both yielded none)",
+    };
   } catch (error) {
-    const firstError = compactErrorMessage(toErrorMessage(error))
+    const firstError = compactErrorMessage(toErrorMessage(error));
     if (/tool[_-]?choice|does not support this tool_choice/i.test(firstError)) {
       try {
-        const relaxed = await invokeToolTest(false)
+        const relaxed = await invokeToolTest(false);
         if (relaxed.toolCallCount > 0) {
           return {
-            status: 'ok',
+            status: "ok",
             latencyMs: Date.now() - startedAt,
             toolCallCount: relaxed.toolCallCount,
-          }
+          };
         }
         return {
-          status: 'inconclusive',
+          status: "inconclusive",
           latencyMs: Date.now() - startedAt,
           toolCallCount: 0,
-          error: 'tool_choice unsupported and auto mode produced no tool call',
-        }
+          error: "tool_choice unsupported and auto mode produced no tool call",
+        };
       } catch (fallbackError) {
         return {
-          status: 'failed',
+          status: "failed",
           latencyMs: Date.now() - startedAt,
           toolCallCount: 0,
           error: compactErrorMessage(toErrorMessage(fallbackError)),
-        }
+        };
       }
     }
 
     return {
-      status: 'failed',
+      status: "failed",
       latencyMs: Date.now() - startedAt,
       toolCallCount: 0,
       error: firstError,
-    }
+    };
   }
 }
 
@@ -384,28 +391,54 @@ async function runGoogleStreamSmoke(
   modelName: string,
   maxTokens: number | undefined,
 ): Promise<StreamSmokeResult> {
-  const startedAt = Date.now()
+  const startedAt = Date.now();
   try {
-    let textChars = 0
-    let reasoningChars = 0
-    let reasoningTokens = 0
+    let textChars = 0;
+    let reasoningChars = 0;
+    let reasoningTokens = 0;
 
     for await (const event of streamGoogleContent({
       modelName,
-      contents: [{ role: 'user', parts: [{ text: '请先进行必要推理，然后用一句中文回答"冒烟测试通过"，并补 1 个 10 字以内短句。' }] }],
-      thinkingConfig: { includeThoughts: true, thinkingLevel: 'HIGH' },
+      contents: [
+        {
+          role: "user",
+          parts: [
+            {
+              text: '请先进行必要推理，然后用一句中文回答"冒烟测试通过"，并补 1 个 10 字以内短句。',
+            },
+          ],
+        },
+      ],
+      thinkingConfig: { includeThoughts: true, thinkingLevel: "HIGH" },
       maxTokens,
       temperature: 0.2,
     })) {
-      if (event.type === 'text-delta') textChars += event.text.length
-      else if (event.type === 'reasoning-delta') reasoningChars += event.text.length
-      else if (event.type === 'finish') reasoningTokens = event.usage.reasoningTokens
-      else if (event.type === 'error') throw event.error
+      if (event.type === "text-delta") textChars += event.text.length;
+      else if (event.type === "reasoning-delta")
+        reasoningChars += event.text.length;
+      else if (event.type === "finish")
+        reasoningTokens = event.usage.reasoningTokens;
+      else if (event.type === "error") throw event.error;
     }
 
-    return { ok: true, latencyMs: Date.now() - startedAt, textChars, reasoningChars, reasoningTokens, sourceParts: 0 }
+    return {
+      ok: true,
+      latencyMs: Date.now() - startedAt,
+      textChars,
+      reasoningChars,
+      reasoningTokens,
+      sourceParts: 0,
+    };
   } catch (error) {
-    return { ok: false, latencyMs: Date.now() - startedAt, textChars: 0, reasoningChars: 0, reasoningTokens: 0, sourceParts: 0, error: compactErrorMessage(toErrorMessage(error)) }
+    return {
+      ok: false,
+      latencyMs: Date.now() - startedAt,
+      textChars: 0,
+      reasoningChars: 0,
+      reasoningTokens: 0,
+      sourceParts: 0,
+      error: compactErrorMessage(toErrorMessage(error)),
+    };
   }
 }
 
@@ -414,26 +447,36 @@ async function runGoogleToolSmoke(
   maxTokens: number | undefined,
   noTools: boolean,
 ): Promise<ToolSmokeResult> {
-  if (noTools) return { status: 'skipped', latencyMs: 0, toolCallCount: 0 }
-  const startedAt = Date.now()
+  if (noTools) return { status: "skipped", latencyMs: 0, toolCallCount: 0 };
+  const startedAt = Date.now();
   try {
     const result = await generateGoogleContent({
       modelName,
-      contents: [{ role: 'user', parts: [{ text: '必须调用 ping 工具一次，参数 value 传 "ok"。' }] }],
+      contents: [
+        {
+          role: "user",
+          parts: [{ text: '必须调用 ping 工具一次，参数 value 传 "ok"。' }],
+        },
+      ],
       maxTokens: maxTokens ?? 100,
-      thinkingConfig: { includeThoughts: true, thinkingLevel: 'HIGH' },
-    })
+      thinkingConfig: { includeThoughts: true, thinkingLevel: "HIGH" },
+    });
     // For Google non-streaming, we can't easily test tool calling here;
     // mark as inconclusive if no text indicates tool use
-    const hasToolRef = result.text.toLowerCase().includes('ping')
+    const hasToolRef = result.text.toLowerCase().includes("ping");
     return {
-      status: hasToolRef ? 'inconclusive' : 'inconclusive',
+      status: hasToolRef ? "inconclusive" : "inconclusive",
       latencyMs: Date.now() - startedAt,
       toolCallCount: 0,
-      error: 'Google tool smoke via generateContent (no tool execution)',
-    }
+      error: "Google tool smoke via generateContent (no tool execution)",
+    };
   } catch (error) {
-    return { status: 'failed', latencyMs: Date.now() - startedAt, toolCallCount: 0, error: compactErrorMessage(toErrorMessage(error)) }
+    return {
+      status: "failed",
+      latencyMs: Date.now() - startedAt,
+      toolCallCount: 0,
+      error: compactErrorMessage(toErrorMessage(error)),
+    };
   }
 }
 
@@ -441,25 +484,25 @@ function printResults(results: ModelSmokeResult[]): void {
   const rows = results.map((item) => {
     const reasoningState =
       item.stream.reasoningChars > 0
-        ? 'visible'
+        ? "visible"
         : item.stream.reasoningTokens > 0
-          ? 'hidden'
-          : 'none'
+          ? "hidden"
+          : "none";
 
     const streamState = item.stream.ok
       ? `OK ${item.stream.latencyMs}ms`
-      : `FAIL ${item.stream.latencyMs}ms`
+      : `FAIL ${item.stream.latencyMs}ms`;
 
     const toolState =
-      item.tool.status === 'ok'
+      item.tool.status === "ok"
         ? `OK(${item.tool.toolCallCount})`
-        : item.tool.status === 'disabled'
-          ? 'DISABLED'
-          : item.tool.status === 'skipped'
-            ? 'SKIPPED'
-            : item.tool.status === 'inconclusive'
-              ? 'NO_CALL'
-              : 'FAIL'
+        : item.tool.status === "disabled"
+          ? "DISABLED"
+          : item.tool.status === "skipped"
+            ? "SKIPPED"
+            : item.tool.status === "inconclusive"
+              ? "NO_CALL"
+              : "FAIL";
 
     return {
       id: String(item.modelId),
@@ -468,82 +511,76 @@ function printResults(results: ModelSmokeResult[]): void {
       tool: toolState,
       reasoning: reasoningState,
       sources: String(item.stream.sourceParts),
-      temp: item.allowTemperature ? 'ON' : 'OFF',
-      tools: item.allowTools ? 'ON' : 'OFF',
-      error:
-        item.stream.error ??
-        item.tool.error ??
-        '',
-    }
-  })
+      temp: item.allowTemperature ? "ON" : "OFF",
+      tools: item.allowTools ? "ON" : "OFF",
+      error: item.stream.error ?? item.tool.error ?? "",
+    };
+  });
 
   const headers = [
-    'id',
-    'model',
-    'stream',
-    'tool',
-    'reasoning',
-    'sources',
-    'temp',
-    'tools',
-    'error',
-  ] as const
+    "id",
+    "model",
+    "stream",
+    "tool",
+    "reasoning",
+    "sources",
+    "temp",
+    "tools",
+    "error",
+  ] as const;
 
   const widths = headers.map((header) =>
-    Math.max(
-      header.length,
-      ...rows.map((row) => row[header].length),
-    ),
-  )
+    Math.max(header.length, ...rows.map((row) => row[header].length)),
+  );
 
   const line = headers
     .map((header, idx) => header.padEnd(widths[idx]))
-    .join(' | ')
-  const sep = widths.map((w) => '-'.repeat(w)).join('-|-')
+    .join(" | ");
+  const sep = widths.map((w) => "-".repeat(w)).join("-|-");
 
-  console.log(`\n${line}`)
-  console.log(sep)
+  console.log(`\n${line}`);
+  console.log(sep);
   for (const row of rows) {
     const content = headers
       .map((header, idx) => row[header].padEnd(widths[idx]))
-      .join(' | ')
-    console.log(content)
+      .join(" | ");
+    console.log(content);
   }
 }
 
 async function main(): Promise<void> {
-  const options = parseArgs(process.argv.slice(2))
+  const options = parseArgs(process.argv.slice(2));
 
   if (!process.env.AI_GATEWAY_API_KEY) {
-    throw new Error('Missing AI_GATEWAY_API_KEY')
+    throw new Error("Missing AI_GATEWAY_API_KEY");
   }
   if (!process.env.DATABASE_URL) {
-    throw new Error('Missing DATABASE_URL')
+    throw new Error("Missing DATABASE_URL");
   }
 
-  const adapter = new PrismaMariaDb(process.env.DATABASE_URL)
-  const prisma = new PrismaClient({ adapter })
-  const gateway = createGateway({ apiKey: process.env.AI_GATEWAY_API_KEY })
+  const adapter = new PrismaMariaDb(process.env.DATABASE_URL);
+  const prisma = new PrismaClient({ adapter });
+  const gateway = createGateway({ apiKey: process.env.AI_GATEWAY_API_KEY });
 
   const anthropic = createAnthropic({
-    baseURL: 'https://api.aicodemirror.com/api/claudecode',
-    apiKey: process.env.ANTHROPIC_API_KEY ?? '',
-  })
+    baseURL: "https://api.aicodemirror.com/api/claudecode",
+    apiKey: process.env.ANTHROPIC_API_KEY ?? "",
+  });
 
   const resolveModel = (modelName: string, platform?: string | null) => {
-    if (!platform || platform === 'vercel') {
-      return gateway(modelName)
+    if (!platform || platform === "vercel") {
+      return gateway(modelName);
     }
     switch (platform) {
-      case 'anthropic':
-        return anthropic(modelName)
+      case "anthropic":
+        return anthropic(modelName);
       default:
-        return gateway(modelName)
+        return gateway(modelName);
     }
-  }
+  };
 
   try {
-    const where = options.includeDisabled ? {} : { enabled: 1 }
+    const where = options.includeDisabled ? {} : { enabled: 1 };
     const all = await prisma.llm_config.findMany({
       where,
       select: {
@@ -552,8 +589,8 @@ async function main(): Promise<void> {
         provider: true,
         platform: true,
       },
-      orderBy: { id: 'asc' },
-    })
+      orderBy: { id: "asc" },
+    });
 
     const filtered = all.filter((item) =>
       options.modelFilter
@@ -561,40 +598,48 @@ async function main(): Promise<void> {
             .toLowerCase()
             .includes(options.modelFilter.toLowerCase())
         : true,
-    )
+    );
 
     const picked =
       options.limit && options.limit > 0
         ? filtered.slice(0, options.limit)
-        : filtered
+        : filtered;
 
     if (picked.length === 0) {
-      console.log('No models matched.')
-      return
+      console.log("No models matched.");
+      return;
     }
 
     console.log(
-      `[${nowClock()}] LLM smoke start: models=${picked.length}, noTools=${options.noTools ? 'true' : 'false'}`,
-    )
+      `[${nowClock()}] LLM smoke start: models=${picked.length}, noTools=${options.noTools ? "true" : "false"}`,
+    );
 
-    const results: ModelSmokeResult[] = []
+    const results: ModelSmokeResult[] = [];
 
     for (let i = 0; i < picked.length; i += 1) {
-      const item = picked[i]
-      const modelPolicy = resolveModelRequestPolicy(item.model_name, item.provider)
-      const provider = item.provider || getProvider(item.model_name)
-      const step = `[${i + 1}/${picked.length}]`
+      const item = picked[i];
+      const modelPolicy = resolveModelRequestPolicy(
+        item.model_name,
+        item.provider,
+      );
+      const provider = item.provider || getProvider(item.model_name);
+      const step = `[${i + 1}/${picked.length}]`;
 
-      console.log(
-        `[${nowClock()}] ${step} ${item.model_name}`,
-      )
+      console.log(`[${nowClock()}] ${step} ${item.model_name}`);
 
-      let stream: StreamSmokeResult
-      let tool: ToolSmokeResult
+      let stream: StreamSmokeResult;
+      let tool: ToolSmokeResult;
 
-      if (item.platform === 'google') {
-        stream = await runGoogleStreamSmoke(item.model_name, modelPolicy.maxTokens)
-        tool = await runGoogleToolSmoke(item.model_name, modelPolicy.maxTokens, options.noTools)
+      if (item.platform === "google") {
+        stream = await runGoogleStreamSmoke(
+          item.model_name,
+          modelPolicy.maxTokens,
+        );
+        tool = await runGoogleToolSmoke(
+          item.model_name,
+          modelPolicy.maxTokens,
+          options.noTools,
+        );
       } else {
         stream = await runStreamSmoke(
           resolveModel,
@@ -602,18 +647,18 @@ async function main(): Promise<void> {
           item.platform,
           modelPolicy.providerOptions,
           modelPolicy.maxTokens,
-          modelPolicy.allowTemperature,
-        )
+          true,
+        );
         tool = await runToolSmoke(
           resolveModel,
           item.model_name,
           item.platform,
           modelPolicy.providerOptions,
           modelPolicy.maxTokens,
-          modelPolicy.allowTemperature,
+          true,
           modelPolicy.allowTools,
           options.noTools,
-        )
+        );
       }
 
       results.push({
@@ -621,39 +666,43 @@ async function main(): Promise<void> {
         modelName: item.model_name,
         provider,
         allowTools: modelPolicy.allowTools,
-        allowTemperature: modelPolicy.allowTemperature,
+        allowTemperature: true,
         stream,
         tool,
-      })
+      });
     }
 
-    printResults(results)
+    printResults(results);
 
-    const streamFailures = results.filter((r) => !r.stream.ok).length
-    const toolFailures = results.filter((r) => r.tool.status === 'failed').length
+    const streamFailures = results.filter((r) => !r.stream.ok).length;
+    const toolFailures = results.filter(
+      (r) => r.tool.status === "failed",
+    ).length;
     const toolInconclusive = results.filter(
-      (r) => r.tool.status === 'inconclusive',
-    ).length
+      (r) => r.tool.status === "inconclusive",
+    ).length;
     const hiddenReasoning = results.filter(
       (r) => r.stream.reasoningChars === 0 && r.stream.reasoningTokens > 0,
-    ).length
+    ).length;
 
-    console.log('\nSummary:')
-    console.log(`- total models: ${results.length}`)
-    console.log(`- stream failures: ${streamFailures}`)
-    console.log(`- tool failures: ${toolFailures}`)
-    console.log(`- tool inconclusive: ${toolInconclusive}`)
-    console.log(`- hidden reasoning models: ${hiddenReasoning}`)
+    console.log("\nSummary:");
+    console.log(`- total models: ${results.length}`);
+    console.log(`- stream failures: ${streamFailures}`);
+    console.log(`- tool failures: ${toolFailures}`);
+    console.log(`- tool inconclusive: ${toolInconclusive}`);
+    console.log(`- hidden reasoning models: ${hiddenReasoning}`);
 
     if (streamFailures > 0 || toolFailures > 0) {
-      process.exitCode = 2
+      process.exitCode = 2;
     }
   } finally {
-    await prisma.$disconnect()
+    await prisma.$disconnect();
   }
 }
 
 void main().catch((error) => {
-  console.error(`[${nowClock()}] smoke failed: ${compactErrorMessage(toErrorMessage(error), 500)}`)
-  process.exit(1)
-})
+  console.error(
+    `[${nowClock()}] smoke failed: ${compactErrorMessage(toErrorMessage(error), 500)}`,
+  );
+  process.exit(1);
+});

@@ -112,6 +112,20 @@ export async function POST(request: NextRequest) {
     // 透传给 AI Gateway，积分在 onFinish 回调中扣减
     const systemPrompt: string | undefined = body.systemPrompt || body.system;
 
+    // 采样参数由桌面端按场景传入，服务端校验范围后透传
+    const temperature: number =
+      typeof body.temperature === "number"
+        ? Math.max(0, Math.min(2, body.temperature))
+        : 0.7;
+    const topP: number | undefined =
+      typeof body.topP === "number"
+        ? Math.max(0, Math.min(1, body.topP))
+        : undefined;
+    const topK: number | undefined =
+      typeof body.topK === "number" && body.topK > 0
+        ? Math.floor(body.topK)
+        : undefined;
+
     // 校验 tool-call / tool-result 配对，移除孤立项（所有平台通用）
     sanitizeToolMessages(messages);
 
@@ -125,10 +139,10 @@ export async function POST(request: NextRequest) {
         messages,
         systemPrompt,
         rawTools: body.tools,
-        temperature: modelPolicy.temperature,
+        temperature,
         maxTokens: modelPolicy.maxTokens,
-        topP: modelPolicy.topP,
-        topK: modelPolicy.topK,
+        topP,
+        topK,
         userId: user.id,
         configId,
       });
@@ -140,7 +154,7 @@ export async function POST(request: NextRequest) {
         messages,
         systemPrompt,
         rawTools: body.tools,
-        temperature: modelPolicy.temperature,
+        temperature,
         maxTokens: modelPolicy.maxTokens ?? 16000,
         userId: user.id,
         configId,
@@ -153,7 +167,7 @@ export async function POST(request: NextRequest) {
         messages,
         systemPrompt,
         rawTools: body.tools,
-        temperature: modelPolicy.temperature,
+        temperature,
         maxTokens: modelPolicy.maxTokens,
         userId: user.id,
         configId,
@@ -169,7 +183,7 @@ export async function POST(request: NextRequest) {
       providerOptions: modelPolicy.providerOptions,
       maxTokens: modelPolicy.maxTokens,
       allowTemperature: true,
-      temperature: modelPolicy.temperature,
+      temperature,
       userId: user.id,
       configId,
     });
