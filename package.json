@@ -12,6 +12,7 @@
   "dependencies": {
     "@ai-sdk/anthropic": "^3.0.46",
     "@ai-sdk/openai": "^3.0.29",
+    "@ai-sdk/openai-compatible": "^2.0.35",
     "@anthropic-ai/sdk": "^0.78.0",
     "@aws-sdk/client-s3": "^3.990.0",
     "@google/genai": "^1.42.0",

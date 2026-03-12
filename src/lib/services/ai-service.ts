@@ -1,5 +1,6 @@
 import { streamText, createGateway } from "ai";
 import { createAnthropic } from "@ai-sdk/anthropic";
+import { createOpenAICompatible } from "@ai-sdk/openai-compatible";
 import { prisma } from "@/lib/prisma";
 import {
   calculateCredits,
@@ -170,6 +171,29 @@ const anthropic = createAnthropic({
   apiKey: process.env.ANTHROPIC_API_KEY ?? "",
 });
 
+const packyapi = createOpenAICompatible({
+  baseURL: process.env.PACKYAPI_BASE_URL
+    ? `${process.env.PACKYAPI_BASE_URL}/v1`
+    : "",
+  apiKey: process.env.PACKYAPI_API_KEY ?? "",
+  name: "packyapi",
+  fetch: async (url: RequestInfo | URL, options?: RequestInit) => {
+    // 注入火山引擎 thinking 参数到 chat/completions 请求体
+    if (options?.body && typeof options.body === "string") {
+      try {
+        const body = JSON.parse(options.body);
+        if (!body.thinking) {
+          body.thinking = { type: "enabled" };
+        }
+        return fetch(url, { ...options, body: JSON.stringify(body) });
+      } catch {
+        // JSON 解析失败，透传原始请求
+      }
+    }
+    return fetch(url, options);
+  },
+});
+
 export function resolveModel(modelName: string, platform?: string | null) {
   const resolved = (() => {
     if (!platform || platform === "vercel") {
@@ -178,6 +202,8 @@ export function resolveModel(modelName: string, platform?: string | null) {
     switch (platform) {
       case "anthropic":
         return anthropic(modelName);
+      case "packyapi":
+        return packyapi.chatModel(modelName);
       default:
         return gateway(modelName);
     }
