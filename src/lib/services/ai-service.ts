@@ -1,5 +1,4 @@
 import { streamText, createGateway } from "ai";
-import { createAnthropic } from "@ai-sdk/anthropic";
 import { createOpenAICompatible } from "@ai-sdk/openai-compatible";
 import { prisma } from "@/lib/prisma";
 import {
@@ -166,11 +165,6 @@ export const gateway = createGateway({
   apiKey: process.env.AI_GATEWAY_API_KEY ?? "",
 });
 
-const anthropic = createAnthropic({
-  baseURL: process.env.ANTHROPIC_BASE_URL ?? "",
-  apiKey: process.env.ANTHROPIC_API_KEY ?? "",
-});
-
 const packyapi = createOpenAICompatible({
   baseURL: process.env.PACKYAPI_BASE_URL
     ? `${process.env.PACKYAPI_BASE_URL}/v1`
@@ -200,8 +194,6 @@ export function resolveModel(modelName: string, platform?: string | null) {
       return gateway(modelName);
     }
     switch (platform) {
-      case "anthropic":
-        return anthropic(modelName);
       case "packyapi":
         return packyapi.chatModel(modelName);
       default:
