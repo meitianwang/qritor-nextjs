@@ -272,6 +272,7 @@ export interface StreamGoogleOptions {
   topP?: number;
   topK?: number;
   thinkingConfig?: GoogleThinkingConfig;
+  client?: GoogleGenAI;
 }
 
 export async function* streamGoogleContent(
@@ -301,8 +302,10 @@ export async function* streamGoogleContent(
     `[Google GenAI] Stream: model=${opts.modelName}, contents=${opts.contents.length} msgs, tools=${opts.tools?.length ?? 0}`,
   );
 
+  const client = opts.client ?? googleGenAI;
+
   try {
-    const result = await googleGenAI.models.generateContentStream({
+    const result = await client.models.generateContentStream({
       model: opts.modelName,
       contents: opts.contents,
       config,
@@ -371,6 +374,7 @@ export interface GenerateGoogleOptions {
   systemInstruction?: string;
   maxTokens?: number;
   thinkingConfig?: GoogleThinkingConfig;
+  client?: GoogleGenAI;
 }
 
 export async function generateGoogleContent(
@@ -387,7 +391,9 @@ export async function generateGoogleContent(
     ...(opts.thinkingConfig ? { thinkingConfig: opts.thinkingConfig } : {}),
   };
 
-  const response = await googleGenAI.models.generateContent({
+  const client = opts.client ?? googleGenAI;
+
+  const response = await client.models.generateContent({
     model: opts.modelName,
     contents: opts.contents,
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -542,3 +548,5 @@ function mapFinishReason(googleReason: string, hasToolCalls: boolean): string {
       return "stop";
   }
 }
+
+export { GoogleGenAI };

@@ -169,6 +169,64 @@ export async function POST(request: NextRequest) {
       });
     }
 
+    // OneProxy platform: 根据 model_name 判断走哪个原生协议
+    if (config.platform === "oneproxy") {
+      const {
+        resolveOneProxyProtocol,
+        getOneProxyAnthropicClient,
+        getOneProxyOpenAIClient,
+        getOneProxyGoogleClient,
+      } = await import("@/lib/services/ai-service");
+
+      const protocol = resolveOneProxyProtocol(config.model_name);
+
+      if (protocol === "google") {
+        return handleGoogleStream({
+          modelName: config.model_name,
+          messages,
+          systemPrompt,
+          rawTools: body.tools,
+          temperature,
+          maxTokens: modelPolicy.maxTokens,
+          topP,
+          topK,
+          userId: user.id,
+          configId,
+          client: getOneProxyGoogleClient(),
+        });
+      }
+
+      if (protocol === "anthropic") {
+        return handleAnthropicStream({
+          modelName: config.model_name,
+          messages,
+          systemPrompt,
+          rawTools: body.tools,
+          temperature,
+          maxTokens: modelPolicy.maxTokens ?? 16000,
+          userId: user.id,
+          configId,
+          client: getOneProxyAnthropicClient(),
+        });
+      }
+
+      if (protocol === "openai") {
+        return handleOpenAIStream({
+          modelName: config.model_name,
+          messages,
+          systemPrompt,
+          rawTools: body.tools,
+          temperature,
+          maxTokens: modelPolicy.maxTokens,
+          userId: user.id,
+          configId,
+          client: getOneProxyOpenAIClient(),
+        });
+      }
+
+      // 无法识别的模型 → fallthrough 到 handleVercelStream
+    }
+
     return handleVercelStream({
       modelName: config.model_name,
       platform: config.platform,

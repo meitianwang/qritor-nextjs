@@ -1,5 +1,8 @@
 import { streamText, createGateway } from "ai";
 import { createOpenAICompatible } from "@ai-sdk/openai-compatible";
+import Anthropic from "@anthropic-ai/sdk";
+import OpenAI from "openai";
+import { GoogleGenAI } from "@google/genai";
 import { prisma } from "@/lib/prisma";
 import {
   calculateCredits,
@@ -188,6 +191,14 @@ const packyapi = createOpenAICompatible({
   },
 });
 
+const oneproxy = createOpenAICompatible({
+  baseURL: process.env.ONEPROXY_BASE_URL
+    ? `${process.env.ONEPROXY_BASE_URL}/v1`
+    : "http://localhost:8417/v1",
+  apiKey: process.env.ONEPROXY_API_KEY ?? "",
+  name: "oneproxy",
+});
+
 export function resolveModel(modelName: string, platform?: string | null) {
   const resolved = (() => {
     if (!platform || platform === "vercel") {
@@ -196,6 +207,8 @@ export function resolveModel(modelName: string, platform?: string | null) {
     switch (platform) {
       case "packyapi":
         return packyapi.chatModel(modelName);
+      case "oneproxy":
+        return oneproxy.chatModel(modelName);
       default:
         return gateway(modelName);
     }
@@ -205,6 +218,63 @@ export function resolveModel(modelName: string, platform?: string | null) {
     `[resolveModel] model=${modelName}, platform=${platform ?? "vercel"}, provider=${resolved.provider}, modelId=${resolved.modelId}`,
   );
   return resolved;
+}
+
+// ---------------------------------------------------------------------------
+// OneProxy: 根据模型名称判断走哪个原生协议
+// ---------------------------------------------------------------------------
+
+const ONEPROXY_BASE = process.env.ONEPROXY_BASE_URL ?? "http://localhost:8417";
+const ONEPROXY_KEY = process.env.ONEPROXY_API_KEY ?? "sk-placeholder";
+
+export function resolveOneProxyProtocol(
+  modelName: string,
+): "anthropic" | "openai" | "google" | null {
+  const name = modelName.toLowerCase();
+  if (name.includes("claude")) return "anthropic";
+  if (name.includes("gemini")) return "google";
+  if (
+    name.includes("gpt") ||
+    name.startsWith("o3") ||
+    name.startsWith("o4") ||
+    name.startsWith("o1")
+  )
+    return "openai";
+  return null;
+}
+
+let _oneproxyAnthropic: Anthropic | undefined;
+let _oneproxyOpenAI: OpenAI | undefined;
+let _oneproxyGoogle: GoogleGenAI | undefined;
+
+export function getOneProxyAnthropicClient(): Anthropic {
+  if (!_oneproxyAnthropic) {
+    _oneproxyAnthropic = new Anthropic({
+      apiKey: ONEPROXY_KEY,
+      baseURL: ONEPROXY_BASE,
+    });
+  }
+  return _oneproxyAnthropic;
+}
+
+export function getOneProxyOpenAIClient(): OpenAI {
+  if (!_oneproxyOpenAI) {
+    _oneproxyOpenAI = new OpenAI({
+      apiKey: ONEPROXY_KEY,
+      baseURL: `${ONEPROXY_BASE}/v1`,
+    });
+  }
+  return _oneproxyOpenAI;
+}
+
+export function getOneProxyGoogleClient(): GoogleGenAI {
+  if (!_oneproxyGoogle) {
+    _oneproxyGoogle = new GoogleGenAI({
+      apiKey: ONEPROXY_KEY,
+      httpOptions: { baseUrl: ONEPROXY_BASE },
+    });
+  }
+  return _oneproxyGoogle;
 }
 
 // ---------------------------------------------------------------------------
@@ -392,6 +462,158 @@ class GatewayAIService {
         yield { type: "error", ...classified };
       }
       return;
+    }
+
+    // OneProxy platform: 根据 model_name 判断走哪个原生协议
+    if (config.platform === "oneproxy") {
+      const protocol = resolveOneProxyProtocol(config.model_name);
+
+      if (protocol === "google") {
+        const { streamGoogleContent, classifyGoogleError } =
+          await import("./google-genai");
+        try {
+          for await (const event of streamGoogleContent({
+            client: getOneProxyGoogleClient(),
+            modelName: config.model_name,
+            contents: [{ role: "user", parts: [{ text: prompt }] }],
+            systemInstruction: systemPrompt,
+            thinkingConfig: { includeThoughts: true, thinkingLevel: "HIGH" },
+            maxTokens: modelPolicy.maxTokens,
+            temperature: calTemperature,
+            topP: calTopP,
+            topK: calTopK,
+          })) {
+            switch (event.type) {
+              case "text-delta":
+                yield { type: "chunk", content: event.text };
+                break;
+              case "reasoning-delta":
+                yield { type: "reasoning", content: event.text };
+                break;
+              case "finish":
+                yield {
+                  type: "usage",
+                  inputTokens: event.usage.inputTokens,
+                  outputTokens: event.usage.outputTokens,
+                };
+                break;
+              case "error": {
+                const classified = classifyGoogleError(event.error);
+                console.error("OneProxy/Google stream error:", event.error);
+                yield { type: "error", ...classified };
+                return;
+              }
+            }
+          }
+        } catch (error) {
+          console.error("OneProxy/Google service error:", error);
+          const classified = classifyGoogleError(error);
+          yield { type: "error", ...classified };
+        }
+        return;
+      }
+
+      if (protocol === "openai") {
+        const {
+          streamOpenAIContent,
+          convertMessagesToOpenAIInput,
+          classifyOpenAIError,
+        } = await import("./openai-sdk");
+        const { input } = convertMessagesToOpenAIInput([
+          { role: "user", content: prompt },
+        ]);
+        try {
+          for await (const event of streamOpenAIContent({
+            client: getOneProxyOpenAIClient(),
+            modelName: config.model_name,
+            input,
+            instructions: systemPrompt,
+            maxTokens: modelPolicy.maxTokens,
+            temperature: calTemperature,
+            reasoning: { effort: "high", summary: "detailed" },
+          })) {
+            switch (event.type) {
+              case "text-delta":
+                yield { type: "chunk", content: event.text };
+                break;
+              case "reasoning-delta":
+                yield { type: "reasoning", content: event.text };
+                break;
+              case "finish":
+                yield {
+                  type: "usage",
+                  inputTokens: event.usage.inputTokens,
+                  outputTokens: event.usage.outputTokens,
+                };
+                break;
+              case "error": {
+                const classified = classifyOpenAIError(event.error);
+                console.error("OneProxy/OpenAI stream error:", event.error);
+                yield { type: "error", ...classified };
+                return;
+              }
+            }
+          }
+        } catch (error) {
+          console.error("OneProxy/OpenAI service error:", error);
+          const classified = classifyOpenAIError(error);
+          yield { type: "error", ...classified };
+        }
+        return;
+      }
+
+      if (protocol === "anthropic") {
+        const { streamAnthropicContent, classifyAnthropicError } =
+          await import("./anthropic-sdk");
+        try {
+          for await (const event of streamAnthropicContent({
+            client: getOneProxyAnthropicClient(),
+            modelName: config.model_name,
+            messages: [{ role: "user", content: prompt }],
+            systemBlocks: systemPrompt
+              ? [{ type: "text", text: systemPrompt }]
+              : [],
+            maxTokens: modelPolicy.maxTokens ?? 16000,
+            temperature: calTemperature,
+            thinking: {
+              type: "enabled",
+              budget_tokens: Math.max(
+                1024,
+                (modelPolicy.maxTokens ?? 16000) - 1,
+              ),
+            },
+          })) {
+            switch (event.type) {
+              case "text-delta":
+                yield { type: "chunk", content: event.text };
+                break;
+              case "reasoning-delta":
+                yield { type: "reasoning", content: event.text };
+                break;
+              case "finish":
+                yield {
+                  type: "usage",
+                  inputTokens: event.usage.inputTokens,
+                  outputTokens: event.usage.outputTokens,
+                };
+                break;
+              case "error": {
+                const classified = classifyAnthropicError(event.error);
+                console.error("OneProxy/Anthropic stream error:", event.error);
+                yield { type: "error", ...classified };
+                return;
+              }
+            }
+          }
+        } catch (error) {
+          console.error("OneProxy/Anthropic service error:", error);
+          const classified = classifyAnthropicError(error);
+          yield { type: "error", ...classified };
+        }
+        return;
+      }
+
+      // protocol === null: 无法识别的模型，fallthrough 到 Vercel AI SDK（走 OpenAI 兼容）
     }
 
     let outputText = "";

@@ -7,6 +7,7 @@
 
 import { createUIMessageStream, createUIMessageStreamResponse } from "ai";
 import { generateId } from "@ai-sdk/provider-utils";
+import type Anthropic from "@anthropic-ai/sdk";
 import { normalizeToolName } from "./llm-message-preprocessor";
 import { deductLlmCredits } from "./llm-credit-settle";
 
@@ -106,6 +107,7 @@ export interface HandleAnthropicStreamParams {
   maxTokens: number;
   userId: bigint;
   configId?: number;
+  client?: Anthropic;
 }
 
 export async function handleAnthropicStream(
@@ -155,6 +157,7 @@ export async function handleAnthropicStream(
             type: "enabled",
             budget_tokens: Math.max(1024, params.maxTokens - 1),
           },
+          client: params.client,
         })) {
           switch (event.type) {
             case "reasoning-delta": {

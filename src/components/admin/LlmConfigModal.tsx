@@ -10,6 +10,7 @@ const PLATFORMS = [
   { key: "google", label: "Google" },
   { key: "openai", label: "OpenAI" },
   { key: "packyapi", label: "PackyAPI" },
+  { key: "oneproxy", label: "OneProxy" },
 ] as const;
 
 type PlatformKey = (typeof PLATFORMS)[number]["key"];

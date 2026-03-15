@@ -6,6 +6,7 @@
 
 import { createUIMessageStream, createUIMessageStreamResponse } from "ai";
 import { generateId } from "@ai-sdk/provider-utils";
+import type { GoogleGenAI } from "@google/genai";
 import { normalizeToolName } from "./llm-message-preprocessor";
 import { deductLlmCredits } from "./llm-credit-settle";
 
@@ -28,6 +29,7 @@ export interface HandleGoogleStreamParams {
   topK?: number;
   userId: bigint;
   configId?: number;
+  client?: GoogleGenAI;
 }
 
 export async function handleGoogleStream(
@@ -78,6 +80,7 @@ export async function handleGoogleStream(
           topP: params.topP,
           topK: params.topK,
           thinkingConfig: { includeThoughts: true, thinkingLevel: "HIGH" },
+          client: params.client,
         })) {
           switch (event.type) {
             case "reasoning-delta": {

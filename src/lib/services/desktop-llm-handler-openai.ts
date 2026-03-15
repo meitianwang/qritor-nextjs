@@ -6,6 +6,7 @@
 
 import { createUIMessageStream, createUIMessageStreamResponse } from "ai";
 import { generateId } from "@ai-sdk/provider-utils";
+import type OpenAI from "openai";
 import { normalizeToolName } from "./llm-message-preprocessor";
 import { deductLlmCredits } from "./llm-credit-settle";
 
@@ -26,6 +27,7 @@ export interface HandleOpenAIStreamParams {
   maxTokens?: number;
   userId: bigint;
   configId?: number;
+  client?: OpenAI;
 }
 
 export async function handleOpenAIStream(
@@ -75,6 +77,7 @@ export async function handleOpenAIStream(
           temperature: params.temperature,
           maxTokens: params.maxTokens,
           reasoning: { effort: "high", summary: "detailed" },
+          client: params.client,
         })) {
           switch (event.type) {
             case "reasoning-delta": {

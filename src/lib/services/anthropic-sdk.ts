@@ -330,6 +330,7 @@ export interface StreamAnthropicOptions {
   temperature?: number;
   maxTokens: number;
   thinking?: ThinkingConfigParam;
+  client?: Anthropic;
 }
 
 export async function* streamAnthropicContent(
@@ -359,8 +360,10 @@ export async function* streamAnthropicContent(
   let totalOutputTokens = 0;
   let stopReason = "end_turn";
 
+  const client = opts.client ?? anthropicClient;
+
   try {
-    const stream = await anthropicClient.messages.create({
+    const stream = await client.messages.create({
       model: opts.modelName,
       max_tokens: opts.maxTokens,
       ...(opts.systemBlocks.length > 0 ? { system: opts.systemBlocks } : {}),
@@ -637,3 +640,5 @@ function mapFinishReason(stopReason: string): string {
       return "stop";
   }
 }
+
+export { Anthropic };
