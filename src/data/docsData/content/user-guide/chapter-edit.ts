@@ -37,7 +37,7 @@ export const zhChapterEdit: DocsContentEntry = {
 4. 您可以选择 **确认** 应用修改，或 **拒绝** 恢复原文。
 
 ## AI 辅助
-- **选中润色**：选中文本后，AI 可帮您优化措辞。
+- **选中润色**：选中文本后，可通过右侧 AI 助手工具栏中的「润色」按钮优化措辞。
 - **更多工具**：选中章节后，AI 助手工具栏会显示续写、提取实体、质量评估等功能按钮，详见 [AI 助手](/docs/zh/user-guide/ai-assistant)。
         `,
 };
@@ -79,7 +79,7 @@ When AI makes targeted edits to existing content, the editor enters **Modify Mod
 4. You can **Confirm** to apply changes, or **Reject** to restore the original.
 
 ## AI Assistance
-- **Select & Polish**: Select text to have AI optimize your wording.
+- **Select & Polish**: Select text first, then use the "Polish" button in the AI assistant toolbar on the right.
 - **More Tools**: When a chapter is selected, the AI assistant toolbar displays buttons for continuation, entity extraction, quality assessment, and more. See [AI Assistant](/docs/en/user-guide/ai-assistant) for details.
         `,
 };
