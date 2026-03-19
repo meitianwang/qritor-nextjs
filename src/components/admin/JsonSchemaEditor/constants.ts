@@ -2,11 +2,6 @@
  * JsonSchemaEditor 常量配置
  */
 
-export interface PresetEditor {
-    label: string
-    value: string
-}
-
 export interface PresetField {
     name: string
     type: string
@@ -34,11 +29,6 @@ export interface SchemaField {
     locked?: boolean
     enumLabels?: Record<string, string>
 }
-
-// 预置编辑器列表
-export const PRESET_EDITORS: PresetEditor[] = [
-    { label: '智能写作编辑器', value: 'SmartWriterEditor' }
-]
 
 // 智能写作编辑器预置字段
 export const SMART_WRITER_PRESET_FIELDS: PresetField[] = [

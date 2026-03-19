@@ -8,7 +8,6 @@ import { Prisma, type subscription_plans } from '@/generated/prisma/client'
 const DEFAULT_PLAN = 'FREE'
 const STATUS_ACTIVE = 'ACTIVE'
 const STATUS_EXPIRED = 'EXPIRED'
-const STATUS_CANCELLED = 'CANCELLED'
 const SUBSCRIPTION_CYCLE_MS = 30 * 24 * 60 * 60 * 1000
 
 // ---------------------------------------------------------------------------
@@ -261,45 +260,3 @@ export async function canUserAccessModelTier(
   return allowed.includes(modelTier)
 }
 
-export async function subscribe(
-  userId: bigint,
-  planName: string,
-): Promise<SubscriptionDTO | null> {
-  const plan = await prisma.subscription_plans.findFirst({
-    where: { name: planName },
-  })
-  if (!plan) {
-    throw new Error(`Plan not found: ${planName}`)
-  }
-
-  // Cancel existing active subscription
-  const existing = await prisma.user_subscriptions.findFirst({
-    where: { user_id: userId, status: STATUS_ACTIVE },
-  })
-  if (existing) {
-    await prisma.user_subscriptions.update({
-      where: { id: existing.id },
-      data: { status: STATUS_CANCELLED },
-    })
-  }
-
-  const now = new Date()
-  const expireAt = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000) // 30 days
-
-  await prisma.user_subscriptions.create({
-    data: {
-      user_id: userId,
-      plan_id: plan.id,
-      status: STATUS_ACTIVE,
-      start_at: now,
-      expire_at: expireAt,
-      credits: plan.monthly_credits,
-      credits_used: BigInt(0),
-      auto_renew: false,
-      created_at: now,
-      updated_at: now,
-    },
-  })
-
-  return getUserSubscription(userId)
-}

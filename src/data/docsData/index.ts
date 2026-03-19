@@ -3,9 +3,8 @@
  * 支持中英文两种语言
  */
 
-// 类型定义与常量
+// 类型定义
 export type {
-    LanguageInfo,
     DocsNavItem,
     DocsNavSection,
     DocsNavigation,
@@ -13,7 +12,6 @@ export type {
     DocsContentEntry,
     DocsUITexts,
 } from './types'
-export { SUPPORTED_LANGUAGES, DEFAULT_LANGUAGE } from './types'
 
 // 导航结构
 export { docsNavigation } from './navigation'

@@ -104,7 +104,7 @@ export interface LlmConfigRow {
 // Utility: extract JSON from LLM output
 // ---------------------------------------------------------------------------
 
-export function extractJson(content: string): string | null {
+function extractJson(content: string): string | null {
   // Try ```json ... ``` blocks first
   const jsonBlockPattern = /```json\s*([\s\S]*?)```/i;
   const blockMatch = jsonBlockPattern.exec(content);
@@ -164,7 +164,7 @@ export async function getConfigById(
 // Vercel AI Gateway instance
 // ---------------------------------------------------------------------------
 
-export const gateway = createGateway({
+const gateway = createGateway({
   apiKey: process.env.AI_GATEWAY_API_KEY ?? "",
 });
 
@@ -868,5 +868,4 @@ class AIGenerateService {
 // Singleton exports
 // ---------------------------------------------------------------------------
 
-export const proxyAIService = new GatewayAIService();
 export const aiGenerateService = new AIGenerateService();

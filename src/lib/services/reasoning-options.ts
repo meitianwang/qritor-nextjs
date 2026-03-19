@@ -67,17 +67,6 @@ export function resolveModelRequestPolicy(
   };
 }
 
-export function shouldSendTools(modelName: string, provider: string): boolean {
-  return resolveModelRequestPolicy(modelName, provider).allowTools;
-}
-
-export function buildReasoningProviderOptions(
-  modelName: string,
-  provider: string,
-): ReasoningProviderOptions | undefined {
-  return resolveModelRequestPolicy(modelName, provider).providerOptions;
-}
-
 /**
  * 按模型名称返回固定采样参数（temperature / topP / topK）。
  */

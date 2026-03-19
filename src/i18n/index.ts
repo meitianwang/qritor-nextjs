@@ -85,14 +85,6 @@ export async function setLanguage(lang: string): Promise<boolean> {
 }
 
 /**
- * Get current language info object
- */
-export function getCurrentLanguageInfo(): LanguageInfo {
-    const lang = getLanguage()
-    return SUPPORTED_LANGUAGES[lang] || SUPPORTED_LANGUAGES[DEFAULT_LANGUAGE]
-}
-
-/**
  * Sync language setting from server after login
  * Fetches user's language preference and applies it to localStorage
  */

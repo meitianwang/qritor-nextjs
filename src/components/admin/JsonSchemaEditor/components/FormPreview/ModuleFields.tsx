@@ -534,5 +534,3 @@ export const ModuleFieldsInArray: React.FC<ModuleFieldsProps> = ({
     );
   }
 };
-
-export default ModuleFields;

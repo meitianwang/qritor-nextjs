@@ -94,7 +94,7 @@ function stringifyUnknown(value: unknown): string {
  * - tool role messages
  */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-export function estimateMessageTokens(msg: any): number {
+function estimateMessageTokens(msg: any): number {
   let tokens = 0
 
   if (typeof msg.content === 'string') {
@@ -127,62 +127,6 @@ export function estimateMessagesTokens(messages: any[]): number {
     total += estimateMessageTokens(msg)
   }
   return total
-}
-
-// ---------------------------------------------------------------------------
-// Token breakdown by category (inspired by opencode context breakdown)
-// ---------------------------------------------------------------------------
-
-export interface TokenBreakdown {
-  system: number
-  user: number
-  assistant: number
-  tool: number
-  total: number
-}
-
-/**
- * Estimate tokens broken down by message role.
- *
- * Useful for understanding context window composition.
- */
-export function estimateTokenBreakdown(
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  messages: any[],
-  systemPrompt?: string,
-): TokenBreakdown {
-  const breakdown: TokenBreakdown = {
-    system: systemPrompt ? estimateTextTokens(systemPrompt) : 0,
-    user: 0,
-    assistant: 0,
-    tool: 0,
-    total: 0,
-  }
-
-  for (const msg of messages) {
-    const msgTokens = estimateMessageTokens(msg)
-    switch (msg.role) {
-      case 'system':
-        breakdown.system += msgTokens
-        break
-      case 'user':
-        breakdown.user += msgTokens
-        break
-      case 'assistant':
-        breakdown.assistant += msgTokens
-        break
-      case 'tool':
-        breakdown.tool += msgTokens
-        break
-      default:
-        breakdown.user += msgTokens
-        break
-    }
-  }
-
-  breakdown.total =
-    breakdown.system + breakdown.user + breakdown.assistant + breakdown.tool
-  return breakdown
 }
 
 // ---------------------------------------------------------------------------

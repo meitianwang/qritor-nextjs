@@ -103,5 +103,3 @@ function updateStructuredData(data: Record<string, unknown>): void {
     }
     script.textContent = JSON.stringify(data)
 }
-
-export default useDocumentMeta

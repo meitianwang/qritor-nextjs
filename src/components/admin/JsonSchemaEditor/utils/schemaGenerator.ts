@@ -194,5 +194,3 @@ export function generateJsonSchema(
     "x-titleField": titleField || undefined,
   };
 }
-
-export default generateJsonSchema;

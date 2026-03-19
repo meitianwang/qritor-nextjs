@@ -4,7 +4,7 @@ import { prisma } from '@/lib/prisma'
 // Config key constants
 // ---------------------------------------------------------------------------
 
-export const ConfigKeys = {
+const ConfigKeys = {
   // Referral programme
   INVITER_REWARD: 'referral.inviter_reward',
   INVITEE_REWARD: 'referral.invitee_reward',
@@ -15,7 +15,7 @@ export const ConfigKeys = {
   REFERRAL_MONTHLY_LIMIT: 'referral.monthly_limit',
 } as const
 
-export type ConfigKey = (typeof ConfigKeys)[keyof typeof ConfigKeys]
+type ConfigKey = (typeof ConfigKeys)[keyof typeof ConfigKeys]
 
 // ---------------------------------------------------------------------------
 // Core CRUD

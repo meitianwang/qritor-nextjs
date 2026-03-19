@@ -53,14 +53,3 @@ export function formatSource(source: string): string {
     return sourceMap[source] || source
 }
 
-/**
- * Format credit type display
- */
-export function formatType(type: string): string {
-    const typeMap: Record<string, string> = {
-        'EARN': '获得',
-        'CONSUME': '消费',
-        'REFUND': '退还'
-    }
-    return typeMap[type] || type
-}

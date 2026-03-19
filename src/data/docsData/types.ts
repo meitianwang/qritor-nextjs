@@ -4,12 +4,6 @@
 
 // ============== Type Definitions ==============
 
-export interface LanguageInfo {
-    code: string
-    name: string
-    flag: string
-}
-
 export interface DocsNavItem {
     id: string
     title: string
@@ -58,21 +52,3 @@ export interface DocsUITexts {
     askQuestion: string
 }
 
-// ============== Constants ==============
-
-// 支持的语言
-export const SUPPORTED_LANGUAGES: Record<string, LanguageInfo> = {
-    zh: {
-        code: 'zh',
-        name: '简体中文',
-        flag: '🇨🇳'
-    },
-    en: {
-        code: 'en',
-        name: 'English',
-        flag: '🇺🇸'
-    }
-}
-
-// 默认语言
-export const DEFAULT_LANGUAGE: string = 'zh'

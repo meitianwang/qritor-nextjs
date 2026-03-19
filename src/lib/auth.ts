@@ -13,14 +13,6 @@ export async function createAccessToken(subject: string | number): Promise<strin
     .sign(JWT_SECRET)
 }
 
-export async function createRefreshTokenJwt(subject: string | number): Promise<string> {
-  const exp = Math.floor(Date.now() / 1000) + REFRESH_TOKEN_EXPIRE_DAYS * 24 * 60 * 60
-  return new jose.SignJWT({ sub: String(subject), type: 'refresh' })
-    .setProtectedHeader({ alg: ALGORITHM })
-    .setExpirationTime(exp)
-    .sign(JWT_SECRET)
-}
-
 export async function decodeToken(token: string): Promise<jose.JWTPayload | null> {
   try {
     const { payload } = await jose.jwtVerify(token, JWT_SECRET, { algorithms: [ALGORITHM] })

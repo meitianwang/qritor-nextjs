@@ -208,7 +208,7 @@ async function getOutstandingDebtInTx(
   return Math.max(0, totalDebt - totalSettled)
 }
 
-export async function getOutstandingDebt(userId: bigint): Promise<number> {
+async function getOutstandingDebt(userId: bigint): Promise<number> {
   return prisma.$transaction(
     async (tx) => getOutstandingDebtInTx(tx, userId),
     { isolationLevel: Prisma.TransactionIsolationLevel.Serializable },
@@ -346,7 +346,7 @@ export async function getCredits(userId: bigint): Promise<CreditsDTO> {
   return { subscription, referral, boostPack }
 }
 
-export async function getTotalBalance(userId: bigint): Promise<number> {
+async function getTotalBalance(userId: bigint): Promise<number> {
   const credits = await getCredits(userId)
   return credits.subscription.balance + credits.referral.balance + credits.boostPack.balance
 }
@@ -361,19 +361,6 @@ export async function hasEnoughCredits(
     getOutstandingDebt(userId),
   ])
   return balance >= normalizedAmount + outstandingDebt
-}
-
-export async function consumeCredits(
-  userId: bigint,
-  amount: number,
-): Promise<boolean> {
-  const normalizedAmount = normalizeCreditAmount(amount)
-  await ensureDefaultSubscriptionForCredits(userId)
-
-  return prisma.$transaction(
-    async (tx) => consumeCreditsInTx(tx, userId, normalizedAmount),
-    { isolationLevel: Prisma.TransactionIsolationLevel.Serializable },
-  )
 }
 
 export async function consumeCreditsWithTransaction(

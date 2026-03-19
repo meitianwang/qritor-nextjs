@@ -97,5 +97,3 @@ export function parseJsonSchema(jsonSchemaStr: string): ParseResult {
         }
     }
 }
-
-export default parseJsonSchema

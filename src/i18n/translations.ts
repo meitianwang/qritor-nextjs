@@ -17,5 +17,3 @@ export function clearTranslationCache(): void {
     })
 }
 
-// Re-export core functions
-export { getLanguage, setLanguage, getCurrentLanguageInfo, SUPPORTED_LANGUAGES, DEFAULT_LANGUAGE } from './index'

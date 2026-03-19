@@ -304,9 +304,6 @@ export async function authFetch(url: string, options: Omit<RequestInit, 'body'> 
 
 // ============== Token auto-refresh ==============
 const PRE_REFRESH_BUFFER_MS = 5 * 60 * 1000
-const AUTO_REFRESH_CHECK_INTERVAL_MS = 5 * 60 * 1000
-
-let autoRefreshTimer: ReturnType<typeof setInterval> | null = null
 
 function shouldRefreshToken(): boolean {
     if (tokenExpiresAt) {
@@ -324,35 +321,6 @@ function shouldRefreshToken(): boolean {
     }
 
     return false
-}
-
-async function checkAndPreRefresh(): Promise<void> {
-    if (!getUserInfo()) {
-        return
-    }
-
-    if (shouldRefreshToken()) {
-        try {
-            await refreshToken()
-        } catch (e) {
-            console.error('[Auth] Token pre-refresh error:', e)
-        }
-    }
-}
-
-function handleVisibilityChange(): void {
-    if (document.visibilityState === 'visible') {
-        checkAndPreRefresh()
-    }
-}
-
-export function startTokenAutoRefresh(): void {
-    if (autoRefreshTimer) {
-        return
-    }
-
-    autoRefreshTimer = setInterval(checkAndPreRefresh, AUTO_REFRESH_CHECK_INTERVAL_MS)
-    document.addEventListener('visibilitychange', handleVisibilityChange)
 }
 
 // ============== Callback URL Builder ==============

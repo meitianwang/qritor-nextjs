@@ -117,5 +117,3 @@ export function useSchemaFields(initialFields: SchemaField[] = []) {
         moveFieldDown
     }
 }
-
-export default useSchemaFields
