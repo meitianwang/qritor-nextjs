@@ -41,9 +41,6 @@ export async function POST(request: NextRequest) {
         description_zh: body.descriptionZh || null,
         description_en: body.descriptionEn || null,
         novel_genre: genre,
-        visible_categories: body.visibleCategories
-          ? JSON.stringify(body.visibleCategories)
-          : null,
         created_at: new Date(),
       },
     });

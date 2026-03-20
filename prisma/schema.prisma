@@ -81,24 +81,6 @@ model llm_config {
   @@index([id], map: "ix_llm_config_id")
 }
 
-model module_type {
-  id                       BigInt    @id @default(autoincrement())
-  name_zh                  String?   @db.VarChar(200)
-  name_en                  String?   @db.VarChar(200)
-  description_zh           String?   @db.Text
-  description_en           String?   @db.Text
-  json_schema_zh           String?   @db.Text
-  json_schema_en           String?   @db.Text
-  novel_creation_method_id BigInt?
-  enable_ai                Int       @db.SmallInt
-  singleton                Int       @db.SmallInt
-  entity_category          String?   @db.VarChar(50)
-  created_at               DateTime  @db.DateTime(0)
-  updated_at               DateTime? @db.DateTime(0)
-
-  @@index([id], map: "ix_module_type_id")
-}
-
 model orders {
   id                       BigInt    @id @default(autoincrement())
   order_no                 String    @unique(map: "order_no") @db.VarChar(32)
@@ -283,14 +265,31 @@ model novel_creation_method {
   name_en            String?   @db.VarChar(200)
   description_zh     String?   @db.Text
   description_en     String?   @db.Text
-  novel_genre        String?   @db.VarChar(50)
-  visible_categories String?   @db.Text
+  novel_genre         String?   @db.VarChar(50)
+  starter_dirs_zh    String?   @db.Text
+  starter_dirs_en    String?   @db.Text
+  skills_version     String?   @db.VarChar(50)
   user_id            BigInt?
   created_at         DateTime  @db.DateTime(0)
   updated_at         DateTime? @db.DateTime(0)
 
   @@index([id], map: "ix_novel_creation_method_id")
   @@index([user_id], map: "ix_novel_creation_method_user_id")
+}
+
+model creation_method_skill {
+  id                       BigInt    @id @default(autoincrement())
+  creation_method_id       BigInt
+  name                     String    @db.VarChar(200)
+  description_zh           String?   @db.VarChar(500)
+  description_en           String?   @db.VarChar(500)
+  instruction_zh           String?   @db.LongText
+  instruction_en           String?   @db.LongText
+  created_at               DateTime  @db.DateTime(0)
+  updated_at               DateTime? @db.DateTime(0)
+
+  @@index([id], map: "ix_creation_method_skill_id")
+  @@index([creation_method_id], map: "ix_creation_method_skill_method_id")
 }
 
 

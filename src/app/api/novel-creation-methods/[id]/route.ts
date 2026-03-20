@@ -77,10 +77,6 @@ export async function PUT(
       }
       updateData.novel_genre = genre;
     }
-    if (body.visibleCategories !== undefined)
-      updateData.visible_categories = body.visibleCategories
-        ? JSON.stringify(body.visibleCategories)
-        : null;
     const updated = await prisma.novel_creation_method.update({
       where: { id: numericId },
       data: updateData,
@@ -112,12 +108,7 @@ export async function DELETE(
       return apiNotFound("创作方法不存在");
     }
 
-    await prisma.$transaction(async (tx) => {
-      await tx.module_type.deleteMany({
-        where: { novel_creation_method_id: numericId },
-      });
-      await tx.novel_creation_method.delete({ where: { id: numericId } });
-    });
+    await prisma.novel_creation_method.delete({ where: { id: numericId } });
 
     return apiSuccess(null, "删除成功");
   } catch (error) {
