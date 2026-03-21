@@ -48,7 +48,7 @@ export const zhNovelCreate: DocsContentEntry = {
 
 点击作品卡片进入编辑器后，推荐按以下顺序开始创作：
 
-1. **完善设定**：先填充设定分组下的模块（世界观、力量体系等），为后续创作打好基础。可以使用 \`/novel-initialization\` 技能让 AI 批量填充
+1. **完善设定**：先填充设定分组下的模块（世界观、力量体系等），为后续创作打好基础。可以使用 \`/setting-generation\` 技能让 AI 批量填充
 2. **构建角色和场景**：在角色库、场景库中创建主要人物和关键场景
 3. **规划剧情**：利用剧情管理工具设计故事线和关键事件
 4. **开始写作**：在章节分组中创建章节，开始正文创作
@@ -105,7 +105,7 @@ Inside the editor, you can modify the novel's name and description through the A
 
 After clicking a work card to enter the editor, here's a recommended workflow:
 
-1. **Flesh Out Settings**: Start with the modules under the Settings group (world-building, power systems, etc.) to lay the foundation. You can use the \`/novel-initialization\` skill to have AI batch-fill these
+1. **Flesh Out Settings**: Start with the modules under the Settings group (world-building, power systems, etc.) to lay the foundation. You can use the \`/setting-generation\` skill to have AI batch-fill these
 2. **Build Characters and Scenes**: Create your main characters and key locations in the Characters and Scenes groups
 3. **Plan the Plot**: Use the plot management tools to design storylines and key events
 4. **Start Writing**: Create chapters in the Chapters group and begin your story

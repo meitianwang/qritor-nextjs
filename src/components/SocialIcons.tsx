@@ -63,24 +63,12 @@ const SOCIAL_ICONS: Record<string, React.FC> = {
     Xiaohongshu: XiaohongshuIcon
 }
 
-/**
- * Get social media icon component
- */
-export function getSocialIcon(iconName: string): React.FC | null {
-    return SOCIAL_ICONS[iconName] || null
-}
-
 interface SocialIconProps {
     name: string
 }
 
-/**
- * Social media icon component
- */
 export function SocialIcon({ name }: SocialIconProps) {
     const IconComponent = SOCIAL_ICONS[name]
     if (!IconComponent) return null
     return <IconComponent />
 }
-
-export default SOCIAL_ICONS

@@ -1,4 +1,4 @@
-export interface NovelGenre {
+interface NovelGenre {
   key: string;
   zh: string;
   en: string;
@@ -43,7 +43,7 @@ export const NOVEL_GENRES: NovelGenre[] = [
   { key: "coming-of-age", zh: "成长", en: "Coming of Age" },
 ];
 
-export const NOVEL_GENRE_MAP = new Map(
+const NOVEL_GENRE_MAP = new Map(
   NOVEL_GENRES.map((g) => [g.key, g]),
 );
 

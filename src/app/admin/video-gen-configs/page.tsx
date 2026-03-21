@@ -7,6 +7,7 @@ import ToastNotification from '@/components/ToastNotification'
 import VideoGenConfigModal from '@/components/admin/VideoGenConfigModal'
 import TestResultModal from '@/components/admin/TestResultModal'
 import ConfirmModal from '@/components/admin/ConfirmModal'
+import { PlusIcon } from '@/components/admin/icons'
 
 interface VideoGenConfig {
     id: number
@@ -38,13 +39,6 @@ interface TestResult {
 const VideoGenIcon = ({ className }: { className?: string }) => (
     <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
-    </svg>
-)
-
-// Plus 图标
-const PlusIcon = ({ className }: { className?: string }) => (
-    <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v16m8-8H4" />
     </svg>
 )
 

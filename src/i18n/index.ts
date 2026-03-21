@@ -8,7 +8,7 @@
 import { authFetch, getUserInfo } from '@/lib/auth-utils'
 
 // ============== Supported languages ==============
-export interface LanguageInfo {
+interface LanguageInfo {
     code: string
     name: string
     flag: string

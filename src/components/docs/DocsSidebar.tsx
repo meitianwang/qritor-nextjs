@@ -23,7 +23,7 @@ interface NavSection {
     items: NavItem[]
 }
 
-export interface DocsSidebarProps {
+interface DocsSidebarProps {
     currentLang: string
     isOpen: boolean
     onClose?: () => void

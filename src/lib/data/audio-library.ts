@@ -13,7 +13,7 @@ export const BGM_CATEGORIES: Record<string, string> = {
   mysterious: '神秘',
 }
 
-export interface BgmItem {
+interface BgmItem {
   id: string
   name: string
   category: string
@@ -63,7 +63,7 @@ export const SFX_CATEGORIES: Record<string, string> = {
   fx_magic: '魔法音效',
 }
 
-export interface SfxItem {
+interface SfxItem {
   id: string
   name: string
   category: string

@@ -3,16 +3,6 @@
  * 支持中英文两种语言
  */
 
-// 类型定义
-export type {
-    DocsNavItem,
-    DocsNavSection,
-    DocsNavigation,
-    DocsQuickLink,
-    DocsContentEntry,
-    DocsUITexts,
-} from './types'
-
 // 导航结构
 export { docsNavigation } from './navigation'
 

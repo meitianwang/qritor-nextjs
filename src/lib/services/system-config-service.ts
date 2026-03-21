@@ -15,8 +15,6 @@ const ConfigKeys = {
   REFERRAL_MONTHLY_LIMIT: 'referral.monthly_limit',
 } as const
 
-type ConfigKey = (typeof ConfigKeys)[keyof typeof ConfigKeys]
-
 // ---------------------------------------------------------------------------
 // Core CRUD
 // ---------------------------------------------------------------------------

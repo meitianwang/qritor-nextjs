@@ -10,7 +10,7 @@ export interface SocialLink {
     enabled: boolean
 }
 
-export const SOCIAL_LINKS: SocialLink[] = [
+const SOCIAL_LINKS: SocialLink[] = [
     {
         key: 'discord',
         icon: 'Discord',
@@ -59,6 +59,3 @@ export function getEnabledSocialLinks(): SocialLink[] {
     return SOCIAL_LINKS.filter(link => link.enabled)
 }
 
-export function getSocialLinksByRegion(_region: string = 'global'): SocialLink[] {
-    return getEnabledSocialLinks()
-}

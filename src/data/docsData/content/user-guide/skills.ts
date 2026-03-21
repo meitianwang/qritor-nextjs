@@ -9,7 +9,7 @@ export const zhSkills: DocsContentEntry = {
 
 技能是一段预置的 **AI 指令集**，包含特定创作任务的流程、规则和领域知识。当技能被加载后，AI 助手会按照技能中定义的步骤执行任务，无需你逐步指导。
 
-例如，加载 \`/novel-initialization\` 技能后，AI 会自动遍历所有设定模块、加载专属生成技能、逐个填充结构化内容——整个流程由技能编排，你只需审阅确认。
+例如，加载 \`/setting-generation\` 技能后，AI 会自动遍历所有设定模块、加载专属生成技能、逐个填充结构化内容——整个流程由技能编排，你只需审阅确认。
 
 ![技能系统](/images/features/skill_system.png)
 
@@ -40,7 +40,7 @@ export const zhSkills: DocsContentEntry = {
 在 AI 助手输入框中输入 \`/\` 加技能名称即可触发。输入 \`/\` 后会弹出技能选择器，支持模糊搜索。
 
 **示例**：
-- \`/novel-initialization\` — 批量初始化所有设定模块
+- \`/setting-generation\` — 批量初始化所有设定模块
 - \`/character-operations 创建一个亦正亦邪的剑修角色\` — 加载角色操作技能并执行指令
 
 ### 自动触发
@@ -95,7 +95,7 @@ export const enSkills: DocsContentEntry = {
 
 A skill is a pre-built set of **AI instructions** containing the workflow, rules, and domain knowledge for a specific creative task. Once loaded, the AI assistant follows the steps defined in the skill to execute the task without requiring step-by-step guidance from you.
 
-For example, loading the \`/novel-initialization\` skill causes the AI to automatically iterate through all setting modules, load specialized generation skills for each, and fill in structured content — the entire flow is orchestrated by the skill, and you only need to review and confirm.
+For example, loading the \`/setting-generation\` skill causes the AI to automatically iterate through all setting modules, load specialized generation skills for each, and fill in structured content — the entire flow is orchestrated by the skill, and you only need to review and confirm.
 
 ![Skills System](/images/features/skill_system.png)
 
@@ -126,7 +126,7 @@ Skills are organized by scope:
 Type \`/\` followed by the skill name in the AI assistant input box. A skill selector dropdown appears after typing \`/\`, with fuzzy search support.
 
 **Examples**:
-- \`/novel-initialization\` — Batch-initialize all setting modules
+- \`/setting-generation\` — Batch-initialize all setting modules
 - \`/character-operations Create a morally ambiguous sword cultivator\` — Load the character operations skill with your instruction
 
 ### Automatic Trigger
