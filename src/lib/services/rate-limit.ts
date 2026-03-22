@@ -67,16 +67,8 @@ class RateLimiter {
   }
 
   /**
-   * Check whether a request identified by `key` is allowed under the given
-   * rate limit policy.
-   *
-   * @param key       - Unique identifier for the client / endpoint combination
-   *                    (e.g. `${userId}:POST:/api/orders`).
-   * @param limit     - Maximum number of requests allowed within the window.
-   * @param windowMs  - Length of the sliding window in milliseconds.
-   *
-   * @returns An object indicating whether the request is allowed, how many
-   *          attempts remain, and when the window resets (epoch ms).
+   * 检查并消耗一次请求配额（等同于 consume）。
+   * 如果只需查询剩余配额而不消耗，请使用 peek()。
    */
   check(key: string, limit: number, windowMs: number): RateLimitResult {
     return this.consume(key, limit, windowMs)
