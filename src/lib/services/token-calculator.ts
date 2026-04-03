@@ -133,10 +133,12 @@ export function estimateMessagesTokens(messages: any[]): number {
 // Config lookup
 // ---------------------------------------------------------------------------
 
-interface ConfigParams {
+export interface ConfigParams {
   inputPricePerM: number
   outputPricePerM: number
   configId: number | null
+  /** Model tier from llm_config (e.g. 'economy', 'pro', 'max') */
+  modelTier?: string
 }
 
 /**
@@ -147,6 +149,45 @@ interface ConfigParams {
  *
  * Falls back to GLM-4.7 Flash pricing when no matching config is found.
  */
+/**
+ * Retrieve pricing by Anthropic model name (e.g. "claude-sonnet-4-6-20250610").
+ *
+ * Used by the transparent Anthropic proxy to look up billing config without a
+ * configId — the proxy only sees the raw Anthropic request body which contains
+ * the model string.
+ *
+ * Falls back to Sonnet pricing when no matching config is found.
+ */
+export async function getConfigParamsByModelName(
+  modelName: string,
+): Promise<ConfigParams> {
+  // Sonnet pricing as fallback for Anthropic-only proxy
+  const fallback: ConfigParams = {
+    inputPricePerM: 3.0,
+    outputPricePerM: 15.0,
+    configId: null,
+    modelTier: 'economy',
+  }
+
+  try {
+    const config = await prisma.llm_config.findFirst({
+      where: { model_name: modelName, enabled: 1 },
+      select: { id: true, input_price_per_m: true, output_price_per_m: true, model_tier: true },
+    })
+
+    if (!config) return fallback
+
+    return {
+      inputPricePerM: config.input_price_per_m ?? fallback.inputPricePerM,
+      outputPricePerM: config.output_price_per_m ?? fallback.outputPricePerM,
+      modelTier: (config as any).model_tier || 'economy',
+      configId: Number(config.id),
+    }
+  } catch {
+    return fallback
+  }
+}
+
 export async function getConfigParams(
   configId?: number,
 ): Promise<ConfigParams> {
