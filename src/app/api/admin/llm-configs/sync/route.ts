@@ -8,7 +8,6 @@ interface ModelEntry {
   display_name?: string
   model_tier?: string
   provider?: string
-  platform?: string
 }
 
 /**
@@ -29,7 +28,7 @@ export async function POST(request: NextRequest) {
     if (!models || !Array.isArray(models) || models.length === 0) {
       return apiError(
         400,
-        '请提供 models 数组，格式: [{ model_name: "...", provider?: "...", platform?: "...", display_name?: "...", model_tier?: "..." }]',
+        '请提供 models 数组，格式: [{ model_name: "...", provider?: "...", display_name?: "...", model_tier?: "..." }]',
       )
     }
 
@@ -59,10 +58,6 @@ export async function POST(request: NextRequest) {
         if (model.provider && model.provider !== existing.provider) {
           updates.provider = model.provider
         }
-        if (model.platform && model.platform !== existing.platform) {
-          updates.platform = model.platform
-        }
-
         if (Object.keys(updates).length > 0) {
           updates.updated_at = new Date()
           await prisma.llm_config.update({
@@ -80,7 +75,6 @@ export async function POST(request: NextRequest) {
             display_name: model.display_name || modelName,
             model_tier: model.model_tier || null,
             provider: model.provider ?? '',
-            platform: model.platform ?? '',
             enabled: 0,
             is_default: 0,
             input_price_per_m: 0.20,

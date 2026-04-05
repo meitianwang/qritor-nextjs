@@ -19,6 +19,7 @@ export async function GET(request: NextRequest) {
       const c = configs[index]
       return {
         ...item,
+        apiKey: c?.api_key ? `${c.api_key.slice(0, 8)}...` : null,
         tags: parseLlmTags(c?.tags ?? null),
         inputCreditsPerM: creditsPerMToken(c?.input_price_per_m ?? 0.20),
         outputCreditsPerM: creditsPerMToken(c?.output_price_per_m ?? 0.40),
@@ -39,7 +40,8 @@ export async function POST(request: NextRequest) {
     const {
       model_name,
       provider,
-      platform,
+      base_url,
+      api_key,
       display_name,
       tags,
       is_default,
@@ -51,7 +53,8 @@ export async function POST(request: NextRequest) {
     } = body as {
       model_name: string
       provider?: string
-      platform?: string
+      base_url?: string
+      api_key?: string
       display_name?: string
       tags?: unknown
       is_default?: unknown
@@ -96,7 +99,6 @@ export async function POST(request: NextRequest) {
 
     const normalizedDisplayName = String(display_name ?? normalizedModelName).trim()
     const normalizedProvider = String(provider ?? '').trim()
-    const normalizedPlatform = String(platform ?? '').trim()
     const normalizedIsDefault = toTinyInt(is_default, 0)
     const normalizedEnabled = toTinyInt(enabled, 1)
     const normalizedInputPricePerM = toNumber(input_price_per_m, 0.20)
@@ -109,7 +111,8 @@ export async function POST(request: NextRequest) {
       data: {
         model_name: normalizedModelName,
         provider: normalizedProvider,
-        platform: normalizedPlatform,
+        base_url: typeof base_url === 'string' && base_url.trim() ? base_url.trim() : null,
+        api_key: typeof api_key === 'string' && api_key.trim() ? api_key.trim() : null,
         display_name: normalizedDisplayName || normalizedModelName,
         tags: serializeLlmTags(tags),
         is_default: normalizedIsDefault,

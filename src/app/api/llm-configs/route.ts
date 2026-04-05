@@ -101,7 +101,6 @@ export async function GET(request: NextRequest) {
           modelName: c.model_name,
           displayName: c.display_name || c.model_name,
           provider: c.provider,
-          platform: c.platform,
           isDefault: c.is_default === 1,
           inputPricePerM: c.input_price_per_m ?? 0.20,
           outputPricePerM: c.output_price_per_m ?? 0.40,

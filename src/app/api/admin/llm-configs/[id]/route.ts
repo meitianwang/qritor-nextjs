@@ -85,7 +85,8 @@ export async function PUT(
     const modelName = pickString(body.model_name, body.modelName)
     const displayName = pickString(body.display_name, body.displayName)
     const provider = pickString(body.provider)
-    const platform = pickString(body.platform, body.owned_by, body.ownedBy)
+    const baseUrl = pickString(body.base_url, body.baseUrl)
+    const apiKey = pickString(body.api_key, body.apiKey)
     const modelTier = pickString(body.model_tier, body.modelTier)
     const isDefault = toTinyInt(body.is_default ?? body.isDefault)
     const enabled = toTinyInt(body.enabled)
@@ -97,7 +98,8 @@ export async function PUT(
     if (modelName !== undefined) updateData.model_name = modelName
     if (displayName !== undefined) updateData.display_name = displayName
     if (provider !== undefined) updateData.provider = provider
-    if (platform !== undefined) updateData.platform = platform
+    if (baseUrl !== undefined) updateData.base_url = baseUrl || null
+    if (apiKey !== undefined) updateData.api_key = apiKey || null
 
     if (body.tags !== undefined) updateData.tags = serializeLlmTags(body.tags)
 

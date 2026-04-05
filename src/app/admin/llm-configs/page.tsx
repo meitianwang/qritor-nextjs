@@ -20,7 +20,8 @@ interface LlmConfig {
   modelName: string;
   displayName: string;
   provider?: string;
-  platform?: string;
+  baseUrl?: string;
+  apiKey?: string;
   modelTier?: string;
   inputCreditsPerM: number;
   outputCreditsPerM: number;
@@ -274,11 +275,19 @@ export default function LlmConfigPage() {
                       </span>
                     </div>
                   )}
-                  {config.platform && (
+                  {config.baseUrl && (
                     <div className="admin-card-row">
-                      <span className="admin-card-label">Platform</span>
-                      <span className="admin-card-value">
-                        {config.platform}
+                      <span className="admin-card-label">Base URL</span>
+                      <span className="admin-card-value" style={{ fontSize: "0.8rem", wordBreak: "break-all" }}>
+                        {config.baseUrl}
+                      </span>
+                    </div>
+                  )}
+                  {config.apiKey && (
+                    <div className="admin-card-row">
+                      <span className="admin-card-label">API Key</span>
+                      <span className="admin-card-value" style={{ fontSize: "0.8rem" }}>
+                        {config.apiKey}
                       </span>
                     </div>
                   )}

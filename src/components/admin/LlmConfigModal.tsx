@@ -3,28 +3,16 @@
 import { useState, useEffect, ChangeEvent } from "react";
 import { adminFetch } from "@/lib/admin-utils";
 
-// 平台枚举（决定使用哪个 SDK）
-const PLATFORMS = [
-  { key: "vercel", label: "Vercel AI Gateway" },
-  { key: "anthropic", label: "Anthropic" },
-  { key: "google", label: "Google" },
-  { key: "openai", label: "OpenAI" },
-  { key: "packyapi", label: "PackyAPI" },
-  { key: "oneproxy", label: "OneProxy" },
-] as const;
-
-type PlatformKey = (typeof PLATFORMS)[number]["key"];
-
-// Provider 枚举（AI 提供商，用于匹配 reasoning 策略）
+// Provider 枚举及其默认 Anthropic 协议 base_url
 const PROVIDERS = [
   { key: "anthropic", label: "Anthropic" },
+  { key: "deepseek", label: "DeepSeek" },
   { key: "google", label: "Google" },
   { key: "openai", label: "OpenAI" },
-  { key: "deepseek", label: "DeepSeek" },
   { key: "xai", label: "xAI" },
   { key: "moonshotai", label: "Moonshot AI" },
   { key: "minimax", label: "MiniMax" },
-  { key: "zai", label: "ZAI (智谱)" },
+  { key: "zhipu", label: "智谱 (Zhipu)" },
   { key: "doubao", label: "豆包 (Doubao)" },
 ] as const;
 
@@ -66,7 +54,8 @@ interface LlmConfig {
   modelName: string;
   displayName: string;
   provider?: string;
-  platform?: string;
+  baseUrl?: string;
+  apiKey?: string;
   modelTier?: string;
   tags: string[];
   isDefault: boolean;
@@ -79,7 +68,8 @@ interface LlmConfig {
 interface LlmFormData {
   modelName: string;
   provider: string;
-  platform: PlatformKey | "";
+  baseUrl: string;
+  apiKey: string;
   displayName: string;
   modelTier: string;
   tags: string[];
@@ -117,7 +107,8 @@ function LlmConfigModal({
   const [formData, setFormData] = useState<LlmFormData>({
     modelName: "",
     provider: "",
-    platform: "",
+    baseUrl: "",
+    apiKey: "",
     displayName: "",
     modelTier: "economy",
     tags: [],
@@ -135,7 +126,8 @@ function LlmConfigModal({
         setFormData({
           modelName: "",
           provider: "",
-          platform: PLATFORMS[0].key,
+          baseUrl: "",
+          apiKey: "",
           displayName: "",
           modelTier: "economy",
           tags: [],
@@ -150,7 +142,8 @@ function LlmConfigModal({
         setFormData({
           modelName: config.modelName,
           provider: config.provider || "",
-          platform: (config.platform || "") as PlatformKey | "",
+          baseUrl: config.baseUrl || "",
+          apiKey: "",
           displayName: config.displayName || "",
           modelTier: config.modelTier || "economy",
           tags: config.tags || [],
@@ -183,10 +176,7 @@ function LlmConfigModal({
       return value;
     })();
 
-    setFormData((prev) => ({
-      ...prev,
-      [name]: normalizedValue,
-    }));
+    setFormData((prev) => ({ ...prev, [name]: normalizedValue }));
   };
 
   const handleSave = async () => {
@@ -203,7 +193,8 @@ function LlmConfigModal({
           body: {
             model_name: formData.modelName.trim(),
             provider: formData.provider || undefined,
-            platform: formData.platform || undefined,
+            base_url: formData.baseUrl.trim() || undefined,
+            api_key: formData.apiKey.trim() || undefined,
             display_name: formData.displayName.trim() || undefined,
             model_tier: formData.modelTier || undefined,
             tags: formData.tags,
@@ -241,7 +232,8 @@ function LlmConfigModal({
             body: {
               model_name: formData.modelName.trim() || undefined,
               provider: formData.provider || undefined,
-              platform: formData.platform || undefined,
+              base_url: formData.baseUrl.trim() || undefined,
+              ...(formData.apiKey.trim() ? { api_key: formData.apiKey.trim() } : {}),
               display_name: formData.displayName.trim() || undefined,
               model_tier: formData.modelTier || undefined,
               tags: formData.tags || [],
@@ -302,11 +294,11 @@ function LlmConfigModal({
           </button>
         </div>
 
-        {/* 模型名称 / Provider / Platform */}
+        {/* 模型名称 / Provider */}
         <div
           style={{
             display: "grid",
-            gridTemplateColumns: "2fr 1fr 1fr",
+            gridTemplateColumns: "2fr 1fr",
             gap: "16px",
             marginBottom: "24px",
           }}
@@ -340,23 +332,48 @@ function LlmConfigModal({
               ))}
             </select>
           </div>
-          <div className="admin-form-group" style={{ marginBottom: 0 }}>
-            <label className="admin-form-label">
-              Platform {isCreate && <span style={{ color: "#ef4444" }}>*</span>}
-            </label>
-            <select
-              name="platform"
-              value={formData.platform}
-              onChange={handleInputChange}
-              className="admin-form-input"
-            >
-              {PLATFORMS.map((p) => (
-                <option key={p.key} value={p.key}>
-                  {p.label}
-                </option>
-              ))}
-            </select>
-          </div>
+        </div>
+
+        {/* Base URL / API Key */}
+        <div className="admin-form-group">
+          <label className="admin-form-label">Base URL</label>
+          <input
+            type="text"
+            name="baseUrl"
+            value={formData.baseUrl}
+            onChange={handleInputChange}
+            className="admin-form-input"
+            placeholder="Anthropic 协议端点，例如: https://api.anthropic.com"
+          />
+          <p
+            style={{
+              fontSize: "0.75rem",
+              color: "rgba(255,255,255,0.4)",
+              marginTop: "4px",
+            }}
+          >
+            该 Provider 的 Anthropic Messages API 兼容端点地址，留空使用系统默认
+          </p>
+        </div>
+        <div className="admin-form-group">
+          <label className="admin-form-label">API Key</label>
+          <input
+            type="password"
+            name="apiKey"
+            value={formData.apiKey}
+            onChange={handleInputChange}
+            className="admin-form-input"
+            placeholder={isCreate ? "输入 API Key" : "留空保持不变"}
+          />
+          <p
+            style={{
+              fontSize: "0.75rem",
+              color: "rgba(255,255,255,0.4)",
+              marginTop: "4px",
+            }}
+          >
+            该 Provider 的 API Key，留空使用系统默认
+          </p>
         </div>
 
         {/* 表单内容 */}

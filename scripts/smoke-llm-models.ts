@@ -3,7 +3,6 @@ import "dotenv/config";
 import { PrismaClient } from "../src/generated/prisma/client";
 import { PrismaMariaDb } from "@prisma/adapter-mariadb";
 import { createGateway, generateText, jsonSchema, streamText } from "ai";
-import { createAnthropic } from "@ai-sdk/anthropic";
 import {
   resolveModelRequestPolicy,
   type ReasoningProviderOptions,
@@ -173,9 +172,8 @@ function parseToolCallCount(output: unknown): number {
 
 async function runStreamSmoke(
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  modelResolver: (name: string, platform?: string | null) => any,
+  modelResolver: (name: string) => any,
   modelName: string,
-  platform: string | null,
   providerOptions: ReasoningProviderOptions | undefined,
   maxTokens: number | undefined,
   allowTemperature: boolean,
@@ -187,7 +185,7 @@ async function runStreamSmoke(
       `${modelName} stream`,
       async () => {
         const result = streamText({
-          model: modelResolver(modelName, platform),
+          model: modelResolver(modelName),
           messages: [
             {
               role: "user",
@@ -261,9 +259,8 @@ async function runStreamSmoke(
 
 async function runToolSmoke(
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  modelResolver: (name: string, platform?: string | null) => any,
+  modelResolver: (name: string) => any,
   modelName: string,
-  platform: string | null,
   providerOptions: ReasoningProviderOptions | undefined,
   maxTokens: number | undefined,
   allowTemperature: boolean,
@@ -288,7 +285,7 @@ async function runToolSmoke(
       `${modelName} tool`,
       async () =>
         generateText({
-          model: modelResolver(modelName, platform),
+          model: modelResolver(modelName),
           messages: [
             {
               role: "user",
@@ -562,21 +559,8 @@ async function main(): Promise<void> {
   const prisma = new PrismaClient({ adapter });
   const gateway = createGateway({ apiKey: process.env.AI_GATEWAY_API_KEY });
 
-  const anthropic = createAnthropic({
-    baseURL: "https://api.aicodemirror.com/api/claudecode",
-    apiKey: process.env.ANTHROPIC_API_KEY ?? "",
-  });
-
-  const resolveModel = (modelName: string, platform?: string | null) => {
-    if (!platform || platform === "vercel") {
-      return gateway(modelName);
-    }
-    switch (platform) {
-      case "anthropic":
-        return anthropic(modelName);
-      default:
-        return gateway(modelName);
-    }
+  const resolveModel = (modelName: string) => {
+    return gateway(modelName);
   };
 
   try {
@@ -587,7 +571,6 @@ async function main(): Promise<void> {
         id: true,
         model_name: true,
         provider: true,
-        platform: true,
       },
       orderBy: { id: "asc" },
     });
@@ -630,7 +613,7 @@ async function main(): Promise<void> {
       let stream: StreamSmokeResult;
       let tool: ToolSmokeResult;
 
-      if (item.platform === "google") {
+      if (provider === "google") {
         stream = await runGoogleStreamSmoke(
           item.model_name,
           modelPolicy.maxTokens,
@@ -644,7 +627,6 @@ async function main(): Promise<void> {
         stream = await runStreamSmoke(
           resolveModel,
           item.model_name,
-          item.platform,
           modelPolicy.providerOptions,
           modelPolicy.maxTokens,
           true,
@@ -652,7 +634,6 @@ async function main(): Promise<void> {
         tool = await runToolSmoke(
           resolveModel,
           item.model_name,
-          item.platform,
           modelPolicy.providerOptions,
           modelPolicy.maxTokens,
           true,

@@ -23,7 +23,6 @@ export async function GET(
       modelName: c.model_name,
       displayName: c.display_name || c.model_name,
       provider: c.provider,
-      platform: c.platform,
       isDefault: c.is_default === 1,
       enabled: c.enabled === 1,
       inputPricePerM: c.input_price_per_m ?? 0.20,
