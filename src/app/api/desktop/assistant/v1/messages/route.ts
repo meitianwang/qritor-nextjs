@@ -60,8 +60,11 @@ export async function POST(request: NextRequest) {
     );
   }
 
-  // 3. 解析上游地址和 API Key
-  const upstreamApiKey = config.api_key || FALLBACK_API_KEY;
+  // 3. 解析上游 API Key（仅 Anthropic 协议允许 fallback 到环境变量）
+  const isOpenAIProtocol = config.provider === "openai";
+  const upstreamApiKey = isOpenAIProtocol
+    ? config.api_key
+    : (config.api_key || FALLBACK_API_KEY);
 
   if (!upstreamApiKey) {
     return NextResponse.json(
@@ -111,8 +114,6 @@ export async function POST(request: NextRequest) {
   }
 
   // 7. 根据 provider 字段选择协议路径
-  const isOpenAIProtocol = config.provider === "openai";
-
   if (isOpenAIProtocol) {
     return handleOpenAIProtocol(parsedBody, config, upstreamApiKey, userId, llmConfigId);
   } else {
