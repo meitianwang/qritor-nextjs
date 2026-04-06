@@ -269,7 +269,7 @@ export default function LlmConfigPage() {
                 <div className="admin-card-body">
                   {config.provider && (
                     <div className="admin-card-row">
-                      <span className="admin-card-label">Provider</span>
+                      <span className="admin-card-label">API 协议</span>
                       <span className="admin-card-value">
                         {config.provider}
                       </span>

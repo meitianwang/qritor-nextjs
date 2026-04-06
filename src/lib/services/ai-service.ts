@@ -17,6 +17,7 @@ export interface LlmConfigRow {
   enabled: number | null;
   input_price_per_m: number | null;
   output_price_per_m: number | null;
+  context_window: number | null;
 }
 
 // ---------------------------------------------------------------------------

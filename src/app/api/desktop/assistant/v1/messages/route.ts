@@ -1,15 +1,16 @@
 /**
  * Anthropic Messages API 代理端点
  *
- * 所有模型统一走 Anthropic Messages API 协议。
- * 每个 provider 在 llm_config 中配置自己的 base_url 和 api_key。
+ * 根据 llm_config.provider 字段判断上游 API 协议：
+ * - provider = 'anthropic'（或空）→ 直接转发 Anthropic Messages API
+ * - provider = 'openai' → 用 @musistudio/llms 做 Anthropic ↔ OpenAI 协议转换
  *
  * 职责：
  * 1. 验证用户身份（x-api-key = qritor access token）
- * 2. 根据 x-llm-config-id 查配置，获取上游 base_url 和 api_key
+ * 2. 根据 x-llm-config-id 查配置，获取上游 base_url、api_key、provider
  * 3. 订阅等级检查 + 积分预检
- * 4. 透传 Anthropic Messages API 请求，流式转发响应
- * 5. 提取 token 用量，完成后扣费（失败记欠费）
+ * 4. 根据 provider 选择转发路径
+ * 5. 提取 token 用量，完成后扣费
  */
 
 import { NextRequest, NextResponse } from "next/server";
@@ -19,6 +20,7 @@ import { getConfigById } from "@/lib/services/ai-service";
 import { canUserAccessModelTier } from "@/lib/services/subscription-service";
 import { hasEnoughCredits } from "@/lib/services/credit-service";
 import { calculateCredits, getConfigParams } from "@/lib/services/token-calculator";
+import { AnthropicTransformer, VercelTransformer } from "@/lib/llm-transformer";
 
 export const dynamic = "force-dynamic";
 export const maxDuration = 300;
@@ -28,6 +30,10 @@ const FALLBACK_API_KEY = process.env.ANTHROPIC_API_KEY ?? "";
 const FALLBACK_BASE_URL = (
   process.env.ANTHROPIC_BASE_URL ?? "https://api.anthropic.com"
 ).replace(/\/v1\/?$/, "");
+
+// 单例 transformer（无状态，可复用）
+const anthropicTransformer = new AnthropicTransformer();
+const vercelTransformer = new VercelTransformer();
 
 export async function POST(request: NextRequest) {
   // 1. 验证用户身份
@@ -55,7 +61,6 @@ export async function POST(request: NextRequest) {
   }
 
   // 3. 解析上游地址和 API Key
-  const upstreamBaseUrl = (config.base_url || FALLBACK_BASE_URL).replace(/\/v1\/?$/, "");
   const upstreamApiKey = config.api_key || FALLBACK_API_KEY;
 
   if (!upstreamApiKey) {
@@ -90,22 +95,47 @@ export async function POST(request: NextRequest) {
     console.error("[assistant-proxy] credit pre-check error:", error);
   }
 
-  // 6. 读取原始请求体
+  // 6. 读取并预处理请求体
   const body = await request.text();
-
-  // LiteLLM 要求 max_tokens 为必填，但新版 Anthropic SDK 可能不发送该字段
-  // 根据模型的 context_window 推导合理默认值（输出上限一般为上下文窗口的 1/4，cap 在 64k）
-  let finalBody = body;
+  let parsedBody: any;
   try {
-    const parsed = JSON.parse(body);
-    if (!parsed.max_tokens) {
-      const ctxWindow = config.context_window || 200000;
-      parsed.max_tokens = Math.min(Math.floor(ctxWindow / 4), 64000);
-      finalBody = JSON.stringify(parsed);
-    }
-  } catch { /* ignore */ }
+    parsedBody = JSON.parse(body);
+  } catch {
+    return NextResponse.json({ error: "Invalid JSON body" }, { status: 400 });
+  }
 
-  // 7. 构建转发请求头
+  // 补充 max_tokens（新版 Anthropic SDK 可能不发送）
+  if (!parsedBody.max_tokens) {
+    const ctxWindow = config.context_window || 200000;
+    parsedBody.max_tokens = Math.min(Math.floor(ctxWindow / 4), 64000);
+  }
+
+  // 7. 根据 provider 字段选择协议路径
+  const isOpenAIProtocol = config.provider === "openai";
+
+  if (isOpenAIProtocol) {
+    return handleOpenAIProtocol(parsedBody, config, upstreamApiKey, userId, llmConfigId);
+  } else {
+    return handleAnthropicProtocol(parsedBody, config, upstreamApiKey, request, userId, llmConfigId);
+  }
+}
+
+// ============================================================
+// Anthropic 协议路径：直接转发
+// ============================================================
+
+async function handleAnthropicProtocol(
+  parsedBody: any,
+  config: any,
+  upstreamApiKey: string,
+  request: NextRequest,
+  userId: bigint,
+  llmConfigId: number | undefined,
+) {
+  const upstreamBaseUrl = (config.base_url || FALLBACK_BASE_URL).replace(/\/v1\/?$/, "");
+  const upstreamUrl = `${upstreamBaseUrl}/v1/messages`;
+  const finalBody = JSON.stringify(parsedBody);
+
   const forwardHeaders: Record<string, string> = {
     "content-type": "application/json",
     "x-api-key": upstreamApiKey,
@@ -117,9 +147,6 @@ export async function POST(request: NextRequest) {
       forwardHeaders[key] = value;
     }
   }
-
-  // 8. 转发到上游
-  const upstreamUrl = `${upstreamBaseUrl}/v1/messages`;
 
   let upstreamResponse: Response;
   try {
@@ -136,7 +163,6 @@ export async function POST(request: NextRequest) {
     );
   }
 
-  // 9. 非 2xx 直接透传
   if (!upstreamResponse.ok) {
     const errorBody = await upstreamResponse.text();
     return new Response(errorBody, {
@@ -148,37 +174,157 @@ export async function POST(request: NextRequest) {
     });
   }
 
-  // 10. 判断是否流式
-  const contentType = upstreamResponse.headers.get("content-type") ?? "";
+  return forwardAnthropicResponse(upstreamResponse, userId, llmConfigId);
+}
+
+// ============================================================
+// OpenAI 协议路径：Anthropic → OpenAI 转换 → 上游 → OpenAI → Anthropic 转换
+// ============================================================
+
+async function handleOpenAIProtocol(
+  parsedBody: any,
+  config: any,
+  upstreamApiKey: string,
+  userId: bigint,
+  llmConfigId: number | undefined,
+) {
+  // base_url 是完整的 OpenAI 端点 URL（含 /chat/completions）
+  const upstreamUrl = config.base_url;
+  if (!upstreamUrl) {
+    return NextResponse.json(
+      { error: "OpenAI 协议模型必须配置 base_url" },
+      { status: 400 },
+    );
+  }
+
+  // 1. Anthropic 请求 → UnifiedChatRequest（OpenAI 格式）
+  let unifiedRequest: any;
+  try {
+    unifiedRequest = await anthropicTransformer.transformRequestOut(parsedBody);
+  } catch (error) {
+    console.error("[assistant-proxy] transformRequestOut failed:", error);
+    return NextResponse.json(
+      { error: "Failed to transform request" },
+      { status: 500 },
+    );
+  }
+
+  // 2. Provider 适配（VercelTransformer 处理 reasoning 字段等）
+  try {
+    unifiedRequest = await vercelTransformer.transformRequestIn(unifiedRequest);
+  } catch (error) {
+    console.error("[assistant-proxy] transformRequestIn failed:", error);
+    // 非致命，继续
+  }
+
+  // 3. 发送到 OpenAI 兼容上游
+  let upstreamResponse: Response;
+  try {
+    upstreamResponse = await fetch(upstreamUrl, {
+      method: "POST",
+      headers: {
+        "content-type": "application/json",
+        "authorization": `Bearer ${upstreamApiKey}`,
+      },
+      body: JSON.stringify(unifiedRequest),
+    });
+  } catch (error) {
+    console.error("[assistant-proxy] upstream request failed:", error);
+    return NextResponse.json(
+      { error: "Failed to connect to upstream API" },
+      { status: 502 },
+    );
+  }
+
+  if (!upstreamResponse.ok) {
+    const errorBody = await upstreamResponse.text();
+    console.error(`[assistant-proxy] upstream error (${upstreamResponse.status}):`, errorBody.slice(0, 500));
+    return NextResponse.json(
+      { error: `Upstream API error: ${upstreamResponse.status}` },
+      { status: upstreamResponse.status },
+    );
+  }
+
+  // 4. Provider 响应适配（reasoning → thinking 翻译）
+  try {
+    upstreamResponse = await vercelTransformer.transformResponseOut(upstreamResponse);
+  } catch (error) {
+    console.error("[assistant-proxy] transformResponseOut failed:", error);
+    return NextResponse.json(
+      { error: "Failed to transform response" },
+      { status: 500 },
+    );
+  }
+
+  // 5. OpenAI 响应 → Anthropic 响应（含流式 SSE 翻译）
+  let anthropicResponse: Response;
+  try {
+    anthropicResponse = await anthropicTransformer.transformResponseIn(upstreamResponse);
+  } catch (error) {
+    console.error("[assistant-proxy] transformResponseIn failed:", error);
+    return NextResponse.json(
+      { error: "Failed to transform response to Anthropic format" },
+      { status: 500 },
+    );
+  }
+
+  return forwardAnthropicResponse(anthropicResponse, userId, llmConfigId);
+}
+
+// ============================================================
+// 共用：转发 Anthropic 格式响应 + 提取 usage 扣费
+// ============================================================
+
+function forwardAnthropicResponse(
+  response: Response,
+  userId: bigint,
+  llmConfigId: number | undefined,
+) {
+  const contentType = response.headers.get("content-type") ?? "";
   const isStreaming = contentType.includes("text/event-stream");
 
   if (!isStreaming) {
-    const responseBody = await upstreamResponse.text();
-    try {
-      const parsed = JSON.parse(responseBody);
-      const usage = parsed.usage;
-      if (usage) {
-        deductLlmCredits({
-          userId,
-          configId: llmConfigId,
-          inputTokens: usage.input_tokens ?? 0,
-          outputTokens: usage.output_tokens ?? 0,
-          logTag: "assistant-proxy",
-        }).catch((e) =>
-          console.error("[assistant-proxy] credit deduction error:", e),
-        );
-      }
-    } catch {
-      // 解析失败不影响响应
-    }
-    return new Response(responseBody, {
-      status: 200,
-      headers: { "content-type": "application/json" },
-    });
+    return handleNonStreamingResponse(response, userId, llmConfigId);
   }
 
-  // 11. 流式：透传 + 提取 usage 扣费
-  const upstreamBody = upstreamResponse.body;
+  return handleStreamingResponse(response, userId, llmConfigId);
+}
+
+async function handleNonStreamingResponse(
+  response: Response,
+  userId: bigint,
+  llmConfigId: number | undefined,
+) {
+  const responseBody = await response.text();
+  try {
+    const parsed = JSON.parse(responseBody);
+    const usage = parsed.usage;
+    if (usage) {
+      deductLlmCredits({
+        userId,
+        configId: llmConfigId,
+        inputTokens: usage.input_tokens ?? 0,
+        outputTokens: usage.output_tokens ?? 0,
+        logTag: "assistant-proxy",
+      }).catch((e) =>
+        console.error("[assistant-proxy] credit deduction error:", e),
+      );
+    }
+  } catch {
+    // 解析失败不影响响应
+  }
+  return new Response(responseBody, {
+    status: 200,
+    headers: { "content-type": "application/json" },
+  });
+}
+
+function handleStreamingResponse(
+  response: Response,
+  userId: bigint,
+  llmConfigId: number | undefined,
+) {
+  const upstreamBody = response.body;
   if (!upstreamBody) {
     return NextResponse.json(
       { error: "Empty response body from upstream" },

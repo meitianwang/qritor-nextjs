@@ -603,7 +603,6 @@ async function main(): Promise<void> {
       const item = picked[i];
       const modelPolicy = resolveModelRequestPolicy(
         item.model_name,
-        item.provider,
       );
       const provider = item.provider || getProvider(item.model_name);
       const step = `[${i + 1}/${picked.length}]`;

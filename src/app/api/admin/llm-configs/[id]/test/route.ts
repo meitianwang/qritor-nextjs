@@ -24,55 +24,10 @@ export async function POST(
 
     const modelPolicy = resolveModelRequestPolicy(
       config.model_name,
-      config.provider,
     );
     const startTime = Date.now();
 
-    // Google provider: 走 @google/genai SDK
-    if (config.provider === "google") {
-      const { generateGoogleContent } =
-        await import("@/lib/services/google-genai");
-      const { text } = await generateGoogleContent({
-        modelName: config.model_name,
-        contents: [
-          { role: "user", parts: [{ text: 'Say "hello" in one word.' }] },
-        ],
-        thinkingConfig: { includeThoughts: true, thinkingLevel: "HIGH" },
-        maxTokens: modelPolicy.maxTokens,
-      });
-      return apiSuccess({
-        success: true,
-        modelName: config.model_name,
-        latencyMs: Date.now() - startTime,
-        reply: (text ?? "").slice(0, 100),
-      });
-    }
-
-    // OpenAI provider: 走 openai 官方 SDK (Responses API)
-    if (config.provider === "openai") {
-      const { streamOpenAIContent, convertMessagesToOpenAIInput } =
-        await import("@/lib/services/openai-sdk");
-      const { input } = convertMessagesToOpenAIInput([
-        { role: "user", content: 'Say "hello" in one word.' },
-      ]);
-      let reply = "";
-      for await (const event of streamOpenAIContent({
-        modelName: config.model_name,
-        input,
-        maxTokens: modelPolicy.maxTokens,
-      })) {
-        if (event.type === "text-delta") reply += event.text;
-        if (event.type === "error") throw event.error;
-      }
-      return apiSuccess({
-        success: true,
-        modelName: config.model_name,
-        latencyMs: Date.now() - startTime,
-        reply: reply.slice(0, 100),
-      });
-    }
-
-    // 默认: Vercel AI Gateway
+    // 统一走 Vercel AI Gateway 测试
     const { text } = await generateText({
       model: resolveModel(config.model_name),
       messages: [{ role: "user", content: 'Say "hello" in one word.' }],

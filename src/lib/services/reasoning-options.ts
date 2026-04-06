@@ -12,53 +12,55 @@ export interface ModelRequestPolicy {
 }
 
 /**
- * 根据 provider 生成对应的 thinking/reasoning 选项。
+ * 根据模型名称推断 Vercel AI SDK 的 thinking/reasoning 选项。
+ * 不再依赖 llm_config.provider（该字段现在只表示上游 API 协议）。
  */
 function createProviderOptions(
-  provider: string,
+  modelName: string,
 ): ReasoningProviderOptions | undefined {
-  switch (provider) {
-    case "anthropic":
-      return {
-        anthropic: {
-          thinking: { type: "adaptive" },
-        },
-      };
+  const id = modelName.toLowerCase();
 
-    case "openai":
-      return {
-        openai: {
-          reasoningEffort: "high",
-          reasoningSummary: "detailed",
-        },
-      };
-
-    case "deepseek":
-      return {
-        deepseek: {
-          thinking: { type: "enabled" },
-        },
-      };
-
-    case "moonshotai":
-      return {
-        moonshotai: {
-          thinking: { type: "enabled", budgetTokens: 16000 },
-          reasoningHistory: "interleaved",
-        },
-      };
-
-    default:
-      return undefined;
+  if (id.includes("claude")) {
+    return {
+      anthropic: {
+        thinking: { type: "adaptive" },
+      },
+    };
   }
+
+  if (id.includes("gpt") || id.includes("o1") || id.includes("o3") || id.includes("o4")) {
+    return {
+      openai: {
+        reasoningEffort: "high",
+        reasoningSummary: "detailed",
+      },
+    };
+  }
+
+  if (id.includes("deepseek")) {
+    return {
+      deepseek: {
+        thinking: { type: "enabled" },
+      },
+    };
+  }
+
+  if (id.includes("kimi") || id.includes("moonshot")) {
+    return {
+      moonshotai: {
+        thinking: { type: "enabled", budgetTokens: 16000 },
+        reasoningHistory: "interleaved",
+      },
+    };
+  }
+
+  return undefined;
 }
 
 export function resolveModelRequestPolicy(
   modelName: string,
-  provider: string,
 ): ModelRequestPolicy {
-  const normalizedProvider = provider.trim().toLowerCase();
-  const providerOptions = createProviderOptions(normalizedProvider);
+  const providerOptions = createProviderOptions(modelName);
 
   return {
     providerOptions,

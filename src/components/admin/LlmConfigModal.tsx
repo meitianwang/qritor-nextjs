@@ -3,17 +3,10 @@
 import { useState, useEffect, ChangeEvent } from "react";
 import { adminFetch } from "@/lib/admin-utils";
 
-// Provider 枚举及其默认 Anthropic 协议 base_url
-const PROVIDERS = [
-  { key: "anthropic", label: "Anthropic" },
-  { key: "deepseek", label: "DeepSeek" },
-  { key: "google", label: "Google" },
-  { key: "openai", label: "OpenAI" },
-  { key: "xai", label: "xAI" },
-  { key: "moonshotai", label: "Moonshot AI" },
-  { key: "minimax", label: "MiniMax" },
-  { key: "zhipu", label: "智谱 (Zhipu)" },
-  { key: "doubao", label: "豆包 (Doubao)" },
+// provider 字段现在表示上游 API 协议，不再表示模型服务提供商
+const PROTOCOLS = [
+  { key: "anthropic", label: "Anthropic 协议" },
+  { key: "openai", label: "OpenAI 协议" },
 ] as const;
 
 interface PresetTag {
@@ -317,7 +310,7 @@ function LlmConfigModal({
             />
           </div>
           <div className="admin-form-group" style={{ marginBottom: 0 }}>
-            <label className="admin-form-label">Provider</label>
+            <label className="admin-form-label">API 协议</label>
             <select
               name="provider"
               value={formData.provider}
@@ -325,7 +318,7 @@ function LlmConfigModal({
               className="admin-form-input"
             >
               <option value="">--</option>
-              {PROVIDERS.map((p) => (
+              {PROTOCOLS.map((p) => (
                 <option key={p.key} value={p.key}>
                   {p.label}
                 </option>
