@@ -376,7 +376,7 @@ function handleStreamingResponse(
     } catch (error) {
       console.error("[assistant-proxy] stream error:", error);
     } finally {
-      await writer.close();
+      try { await writer.close(); } catch { /* stream already closed */ }
 
       if (inputTokens > 0 || outputTokens > 0) {
         deductLlmCredits({
